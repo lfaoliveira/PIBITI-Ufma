@@ -1,10 +1,11 @@
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from "./components/HelloWorld.vue"
 import videoplayer from "./components/videoplayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
 
 export default {
   components: {
+    HelloWorld,
     videoplayer,
     videoplayerTrack, 
   },
@@ -57,7 +58,7 @@ export default {
     <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <HelloWorld msg="You did it!"></HelloWorld>
     </div>    
   </header>
 
@@ -123,6 +124,7 @@ export default {
 
 <style scoped>
 header {
+  color:aliceblue;
   line-height: 1.5;
 }
 
@@ -143,6 +145,7 @@ header {
   }
 
   header .wrapper {
+    color:aliceblue;
     display: flex;
     place-items: flex-start;
     flex-wrap: wrap;
