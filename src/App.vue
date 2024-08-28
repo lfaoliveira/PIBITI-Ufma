@@ -6,7 +6,7 @@ import videoplayerTrack from "./components/VideoPlayerTracker.vue";
 export default {
   components: {
     videoplayer,
-    videoplayerTrack,
+    videoplayerTrack, 
   },
   data() {
     return {
