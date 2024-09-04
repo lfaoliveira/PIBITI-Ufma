@@ -1,42 +1,68 @@
 <template>
 <div>
-  <video controls autoplay:true class="videoplayer">
-    <source :src="fileName">
-  </video>
+  <video :src="videoURL" controls autoplay:true class="videoPessoa" :style="videoStyle"></video>
+  <input type="file" form="videoUploadForm" accept="video/*" @change="handleFileUpload">
 
-  <form id="videoUploadForm">
-    <input type="file" form="videoUploadForm" id="videoFile" accept="video/*" @change="handleFileUpload">
-    <!-- <button form="videoUploadForm" type="submit">Upload Video</button> -->
-  </form>
-  
 </div>
 
 </template>
 
-
 <script lang="js">
-
 export default{
   name: "Teste",
-  data(){
-    return{
+  data() {
+    return {
       videoFile: null,
-      fileName: '',
+      videoURL: '',
     }
     
   },
   methods: {
-    handleFileUpload(event){
-      const file = event.target.files[0];
+    handleFileUpload($evt){
+      const file = $evt.target.files[0];
       if (file) {
         this.videoFile = file;
-        this.fileName = file.name; // filename = path relativo
-        console.log(this.fileName)
+        this.videoURL =  URL.createObjectURL(this.videoFile) // filename = path relativo
+        console.log(this.videoURL)
       }
+    },
+    resizeVideo() {
+      const aspectRatio = 16 / 9; // Assuming a standard aspect ratio of 16:9
+      const maxWidth = window.innerWidth * 0.8; // 90% of the window width
+      const maxHeight = window.innerHeight * 0.8; // 90% of the window height
 
-    }
-  }
-}
+      if (maxWidth / aspectRatio <= maxHeight) {
+        this.videoWidth = maxWidth;
+        this.videoHeight = maxWidth / aspectRatio;
+      } else {
+        this.videoHeight = maxHeight;
+        this.videoWidth = maxHeight * aspectRatio;
+      }
+    },
 
+  },
+  computed: {
+    videoStyle() {
+      return {
+        width: `${this.videoWidth}px`,
+        height: `${this.videoHeight}px`,
+      };
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.resizeVideo);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.resizeVideo);
+  },
+};
 
 </script>
+
+<style scoped>
+video {
+  margin-top: 20px;
+  max-width: 100%;
+  max-height: 100%;
+}
+</style>

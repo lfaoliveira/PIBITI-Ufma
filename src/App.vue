@@ -1,6 +1,6 @@
 <script>
 import HelloWorld from "./components/HelloWorld.vue"
-import videoplayer from "./components/videoplayer.vue";
+//import videoplayer from "./components/videoplayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
 import Teste from "./components/Teste.vue"
 export default {
@@ -111,7 +111,7 @@ export default {
         </div>
       </template>
     </videoplayer> -->
-    <Teste class="Teste"></Teste>
+    <Teste class="videoplayer"></Teste>
   </div>
 
 
