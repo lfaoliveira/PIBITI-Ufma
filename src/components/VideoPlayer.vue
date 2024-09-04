@@ -1,5 +1,10 @@
+
+/* componente geral de video player */
+
+
 <template>
   <div>
+    
     <video
       :src="src"
       :muted="muted"
@@ -27,6 +32,10 @@
       :toggle-mute="toggleMute"
     ></slot>
   </div>
+  <form id="videoUploadForm">
+    <input type="file" id="videoFile" accept="video/*" required>
+    <button type="submit">Upload Video</button>
+</form>
 </template>
 
 <script lang="js">
@@ -41,6 +50,7 @@ const EVENTS = [
   "canplay",
   "canplaythrough",
   "statechanged",
+  "upload",
 ];
 
 export default {
@@ -91,6 +101,38 @@ export default {
           if (which === "timeupdate") {
             this.percentagePlayed =
               (player.currentTime / player.duration) * 100;
+          }
+          
+          if (which === "upload"){
+            event.preventDefault();
+            const videoFile = document.getElementById('videoFile').files[0];
+            if (!videoFile) {
+                alert("Please select a video file to upload.");
+                return;
+            }
+            const formData = new FormData();
+            formData.append('video', videoFile);
+
+            const status = document.getElementById('status');
+            status.textContent = 'Uploading...';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    status.textContent = 'Upload successful!';
+                } else {
+                    status.textContent = 'Upload failed: ' + data.error;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                status.textContent = 'Upload failed: ' + error.message;
+            });
+
           }
 
           this.$emit(which, { event, player: this });
@@ -152,6 +194,7 @@ export default {
     setMuted(state) {
       this.videoMuted = state;
     },
+    
   },
 };
 </script>

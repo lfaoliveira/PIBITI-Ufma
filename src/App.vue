@@ -2,12 +2,11 @@
 import HelloWorld from "./components/HelloWorld.vue"
 import videoplayer from "./components/videoplayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
-
+import Teste from "./components/Teste.vue"
 export default {
   components: {
     HelloWorld,
-    videoplayer,
-    videoplayerTrack, 
+    Teste,
   },
   data() {
     return {
@@ -63,7 +62,7 @@ export default {
   </header>
 
   <div class="app">
-    <videoplayer
+    <!-- <videoplayer
       class="videoplayer"
       src=".\\src\\assets\\exemplo.mp4"
       :muted="false"
@@ -99,8 +98,7 @@ export default {
             {{ playing ? "pause" : "play" }}
           </button>
           <div class="videoplayer-controls-time">
-            {{ convertTimeToDuration(time) }} /
-            {{ convertTimeToDuration(duration) }}
+            {{ convertTimeToDuration(time) }} / {{ convertTimeToDuration(duration) }}
           </div>
           <videoplayer-track
             :percentage="percentagePlayed"
@@ -112,7 +110,8 @@ export default {
           </button>
         </div>
       </template>
-    </videoplayer>
+    </videoplayer> -->
+    <Teste class="Teste"></Teste>
   </div>
 
 
