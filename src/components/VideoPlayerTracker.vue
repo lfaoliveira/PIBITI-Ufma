@@ -19,6 +19,7 @@ export default {
   },
   methods: {
     onInput(e) {
+      console.log("INPUT no slider")
       this.$emit("seek", e.target.value);
     },
   },

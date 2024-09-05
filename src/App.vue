@@ -1,12 +1,12 @@
 <script>
 import HelloWorld from "./components/HelloWorld.vue"
-//import videoplayer from "./components/videoplayer.vue";
+import videoplayer from "./components/VideoPlayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
-import Teste from "./components/Teste.vue"
 export default {
   components: {
     HelloWorld,
-    Teste,
+    videoplayer,
+    videoplayerTrack,
   },
   data() {
     return {
@@ -49,6 +49,14 @@ export default {
       console.log(event.type);
     },
   },
+  computed: {
+    appStyle(){
+      return {
+        height: `${videoplayer.videoHeight + 10}`,
+        width: `${videoplayer.videoWidth + 10}`,
+      };
+    }
+  },
 }
 </script>
 
@@ -61,15 +69,13 @@ export default {
     </div>    
   </header>
 
-  <div class="app">
-    <!-- <videoplayer
+  <div class="app" :style="appStyle">
+    <videoplayer
       class="videoplayer"
-      src=".\\src\\assets\\exemplo.mp4"
       :muted="false"
-      :autoplay="false"
-      :controls="true"
+      :autoplay="true"
+      :controls="false"
       :loop="false"
-      poster=".\\src\\assets\\01.jpg"
       @play="onPlayerPlay"
       @pause="onPlayerPause"
       @ended="onPlayerEnded"
@@ -98,20 +104,20 @@ export default {
             {{ playing ? "pause" : "play" }}
           </button>
           <div class="videoplayer-controls-time">
-            {{ convertTimeToDuration(time) }} / {{ convertTimeToDuration(duration) }}
+            {{ convertTimeToDuration(time) }} / 
+            {{ convertTimeToDuration(duration) }}
           </div>
           <videoplayer-track
             :percentage="percentagePlayed"
             @seek="seekToPercentage"
             class="videoplayer-controls-track"
-          />
+          ></videoplayer-track>
           <button @click="toggleMute()" class="videoplayer-controls-togglemute">
             {{ videoMuted ? "unmute" : "mute" }}
           </button>
         </div>
       </template>
-    </videoplayer> -->
-    <Teste class="videoplayer"></Teste>
+    </videoplayer>
   </div>
 
 
@@ -125,6 +131,17 @@ export default {
 header {
   color:aliceblue;
   line-height: 1.5;
+  display: flex;
+  position: absolute;
+  top: 3%;  /* Stick to the top */
+  left: 0; /* Align to the left */
+  justify-content: center; /* Horizontal center */
+  align-items: center;
+  width: 100%; /* Full width to cover the entire page width */
+  height: 120px;
+  border-color: aqua;
+  background-color: rgba(0, 0, 0, 0.5);
+  
 }
 
 .logo {
@@ -150,6 +167,15 @@ header {
     flex-wrap: wrap;
   }
 }
+
+.app{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10%;
+  height: 50ch;
+}
+
 .videoplayer {
   width: 500px;
 }
@@ -162,7 +188,22 @@ header {
 
 .videoplayer-controls-toggleplay,
 .videoplayer-controls-togglemute {
+  background-color: #d9d9d9;
+  border-radius: 51px;
+  color: black;
+  position: relative;
+  height: 10%;
+  width: 20%;
+  font-family: "Inter-Regular", Helvetica;
+  white-space: nowrap;
+  letter-spacing: 0;
+  line-height: normal;
+  display: block;
+  padding: 0.25lh;
+  margin-bottom: 10px;
+  text-align: center;
   flex: 1;
+  border: none;
 }
 
 .videoplayer-controls-time {

@@ -4,7 +4,6 @@
   <input type="file" form="videoUploadForm" accept="video/*" @change="handleFileUpload">
 
 </div>
-
 </template>
 
 <script lang="js">
@@ -14,6 +13,8 @@ export default{
     return {
       videoFile: null,
       videoURL: '',
+      videoWidth,
+      videoHeight,
     }
     
   },
