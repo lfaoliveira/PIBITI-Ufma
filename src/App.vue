@@ -1,7 +1,75 @@
+<template>
+  <header>
+    <img
+      alt="Vue logo"
+      class="logo"
+      src="./assets/logo.svg"
+      width="125"
+      height="125"
+    />
+
+    <div class="wrapper">
+      <HelloWorld msg="Bem-vindo!"></HelloWorld>
+    </div>
+  </header>
+
+  <div class="app" :style="appStyle">
+    <videoplayer
+      class="videoplayer"
+      :muted="false"
+      :autoplay="true"
+      :controls="false"
+      :loop="false"
+      @play="onPlayerPlay"
+      @pause="onPlayerPause"
+      @ended="onPlayerEnded"
+      @loadeddata="onPlayerLoadeddata"
+      @waiting="onPlayerWaiting"
+      @playing="onPlayerPlaying"
+      @timeupdate="onPlayerTimeupdate"
+      @canplay="onPlayerCanplay"
+      @canplaythrough="onPlayerCanplaythrough"
+      @statechanged="playerStateChanged"
+    >
+      <template
+        v-slot:controls="{
+          togglePlay,
+          playing,
+          percentagePlayed,
+          seekToPercentage,
+          duration,
+          convertTimeToDuration,
+          videoMuted,
+          toggleMute,
+        }"
+      >
+        <div class="videoplayer-controls">
+          <button @click="togglePlay()" class="videoplayer-controls-toggleplay">
+            {{ playing ? "pause" : "play" }}
+          </button>
+          <div class="videoplayer-controls-time">
+            {{ convertTimeToDuration(time) }} /
+            {{ convertTimeToDuration(duration) }}
+          </div>
+          <videoplayer-track
+            :percentage="percentagePlayed"
+            @seek="seekToPercentage"
+            class="videoplayer-controls-track"
+          ></videoplayer-track>
+          <button @click="toggleMute()" class="videoplayer-controls-togglemute">
+            {{ videoMuted ? "unmute" : "mute" }}
+          </button>
+        </div>
+      </template>
+    </videoplayer>
+  </div>
+</template>
+
 <script>
-import HelloWorld from "./components/HelloWorld.vue"
+import HelloWorld from "./components/HelloWorld.vue";
 import videoplayer from "./components/VideoPlayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
+
 export default {
   components: {
     HelloWorld,
@@ -11,7 +79,7 @@ export default {
   data() {
     return {
       time: 0,
-    }
+    };
   },
   methods: {
     onPlayerPlay({ event, player }) {
@@ -50,98 +118,30 @@ export default {
     },
   },
   computed: {
-    appStyle(){
+    appStyle() {
       return {
-        height: `${videoplayer.videoHeight + 10}`,
-        width: `${videoplayer.videoWidth + 10}`,
+        height: `${videoplayer.videoHeight + 1000}px`,
+        width: `${videoplayer.videoWidth + 1000}px`,
       };
-    }
+    },
   },
-}
+};
 </script>
-
-<template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="OLA MUNDO"></HelloWorld>
-    </div>    
-  </header>
-
-  <div class="app" :style="appStyle">
-    <videoplayer
-      class="videoplayer"
-      :muted="false"
-      :autoplay="true"
-      :controls="false"
-      :loop="false"
-      @play="onPlayerPlay"
-      @pause="onPlayerPause"
-      @ended="onPlayerEnded"
-      @loadeddata="onPlayerLoadeddata"
-      @waiting="onPlayerWaiting"
-      @playing="onPlayerPlaying"
-      @timeupdate="onPlayerTimeupdate"
-      @canplay="onPlayerCanplay"
-      @canplaythrough="onPlayerCanplaythrough"
-      @statechanged="playerStateChanged"
-    >
-      <template
-        v-slot:controls="{
-          togglePlay,
-          playing,
-          percentagePlayed,
-          seekToPercentage,
-          duration,
-          convertTimeToDuration,
-          videoMuted,
-          toggleMute,
-        }"
-      >
-        <div class="videoplayer-controls">
-          <button @click="togglePlay()" class="videoplayer-controls-toggleplay">
-            {{ playing ? "pause" : "play" }}
-          </button>
-          <div class="videoplayer-controls-time">
-            {{ convertTimeToDuration(time) }} / 
-            {{ convertTimeToDuration(duration) }}
-          </div>
-          <videoplayer-track
-            :percentage="percentagePlayed"
-            @seek="seekToPercentage"
-            class="videoplayer-controls-track"
-          ></videoplayer-track>
-          <button @click="toggleMute()" class="videoplayer-controls-togglemute">
-            {{ videoMuted ? "unmute" : "mute" }}
-          </button>
-        </div>
-      </template>
-    </videoplayer>
-  </div>
-
-
-
-</template>
-
-
-
 
 <style scoped>
 header {
-  color:aliceblue;
-  line-height: 1.5;
+  color: white;
+  line-height: 1;
   display: flex;
   position: absolute;
-  top: 3%;  /* Stick to the top */
+  top: 2%; /* Stick to the top */
   left: 0; /* Align to the left */
   justify-content: center; /* Horizontal center */
-  align-items: center;
   width: 100%; /* Full width to cover the entire page width */
-  height: 120px;
+  height: 100px;
   border-color: aqua;
+  border: 1ch;
   background-color: rgba(0, 0, 0, 0.5);
-  
 }
 
 .logo {
@@ -161,19 +161,24 @@ header {
   }
 
   header .wrapper {
-    color:aliceblue;
+    color: aliceblue;
     display: flex;
     place-items: flex-start;
     flex-wrap: wrap;
   }
 }
 
-.app{
+.app {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 10%;
-  height: 50ch;
+  margin-top: 25%;
+  left: 50%;
+  text-align: center;
+  align-items: center;
+  align-content: center;
+  position: relative;
+  border-width: 10px;
 }
 
 .videoplayer {
@@ -183,7 +188,8 @@ header {
 .videoplayer-controls {
   display: flex;
   font: 0.8em sans-serif;
-  width: 100%;
+  width: 150%;
+  height: 20%;
 }
 
 .videoplayer-controls-toggleplay,
@@ -192,31 +198,34 @@ header {
   border-radius: 51px;
   color: black;
   position: relative;
-  height: 10%;
-  width: 20%;
+  height: 1.5em;
+  width: 6em;
   font-family: "Inter-Regular", Helvetica;
   white-space: nowrap;
-  letter-spacing: 0;
   line-height: normal;
-  display: block;
-  padding: 0.25lh;
+  display: flex;
   margin-bottom: 10px;
-  text-align: center;
-  flex: 1;
+  justify-content: center;
+
+  flex-shrink: 1;
   border: none;
 }
 
+.videoplayer-controls-toggleplay{
+  margin-right: 20px;
+  width: 5em;
+}
+
+
 .videoplayer-controls-time {
-  flex: 2;
-  text-align: center;
+  flex: 0.4;
+  text-align: left;
   line-height: 2;
 }
 
 .videoplayer-controls-track {
-  flex: 5;
+  flex: 0.2;
   line-height: 2;
+  margin-right: 1rem;
 }
 </style>
-
-
-

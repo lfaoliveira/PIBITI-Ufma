@@ -1,13 +1,13 @@
 <script lang="js">
-export default{
+export default {
   name: "FFCreator",
-  data(){
+  data() {
     return {
 
     };
   },
-  methods:{
-    main(){
+  methods: {
+    main() {
       // Componente de backend para processamento das layers dos videos
       // TODO: MODULARIZAR CODIGO DO FFCREATOR PARA QUE GENERALIZE PARA QUALQUER VIDEO
 
@@ -15,7 +15,7 @@ export default{
       const path = require('path');
       const colors = require('colors');
       const startAndListen = require('.\\node_modules\\listen');
-      const { FFCreatorCenter, FFScene, FFAudio, FFAlbum, FFText, FFImage, FFCreator } = require('.\\node_modules\\ffcreator');
+      const { FFCreatorCenter, FFScene, FFAudio, FFText, FFImage, FFCreator } = require('.\\node_modules\\ffcreator');
 
       // CÓDIGO DE EXEMPLO DE UTILIZAÇÃO DO FFCREATOR e FFCreatorCenter
       const createFFTask = () => {
@@ -52,9 +52,6 @@ export default{
         scene1.setBgColor('#3b3a98');
         scene2.setBgColor('#b33771');
 
-        // add new album
-        
-
         // add title
         const text1 = new FFText({ text: 'DEMO', x: width / 2, y: 150, fontSize: 40 });
         text1.setColor('#ffffff');
@@ -74,24 +71,13 @@ export default{
         text2.addEffect('fadeInUp', 1, 2);
         text2.alignCenter();
         scene1.addChild(text2);
-      
-        
+
+
         creator.addChild(scene1);
 
-        // add scene2 background
-        const fbg = new FFImage({ path: bg });
-        fbg.setXY(width / 2, height / 2);
-        scene2.addChild(fbg);
-        // add logo
-        /*
-        const flogo1 = new FFImage({ path: logo1, x: width / 2, y: height / 2 - 150 });
-        flogo1.addEffect('fadeInDown', 1, 1.2);
-        scene2.addChild(flogo1); */
-
-        scene2.setDuration(5);
-        creator.addChild(scene2);
         creator.start();
-        creator.openLog();
+        // criar opcao para fazer log do criador
+        //creator.openLog();
 
         creator.on('start', () => {
           console.log(`FFCreator start`);
@@ -125,10 +111,6 @@ export default{
     }
   }
 }
-
 </script>
 
-<style>
-
-
-</style>
+<style></style>

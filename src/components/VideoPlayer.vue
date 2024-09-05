@@ -33,14 +33,6 @@
       :convert-time-to-duration="convertTimeToDuration"
       :video-muted="videoMuted"
       :toggle-mute="toggleMute"
-      togglePlay,
-          playing,
-          percentagePlayed,
-          seekToPercentage,
-          duration,
-          convertTimeToDuration,
-          videoMuted,
-          toggleMute,
     ></slot>
   </div>
 
@@ -86,12 +78,10 @@ export default {
     };
   },
   mounted() {
-    console.log("BINDING")
+    console.log("BINDING:");
     //this.bindEvents();
-
     if (this.$refs.player.muted) {
       this.setMuted(true);
-      
     }
   },
   methods: {
@@ -256,6 +246,6 @@ video {
   max-height: 100%;
   /*display: inline-block; */
   padding: 5px;
-  border: 2px solid rgba(85, 85, 85, 0.426);
+  border: 0.16rem solid rgba(85, 85, 85, 0.426);
 }
 </style>
