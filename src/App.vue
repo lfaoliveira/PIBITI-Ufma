@@ -13,6 +13,8 @@
     </div>
   </header>
 
+  <menuInicial/>
+
   <div class="app" :style="appStyle">
     <videoplayer
       class="videoplayer"
@@ -62,6 +64,7 @@
         </div>
       </template>
     </videoplayer>
+    
   </div>
 </template>
 
@@ -69,12 +72,14 @@
 import HelloWorld from "./components/HelloWorld.vue";
 import videoplayer from "./components/VideoPlayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
+import menuInicial from "./components/MenuInicial.vue";
 
 export default {
   components: {
     HelloWorld,
     videoplayer,
     videoplayerTrack,
+    menuInicial,
   },
   data() {
     return {
@@ -130,18 +135,24 @@ export default {
 
 <style scoped>
 header {
-  color: white;
   line-height: 1;
   display: flex;
   position: absolute;
-  top: 2%; /* Stick to the top */
-  left: 0; /* Align to the left */
-  justify-content: center; /* Horizontal center */
-  width: 100%; /* Full width to cover the entire page width */
+  top: 1rem;
+  /* Stick to the top */
+  left: 0em;
+  /* Align to the left */
+  justify-content: center;
+  /* Horizontal center */
+  /*  width: 50rem; Full width to cover the entire page width     */
   height: 100px;
+  width: 100%;
+  padding-right: 20%;
+  padding-left: 20%;
+  flex: 0;
   border-color: aqua;
-  border: 1ch;
-  background-color: rgba(0, 0, 0, 0.5);
+  /* border: 1ch; */
+  background-color: rgb(0, 0, 0);
 }
 
 .logo {
@@ -149,11 +160,10 @@ header {
   margin: 0 auto 2rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 800px) {
   header {
     display: flex;
     place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
   }
 
   .logo {
@@ -211,11 +221,10 @@ header {
   border: none;
 }
 
-.videoplayer-controls-toggleplay{
+.videoplayer-controls-toggleplay {
   margin-right: 20px;
   width: 5em;
 }
-
 
 .videoplayer-controls-time {
   flex: 0.4;

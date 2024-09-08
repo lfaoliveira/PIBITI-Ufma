@@ -244,6 +244,7 @@ video {
   margin-top: 20px;
   max-width: 100%;
   max-height: 100%;
+  display: flex;
   /*display: inline-block; */
   padding: 5px;
   border: 0.16rem solid rgba(85, 85, 85, 0.426);
