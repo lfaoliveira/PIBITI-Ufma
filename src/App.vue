@@ -1,19 +1,8 @@
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="./assets/logo.svg"
-      width="125"
-      height="125"
-    />
 
-    <div class="wrapper">
-      <HelloWorld msg="Bem-vindo!"></HelloWorld>
-    </div>
-  </header>
+  <h1> Bem-vindo!</h1>
 
-  <menuInicial/>
+  <menuInicial />
 
   <div class="app" :style="appStyle">
     <videoplayer
@@ -64,19 +53,16 @@
         </div>
       </template>
     </videoplayer>
-    
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
 import videoplayer from "./components/VideoPlayer.vue";
 import videoplayerTrack from "./components/VideoPlayerTracker.vue";
 import menuInicial from "./components/MenuInicial.vue";
 
 export default {
   components: {
-    HelloWorld,
     videoplayer,
     videoplayerTrack,
     menuInicial,
@@ -134,56 +120,34 @@ export default {
 </script>
 
 <style scoped>
-header {
+h1 {
+  font-family: "Inter-Regular", Helvetica;
+  font-size: 3rem;
+  color: #004abc;
   line-height: 1;
   display: flex;
   position: absolute;
-  top: 1rem;
+  top: 0rem;
   /* Stick to the top */
   left: 0em;
   /* Align to the left */
   justify-content: center;
+  align-items: center;
   /* Horizontal center */
   /*  width: 50rem; Full width to cover the entire page width     */
-  height: 100px;
+  height: 4rem;
   width: 100%;
-  padding-right: 20%;
-  padding-left: 20%;
-  flex: 0;
-  border-color: aqua;
-  /* border: 1ch; */
+  flex: 1;
+  margin-top: 1.5vh;
   background-color: rgb(0, 0, 0);
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 800px) {
-  header {
-    display: flex;
-    place-items: center;
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    color: aliceblue;
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
 }
 
 .app {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 25%;
-  left: 50%;
+  margin-top: 2vh;
+  left: 0%;
   text-align: center;
   align-items: center;
   align-content: center;
@@ -201,6 +165,7 @@ header {
   width: 150%;
   height: 20%;
 }
+
 
 .videoplayer-controls-toggleplay,
 .videoplayer-controls-togglemute {
@@ -237,4 +202,5 @@ header {
   line-height: 2;
   margin-right: 1rem;
 }
+
 </style>

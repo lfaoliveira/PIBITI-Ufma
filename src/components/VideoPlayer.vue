@@ -94,10 +94,10 @@ export default {
       }
     },
     resizeVideo() {
+      
       const aspectRatio = 16 / 9; // Assuming a standard aspect ratio of 16:9
       const maxWidth = window.innerWidth * VIDEO_RATIO; // % of the window width
       const maxHeight = window.innerHeight * VIDEO_RATIO; // % of the window height
-
       if (maxWidth / aspectRatio <= maxHeight) {
         this.videoWidth = maxWidth;
         this.videoHeight = maxWidth / aspectRatio;
@@ -187,7 +187,7 @@ export default {
       };
     },
     estiloUpload(){
-      const height_but = 6
+      const height_but = 6 //porcentagens
       const width_but = 25
       const height_text = height_but
       return {
@@ -237,13 +237,13 @@ input[type="file"] {
 
 .div-video{
   position: relative;
+  
   /*display: inline-block; */
 
 }
 video {
   margin-top: 20px;
-  max-width: 100%;
-  max-height: 100%;
+  flex: 1;
   display: flex;
   /*display: inline-block; */
   padding: 5px;

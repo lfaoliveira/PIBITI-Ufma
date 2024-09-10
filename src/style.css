@@ -26,8 +26,11 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 320px;
+  align-items: center;
+  justify-content: center;
+  min-width: 100vw;
   min-height: 100vh;
+  background-color: #001B2C;
 }
 
 h1 {
@@ -58,18 +61,11 @@ button:focus-visible {
   padding: 2em;
 }
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  left: 50%;
-  display:flex;
-
-}
+/* */
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color: #001B2C;
     background-color: #ffffff;
   }
   a:hover {
