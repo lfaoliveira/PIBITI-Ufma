@@ -94,7 +94,6 @@ export default {
       }
     },
     resizeVideo() {
-      
       const aspectRatio = 16 / 9; // Assuming a standard aspect ratio of 16:9
       const maxWidth = window.innerWidth * VIDEO_RATIO; // % of the window width
       const maxHeight = window.innerHeight * VIDEO_RATIO; // % of the window height
@@ -128,7 +127,6 @@ export default {
           }
           this.$emit(which, { event, player: this });
         },
-        //true
       );
     },
     
@@ -182,13 +180,14 @@ export default {
   computed: {
     videoStyle() {
       return {
+        backgroundColor: `#000`,
         width: `${this.videoWidth}px`,
         height: `${this.videoHeight}px`,
       };
     },
     estiloUpload(){
-      const height_but = 6 //porcentagens
-      const width_but = 25
+      const height_but = 6 // vmin
+      const width_but = 10
       const height_text = height_but
       return {
         // COR E FONTE
@@ -200,21 +199,17 @@ export default {
         
         //TAMANHO
         position: `relative`,
-        height: `${height_but}%`,
-        width: `${width_but}%`,
-        //lineHeight: `${height_text*10}%`,
-        
+        height: `${4}vmin`,
+        width: `${12}vmin`,
+
         //POSICIONAMENTO
         whiteSpace: `nowrap`,
         letterSpacing: `0`,
-        border: `none`,
         alignItems: `center`,
-        
         display: `flex`,
         justifyContent: `center`,
-        padding: `0.15lh`,
-        //marginTop: `-25px`,
-        marginBottom: `10px`,
+        marginBottom: `1.2vh`,
+        marginTop: `1vh`,
         textAlign: `center`,
       }
     },
@@ -236,17 +231,19 @@ input[type="file"] {
 }
 
 .div-video{
+  max-width: 100%;
+  max-height: 100%;
   position: relative;
-  
   /*display: inline-block; */
 
 }
 video {
+  max-width: 100%;
+  max-height: 100%;
   margin-top: 20px;
-  flex: 1;
   display: flex;
   /*display: inline-block; */
-  padding: 5px;
+  /* padding: 5px; */
   border: 0.16rem solid rgba(85, 85, 85, 0.426);
 }
 </style>

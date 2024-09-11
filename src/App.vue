@@ -1,10 +1,7 @@
 <template>
-
-  <h1> Bem-vindo!</h1>
-
   <menuInicial />
-
-  <div class="app" :style="appStyle">
+  <h1> Bem-vindo!</h1>
+  <div class="app">
     <videoplayer
       class="videoplayer"
       :muted="false"
@@ -35,7 +32,7 @@
         }"
       >
         <div class="videoplayer-controls">
-          <button @click="togglePlay()" class="videoplayer-controls-toggleplay">
+          <button @click="togglePlay()" :style="controlStyle" class="videoplayer-controls-toggleplay">
             {{ playing ? "pause" : "play" }}
           </button>
           <div class="videoplayer-controls-time">
@@ -109,12 +106,13 @@ export default {
     },
   },
   computed: {
-    appStyle() {
+    controlStyle(){
       return {
-        height: `${videoplayer.videoHeight + 1000}px`,
-        width: `${videoplayer.videoWidth + 1000}px`,
-      };
-    },
+        height: `${videoplayer.videoHeight/window.innerHeight}%`,
+        width: `${videoplayer.videoWidth/window.innerWidth}%`,
+      }
+
+    }
   },
 };
 </script>
@@ -137,33 +135,36 @@ h1 {
   /*  width: 50rem; Full width to cover the entire page width     */
   height: 4rem;
   width: 100%;
-  flex: 1;
-  margin-top: 1.5vh;
+  margin: 1vmin 0vmin 5vmin 0vmin;
   background-color: rgb(0, 0, 0);
+  border: none;
 }
 
 .app {
+  width: 90vmin;
+  height: 90vmin;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 2vh;
+  top: 1rem;
   left: 0%;
   text-align: center;
   align-items: center;
   align-content: center;
   position: relative;
-  border-width: 10px;
 }
 
 .videoplayer {
-  width: 500px;
+  display: grid;
+  width: 100%;
+  height: 100%;
 }
 
 .videoplayer-controls {
-  display: flex;
+  display: block flex;
   font: 0.8em sans-serif;
-  width: 150%;
-  height: 20%;
+  width: 80%;
+  height: 80%;
 }
 
 
@@ -179,7 +180,7 @@ h1 {
   white-space: nowrap;
   line-height: normal;
   display: flex;
-  margin-bottom: 10px;
+  left: 0;
   justify-content: center;
 
   flex-shrink: 1;
@@ -188,17 +189,16 @@ h1 {
 
 .videoplayer-controls-toggleplay {
   margin-right: 20px;
-  width: 5em;
 }
 
 .videoplayer-controls-time {
-  flex: 0.4;
   text-align: left;
   line-height: 2;
+  margin-right: 1rem;
+  width: 15%;
 }
 
 .videoplayer-controls-track {
-  flex: 0.2;
   line-height: 2;
   margin-right: 1rem;
 }

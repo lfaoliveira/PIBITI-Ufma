@@ -74,7 +74,7 @@ export default {
   font-family: "Inter-Black", Helvetica;
   justify-content: center;
   align-items: center;
-  font-size: 1.6rem;
+  font-size: 3vmin;
   font-weight: 700;
   display: inline-flex;
   letter-spacing: 0;
