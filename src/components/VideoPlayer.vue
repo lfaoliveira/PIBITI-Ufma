@@ -16,11 +16,7 @@
       :style="videoStyle"
       ref="player"
     />
-    <!--label para estilizar butao upload -->
-    <label for="fileInput" class="custom-file-upload" :style="estiloUpload">
-      Upload
-    </label>
-    <input type="file" id="fileInput" accept="video/*" @change="handleFileUpload">
+
     <slot
       name="controls"
       :play="play"
@@ -54,7 +50,8 @@ const EVENTS = [
 const VIDEO_RATIO = 0.7
 
 export default {
-  name: "videoplayer",
+  
+  name: "Videoplayer",
   props: {
     
     controls: { type: Boolean, required: false, default: false },
@@ -191,12 +188,10 @@ export default {
       const height_text = height_but
       return {
         // COR E FONTE
-        backgroundColor: `#d9d9d9`,
+        backgroundColor: `#43C3DD`,
         borderRadius: `51px`,
         border: `none`,
-        color: `black`,
-        fontFamily: `"Inter-Regular", Helvetica`,
-        
+        color: `black`,        
         //TAMANHO
         position: `relative`,
         height: `${4}vmin`,
@@ -240,7 +235,6 @@ input[type="file"] {
 video {
   max-width: 100%;
   max-height: 100%;
-  margin-top: 20px;
   display: flex;
   /*display: inline-block; */
   /* padding: 5px; */

@@ -13,7 +13,7 @@
 
 <script lang="js">
 export default {
-  name: "VideoTrack",
+  name: "videotrack",
   props: {
     percentage: { type: Number, required: true },
   },
