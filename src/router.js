@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
-import Teste from './components/Teste.vue';
+import EdicaoVideo from './components/EdicaoVideo.vue';
 
 const routes = [
   { path: '/', component: App },       // Root path (Home page)
-  { path: '/teste', component: Teste }, // pagina de testes
+  { path: '/teste', component: EdicaoVideo }, // pagina de testes
 ];
 
 const router = createRouter({

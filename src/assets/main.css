@@ -1,9 +1,7 @@
 @import './base.css';
-
 #app {
   width: 100vw;
   height: 100vh;
-  padding: none;
   font-weight: normal;
   justify-content: center;
   align-items: center;
@@ -26,10 +24,11 @@ a,
 }
 
 body {
+  font-family: 'Roboto Serif', serif !important;  
   display: flex;
   place-items: center;
   margin: 0;
-  background-color: #001B2C;
+  background-color: #D9EDF8;
   width: 100vw;
   height: 100vh;
 }
