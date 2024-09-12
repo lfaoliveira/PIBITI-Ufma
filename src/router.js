@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import App from './App.vue';
+import Homepage from './components/HomePage.vue';
 import EdicaoVideo from './components/EdicaoVideo.vue';
 
 const routes = [
-  { path: '/', component: App },       // Root path (Home page)
+  { path: '/', component: Homepage },       // Root path (Home page)
   { path: '/teste', component: EdicaoVideo }, // pagina de testes
 ];
 

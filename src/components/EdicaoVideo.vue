@@ -1,4 +1,6 @@
 <template>
+  <seta class="setaClasse" @click="onVoltar"></seta>
+  <p>Message: {{ sharedData.message }}</p>
   <div  class="edicaoVideo">
     <videoplayer
       class="videoplayer"
@@ -52,8 +54,11 @@
 </template>
 
 <script>
+import Seta from "./icons/Seta.vue";
 import videoplayer from "./VideoPlayer.vue";
 import videotrack from "./VideoPlayerTracker.vue";
+import seta from "./icons/Seta.vue";
+import { mapGetters } from 'vuex';
 
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DA HOMEPAGE
@@ -61,6 +66,7 @@ export default {
   components:{
     videoplayer,
     videotrack,
+    seta,
   },
   created() {},
   data() {
@@ -104,6 +110,10 @@ export default {
     playerStateChanged({ event }) {
       console.log(event.type);
     },
+
+    onVoltar(){
+      this.$router.push('/');
+    }
   },
   computed: {
     controlStyle(){
@@ -112,7 +122,13 @@ export default {
         width: `${videoplayer.videoWidth/window.innerWidth}%`,
       }
 
-    }
+    },
+    
+    ...mapGetters(['getSharedData']),
+    sharedData() {
+      return this.getSharedData;
+    },
+  
   }
 };
 </script>
@@ -122,7 +138,12 @@ export default {
 .edicaoVideo{
   font-family: 'Roboto Serif', serif !important;
 }
-
+.setaClasse{
+  position: absolute;
+  aspect-ratio: 4/3;
+  top: 0.2vmin;
+  left: 5vmin;
+}
 .videoplayer {
   display: grid;
   width: 100%;

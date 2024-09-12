@@ -1,8 +1,9 @@
 <template>
   <div class="div-menu-hamburguer" :style="styleHamburguer">
-    <img :src="this.path_hamburg" :style="styleImagem" id="imagemHamburguer">
+    <img :src="this.path_hamburg" :style="styleImagem" id="imagemHamburguer" alt="Imagem Menu">
     <div class="text-wrapper" :style="styleTexto">Menu</div>
   </div>
+  <!--ADICIONAR ABA DE CONFIGURACOES -->
 </template>
 
 <script>
@@ -26,8 +27,6 @@ export default {
   },
   computed: {
     styleHamburguer() {
-      const divMenuHamburguer = document.getElementsByClassName("div-menu-hamburguer");
-      
       return {
         width: `${12}%`,
         height: `${10}%`,
