@@ -1,0 +1,37 @@
+@import './base.css';
+#app {
+  width: 100vw;
+  height: 100vh;
+  font-weight: normal;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  display: flex;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+body {
+  font-family: 'Roboto Serif', serif !important;  
+  display: flex;
+  place-items: center;
+  margin: 0;
+  background-color: #D9EDF8;
+  width: 100vw;
+  height: 100vh;
+}
+
+  
+
