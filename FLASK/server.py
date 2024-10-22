@@ -2,12 +2,24 @@ import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory
 import requests
 import os
+from yolo import YOLO
+from Analise import AnaliseParalisia
+#path para arquivos temporarios
+
+PATH_TEMP = os.path.join(os.getcwd(), "TEMP") 
 
 
+kwargs ={ "model_path": 'trained_weights_final.h5',
+         "anchors_path": 'yolo_anchors.txt',"classes_path": 'classes.txt',
+         "score" : 0.3,"iou" : 0.45, "model_image_size" :(416, 416), "gpu_num" : 1}
+#OBS: MODELO DEVE TER FUNCAO detect_image implementada
+modelo = YOLO(**kwargs)
+
+analisador = AnaliseParalisia(modelo, PATH_TEMP)
 app = Flask(__name__)
-
+'''
 @app.route('/')
-'''def index():
+def index():
   return render_template('home.html')'''
 
 # Rota que recupera arquivos da pasta "assets"
