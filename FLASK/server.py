@@ -4,10 +4,11 @@ import requests
 import os
 from yolo import YOLO
 from Analise import AnaliseParalisia
+import time
 #path para arquivos temporarios
 
 PATH_TEMP = os.path.join(os.getcwd(), "TEMP") 
-
+video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
 
 kwargs ={ "model_path": 'trained_weights_final.h5',
          "anchors_path": 'yolo_anchors.txt',"classes_path": 'classes.txt',
@@ -34,7 +35,12 @@ def analisar(videoInput):
   '''
   Pega video de input, executa método e retorna resultado como requisicao HTTP
   '''
-  pass
+  #timestamp do momento em que o servidor foi chamado
+
+  timestamp = time.gmtime()
+  resultado, path_graf = analisador.funcao_metodo(videoInput, f"{timestamp}.mp4",timestamp)
+  # servidor retorna string contando os resultados e grafico como respsotas HTTP
+  return
 
   
 @app.route('/demo', methods=['POST'])
@@ -42,7 +48,9 @@ def demo_func():
   '''
   Pega video de demonstracao do servidor, finge processamento e retorna resultados
   '''
-  pass
+  analisar(video_demo)
+  # servidor retorna string contando os resultados e grafico como respsotas HTTP
+  return
 
 if __name__ == '__main__':
   # para poder adicionar um sheduler de tasks de background,

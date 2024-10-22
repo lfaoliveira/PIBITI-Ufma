@@ -20,12 +20,14 @@ class AnaliseParalisia:
       olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(videoEntrada, videoSaida)
 
       self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
+
       leftEye = np.array(olhoEsquerdo)
       rightEye = np.array(olhoDireito)
       xE = leftEye[:,0]-min(leftEye[:,0])
       xD = rightEye[:,0]-min(rightEye[:,0])
       xEsquerdo, xDireito = self.getHampel(xE,xD)
       xEsquerdoFinal, xDireitaFinal = self.removeOutliers(xEsquerdo, xDireito)
+
       path_graf = self.plotHampelFinal(xE, xD, xEsquerdo, xEsquerdoFinal, xDireito, xDireitaFinal, "Remocao de Ruido", timestamp)
 
       velE, velD = self.calculaVelocidadeEspacoPercorrido(xEsquerdoFinal, xDireitaFinal)
@@ -46,7 +48,7 @@ class AnaliseParalisia:
       
       if perdentualDiferenca < threshold:
         olho_doente = None
-      return [velE, velD, perdentualDiferenca, olho_doente, ]
+      return f"{velE},{velD},{perdentualDiferenca},{olho_doente}", path_graf
       
 
 
@@ -182,9 +184,11 @@ class AnaliseParalisia:
         plt.xlabel('Frames')
         plt.ylabel('Pixels')
         plt.legend()
-        plt.savefig(os.path.join(self.path_temp, f"{timestamp}.jpg"))
+        path_graf = os.path.join(self.path_temp, f"{timestamp}.jpg")
+        plt.savefig(path_graf)
         #plt.show()
         plt.close()
+        return path_graf
 
     def calculaVelocidadeEspacoPercorrido(self, xEsquerdo, xDireito):
         somaEsquerda = 0
