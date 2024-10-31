@@ -2,6 +2,7 @@
   <div class="div-menu-hamburguer" :style="styleHamburguer">
     <img :src="this.path_hamburg" :style="styleImagem" id="imagemHamburguer" alt="Imagem Menu">
     <div class="text-wrapper" :style="styleTexto">Menu</div>
+    <div class="botao-demo"></div>
   </div>
   <!--ADICIONAR ABA DE CONFIGURACOES -->
 </template>
