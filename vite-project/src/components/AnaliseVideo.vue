@@ -1,4 +1,17 @@
 <template>
+  #PARTE DE UPLOAD DE VIDEO  
+  <h1 @click="sendData"> Bem-Vindo!</h1>
+
+  <!--label para estilizar butao upload -->
+  <div class="wrapper">
+    <label for="fileInput" ref="" class="custom-file-upload" :style="estiloUpload">
+      Upload
+    </label>
+    <input type="file" id="fileInput" accept="video/*" @change="handleFileUpload" 
+    @focus="addFocusClass" @blur="removeFocusClass">
+  </div>    
+  
+  
   <seta class="setaClasse" @click="onVoltar"></seta>
   <div  class="edicaoVideo">
     <videoplayer
@@ -112,7 +125,18 @@ export default {
 
     onVoltar(){
       this.$router.push('/');
-    }
+    },
+    addFocusClass() {
+      // Manually add the 'focus' class to the label
+      const label = document.querySelector('.custom-file-upload');
+      label.classList.add('focus');
+      
+    },
+    removeFocusClass() {
+      // Manually remove the 'focus' class from the label
+      const label = document.querySelector('.custom-file-upload');
+      label.classList.remove('focus');
+    },
   },
   computed: {
     controlStyle(){
@@ -121,6 +145,23 @@ export default {
         width: `${videoplayer.videoWidth/window.innerWidth}%`,
       }
 
+    },
+    estiloUpload(){
+      return {
+        // COR E FONTE
+        borderRadius: `51px`,
+        border: `none`,
+        color: `black`,        
+        //TAMANHO
+        position: `relative`,
+        //POSICIONAMENTO
+        whiteSpace: `nowrap`,
+        letterSpacing: `0`,
+        alignItems: `center`,
+        display: `flex`,
+        justifyContent: `center`,
+        textAlign: `center`,
+      }
     },
 
     ...mapGetters(['getSharedData']),
@@ -133,6 +174,35 @@ export default {
 </script>
 
 <style scoped>
+CSS DO UPLOAD
+
+.custom-file-upload{
+  background-color: #43C3DD;
+  --butao-height: 6vmin;
+  --butao-width: 30vmin;
+  height: clamp(4rem, var(--butao-height), 6rem);
+  width: clamp(6rem, var(--butao-width), 10rem);
+  font-size: clamp(2rem, 4vmin, 6rem );
+}
+
+.custom-file-upload:focus{
+  background-color: #ffffff;
+  height: clamp(4vmin + 1vmin, var(--butao-height) + 2 vmin, var(--butao-height)+ 4vmin);
+  width: clamp(6rem, var(--butao-width), 10rem);
+  font-size: clamp(2rem, 4vmin, 6rem );
+}
+
+.custom-file-upload:hover{
+  background-color: #39abc2;
+  --butao-height: 8vmin;
+  --butao-width: 30vmin;
+  height: clamp(2vmin + 4vmin, var(--butao-height) + 4vmin, var(--butao-height)+ 12vmin);
+  width: clamp(6rem, var(--butao-width), 10rem);
+  font-size: clamp(3vmin, 5vmin, 7vmin);
+}
+
+
+
 
 .edicaoVideo{
   font-family: 'Roboto Serif', serif !important;

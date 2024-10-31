@@ -1,12 +1,13 @@
 @import './base.css';
 #app {
-  width: 100vw;
-  height: 100vh;
+  width: 100vmax;
+  height: 100max;
+  display: flex;
   font-weight: normal;
   justify-content: center;
   align-items: center;
   position: relative;
-  display: flex;
+  
 }
 
 a,
@@ -24,7 +25,7 @@ a,
 }
 
 body {
-  font-family: 'Roboto Serif', serif !important;  
+  font-family: 'Montserrat' !important;  
   display: flex;
   place-items: center;
   margin: 0;
