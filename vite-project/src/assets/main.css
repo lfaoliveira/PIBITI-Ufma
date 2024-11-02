@@ -1,7 +1,7 @@
 @import './base.css';
 #app {
-  width: 100vmax;
-  height: 100max;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   font-weight: normal;
   justify-content: center;
@@ -32,6 +32,7 @@ body {
   background-color: #D9EDF8;
   width: 100vw;
   height: 100vh;
+  overflow-x: hidden;
 }
 
   
