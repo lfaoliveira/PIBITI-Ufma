@@ -148,12 +148,13 @@
 
 .homepage {
   background-color: #fff;
-  display: inline-grid;
-  overflow: hidden;
   width: 100vw;
   height: 400vmax;
   left: 0px;
   justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
 
 }
 
@@ -171,7 +172,6 @@
   position: absolute;
   left: 0px;
   object-fit: cover;
-  display: none;
   z-index: 0;
 }
 
@@ -274,7 +274,7 @@ input{
   width: 8vmin;
 }
 
-/* 
+
 .color-item {
   width: 60px;
   height: 60px;
@@ -422,7 +422,7 @@ input{
   color: #fff;
   text-decoration: none;
   font: 700 14px Montserrat, sans-serif;
-} */
+}
 
 </style>
 
