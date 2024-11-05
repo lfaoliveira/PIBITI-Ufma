@@ -1,12 +1,13 @@
 <template>
-  <div class="div-menu-hamburguer" :style="styleHamburguer">
-    <img :src="this.path_hamburg" :style="styleImagem" id="imagemHamburguer" alt="Imagem Menu">
-    <div class="wrapper">
-      <label for="botao-demo" ref="" class="custom-file-upload" :style="estiloUpload">
-        Analisar Vídeo
+  <div class="div-header">
+    <img :src="this.path_hamburg" id="imagemHamburguer" alt="Imagem Menu">
+    <div class="cntr-demo">
+      <input type="file" id="fileInput" accept="video/*">
+      <label for="fileInput" ref="" class="botao-demo">
+        Demonstração
       </label>
-      <button class="botao-demo"> </button>
     </div>
+    
   </div>
   <!--ADICIONAR ABA DE CONFIGURACOES -->
 </template>
@@ -15,7 +16,7 @@
 import path from "path";
 
 export default {
-  name: "MenuLateral",
+  name: "HeaderHomepage",
   data() {
     return {
       path_hamburg: path.join(".", "src", "assets", "menu-sanduiche.png"),
@@ -31,15 +32,7 @@ export default {
     },
   },
   computed: {
-    styleHamburguer() {
-      return {
-        width: `${12}%`,
-        height: `${10}%`,
-        left: `${30}vw`,
-        top: `${25}vh`,
-      };
-    },
-    styleImagem() {
+  /*  styleImagem() {
       return {
         aspectRatio: `${1/1}`,
         width: `auto`,
@@ -47,7 +40,7 @@ export default {
         left: `${3}vw`,
         top: `${25}vh`,
       };
-    },
+    }, */ 
     styleTexto(){
       return {
         top: `${25}%`,
@@ -65,26 +58,72 @@ export default {
 </script>
 
 <style scoped>
+input{
+  display:none;
+}
+
+.div-header {
+  width: auto;
+  position: absolute;
+  margin: 0 auto 0 auto;
+  height: auto;
+  top: 0%;
+  z-index: 1;
+  display: flex;
+  gap: 50vw;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  justify-self: center;
+}
+
+.cntr-demo{
+  margin: auto;
+  margin-right: 0%;;
+  position: relative;
+  text-align: center;
+  background-color: #6113c6;
+  position: relative;
+  display: flex;
+  width: 25vmin;
+  height: auto;
+  border-radius: 59px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
+
+}
+#imagemHamburguer{
+  background-color: #6113c6;
+  border-radius: 0.5rem;
+  width: 6vmin;
+  height: auto;
+  margin: auto;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  margin-left: 0vmin;
+  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
+
+}
 .botao-demo{
   border-radius: 51px;
   border: none;
-  color: black;        
+  color: white;
   position: relative;
   white-space: nowrap;
+  font-size: 3vmin;
   letter-spacing: 0;
   align-items: center;
   display: flex;
   justify-content: center;
   text-align: center;
-  width: 100%;
+  width: fit-content;
   height: 100%;
+  cursor: pointer;
+
 }
 
-.div-menu-hamburguer {
-  display: inline-flex;
-  position: absolute;
-  flex-direction: row;
-}
+
 
 </style>
 

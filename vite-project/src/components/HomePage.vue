@@ -1,17 +1,16 @@
 #CODIGO GERADO POR IA:
 <template>
   <div class="homepage">
-  <headerHome/>
-    <header class="header">
-      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Header background" class="header-background" />
+    <section class="cntr-1">
+      <headerHome/> 
+      <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"  />
       <div class="secao-1">
-        <!-- COMPONENTE DO HEADER ENTRA AQUI -->
         <div class="div-titulo">
           <h1 class="titulo">Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico</h1>
         </div>
         <div class="cntr-cta">
-          <input type="file" id="fileInput" accept="video/*" @change="handleFileUpload">
-          <label for="fileInput" ref="" class="label-cta" :style="estiloUpload">
+          <input type="file" id="fileInput" accept="video/*">
+          <label for="fileInput" ref="" class="label-cta" >
             Analisar Vídeo
           </label>
         </div>
@@ -21,9 +20,8 @@
         <div class="div-seta-baixo">
           <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ad9eb0a053b1dfcf3e7e3fa37d9161add87b3e60570b5405f7e6d1c6c7a7f28?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Decorative element" class="seta-baixo" />
         </div>
-      </div>
-    </header>
-
+      </div> 
+    </section> 
     <!-- <main>
       <section class="features">
         <h2 class="section-title">Analisado e aprovado por oftalmologistas!</h2>
@@ -46,7 +44,7 @@
           </div>
         </div>
       </section>
-
+      
       <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Divider" class="divider" />
 
       <section class="about">
@@ -128,7 +126,8 @@
           <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Equipe" class="team-image" />
         </div>
       </section>
-    </main> -->
+      
+    </main>  -->
 
     <!-- <footer class="footer">
       <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/938d419ab519c103a1e0833b1a20709f879d21b943df87ce5a6ad7be4a35e7b8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Logo footer" class="footer-logo" />
@@ -144,53 +143,60 @@
 <style scoped>
 .homepage {
   background-color: #fff;
-  display: grid;
+  display: flex;
   overflow: hidden;
-  align-items: center;
   width: 100vw;
-  height: 200vmax;
-  position: relative;
+  height: 400vmax;
   left: 0px;
   justify-content: center;
 }
 
-.header {
+.cntr-1 {
   display: flex;
-  justify-content: center;
   align-items: center;
-  position: absolute;
-  width: 100%;
-  padding-bottom: 20px;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
 }
 
-.header-background {
+.img-background {
   width: 100%;
-  height: auto;
+  height: 100vh;
+  position: absolute;
+  left: 0px;
+  object-fit: cover;
 }
 
 .secao-1 {
   align-self: center;
   display: flex;
   flex-flow: column wrap;
-  position: absolute;
-  top: 18%;
   width: 75%;
-  height: 80%;
+  height: 90vh;
+  margin-top: 10vh;
   justify-content: space-between;
   align-content: center;
 }
 
 .div-titulo{
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: relative;
   height: auto;
-  width: 110vmin;
+  width: 50vw;
+  margin-top: 0px;
+  margin-bottom: 1vmin;
+
 }
 
 .titulo {
   color: #fff;
-  font-size: 6.5vmin;
+  font-size: 3ch;
   text-align: start;
   margin: auto;
+  width:auto;
 }
 
 .cntr-cta{
@@ -222,6 +228,8 @@ input{
 }
 
 
+
+
 .div-mouse-animado{
   aspect-ratio: 4/3;
   display: flex;
@@ -231,8 +239,7 @@ input{
   margin-top: 10vmin;
   margin-bottom: 0vmin;
   align-self: flex-start;
-  color:#0e0021;
-  width: 8vmin;
+  width: 9vmin;
   height: auto;
   position: relative;
 }
@@ -246,11 +253,12 @@ input{
 .div-seta-baixo{
   margin: auto;
   align-self: center;
-  margin-top: 2vmin;
+  margin-top: -1vh;
+  margin-bottom: 0px;
   display: flex;
   justify-content: center;
   align-items: center;
-
+  z-index: 2;
 } 
 
 .seta-baixo {
@@ -258,12 +266,7 @@ input{
   width: 8vmin;
 }
 
-.color-palette {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 20px;
-}
-
+/* 
 .color-item {
   width: 60px;
   height: 60px;
@@ -411,7 +414,7 @@ input{
   color: #fff;
   text-decoration: none;
   font: 700 14px Montserrat, sans-serif;
-}
+} */
 
 </style>
 
@@ -423,6 +426,7 @@ import headerHome from "./HeaderHomepage.vue";
 import rodape from "./Rodape.vue";
 import convencimento from "./HomeConvencimento.vue";
 import { mapActions } from 'vuex';
+import anime from 'animejs/lib/anime.es.js'
 
 export default {
   name: "Homepage",
@@ -448,6 +452,22 @@ export default {
         this.$router.push('/teste');
       }
     },
+    animarMouse(){
+      console.log($evt);
+      let loop = true;
+      let i = 0;
+      const mouse = document.getElementsByClassName("mouse-animado");
+
+      while(loop){
+        i += 1;
+        let animador = anime()
+        if (i >= 100){
+          loop=false;
+          break;
+        }
+      }
+
+    },
 
   },
   computed: {
@@ -456,10 +476,22 @@ export default {
   data() {
     return {
       videoURL: '',
+      objAnimacao: {animar:true, y:0, frame: {}},
     };
   },
   mounted(){
-    window.addEventListener('resize', this.resizeVideo);
+    window.addEventListener('load', () => {
+      anime({
+          targets: '.mouse-animado',
+          duration: 1100,
+          translateY: '-5vmin',
+          direction: 'alternate',
+          loop: true,
+          easign: 'easeInOutQuint',
+          autoplay: true,
+        }
+      )
+    });
   },
   props: {},
 };
