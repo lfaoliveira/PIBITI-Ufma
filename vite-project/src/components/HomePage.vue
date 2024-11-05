@@ -22,7 +22,7 @@
         </div>
       </div> 
     </section> 
-    <!-- <main>
+    
       <section class="features">
         <h2 class="section-title">Analisado e aprovado por oftalmologistas!</h2>
         <div class="feature-list">
@@ -44,7 +44,7 @@
           </div>
         </div>
       </section>
-      
+
       <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Divider" class="divider" />
 
       <section class="about">
@@ -127,7 +127,7 @@
         </div>
       </section>
       
-    </main>  -->
+     
 
     <!-- <footer class="footer">
       <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/938d419ab519c103a1e0833b1a20709f879d21b943df87ce5a6ad7be4a35e7b8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Logo footer" class="footer-logo" />
@@ -141,14 +141,20 @@
 </template>
 
 <style scoped>
+*{
+  color: black;
+}
+
+
 .homepage {
   background-color: #fff;
-  display: flex;
+  display: inline-grid;
   overflow: hidden;
   width: 100vw;
   height: 400vmax;
   left: 0px;
   justify-content: center;
+
 }
 
 .cntr-1 {
@@ -165,6 +171,8 @@
   position: absolute;
   left: 0px;
   object-fit: cover;
+  display: none;
+  z-index: 0;
 }
 
 .secao-1 {
