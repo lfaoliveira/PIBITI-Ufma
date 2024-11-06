@@ -79,51 +79,46 @@ input{
 
 .cntr-demo{
   margin: auto;
-  margin-right: 0%;;
+  margin-right: 0%;
   position: relative;
   text-align: center;
   background-color: #6113c6;
-  position: relative;
   display: flex;
-  width: 25vmin;
+  width: clamp(50px, 200px, 200px);
   height: auto;
-  border-radius: 59px;
   align-items: center;
   justify-content: center;
+  border-radius: 0.75rem;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
-
 }
+
+.botao-demo{
+  border: none;
+  color: white;
+  position: relative;
+  white-space: nowrap;
+  font-size: 20px;
+  letter-spacing: 0;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
 #imagemHamburguer{
   background-color: #6113c6;
   border-radius: 0.5rem;
-  width: 6vmin;
+  width: 45px;
   height: auto;
   margin: auto;
   margin-top: 0px;
   margin-bottom: 0px;
   margin-left: 0vmin;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
-
 }
-.botao-demo{
-  border-radius: 51px;
-  border: none;
-  color: white;
-  position: relative;
-  white-space: nowrap;
-  font-size: 3vmin;
-  letter-spacing: 0;
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  width: fit-content;
-  height: 100%;
-  cursor: pointer;
-
-}
-
-
 
 </style>
 

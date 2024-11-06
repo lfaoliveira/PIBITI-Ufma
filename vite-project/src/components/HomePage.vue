@@ -44,7 +44,7 @@
           </div>
         </div>
       </section>
-      <div id="divisor">
+      <div id="divisor" class="secao">
         <img alt="Divider" class="divider" src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
       </div>
 
@@ -56,15 +56,13 @@
       </section>
 
       <section class="optic-nerve secao">
-        <div class="optic-nerve-content">
-          <div class="optic-nerve-text">
-            <h2 class="section-title">Sexto Nervo Óptico</h2>
-            <p class="optic-nerve-description">
-              O músculo reto lateral é inervado pelo sexto nervo óptico, também chamado de nervo abducente, como ilustra a figura. Este nervo é diretamente responsável pela contração do músculo reto lateral. O reto lateral permite que o olho faça o movimento de abdução, ou seja, que se mova em direção ao seu canto externo. Uma lesão no sexto nervo causa a paralisia parcial ou total do músculo reto lateral, impossibilitando ou limitando a abdução
-            </p>
-          </div>
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" />
+        <div class="optic-nerve-text">
+          <h2 class="titulo-nervo">Sexto Nervo Óptico</h2>
+          <p class="optic-nerve-description">
+            O músculo reto lateral é inervado pelo sexto nervo óptico, também chamado de nervo abducente, como ilustra a figura. Este nervo é diretamente responsável pela contração do músculo reto lateral. O reto lateral permite que o olho faça o movimento de abdução, ou seja, que se mova em direção ao seu canto externo. Uma lesão no sexto nervo causa a paralisia parcial ou total do músculo reto lateral, impossibilitando ou limitando a abdução
+          </p>
         </div>
+        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" />
       </section>
 
       <section class="faq secao">
@@ -98,7 +96,7 @@
       </section>
 
       <section class="acquisition-protocol secao">
-        <h2 class="section-title">Protocolo de Aquisição</h2>
+        <h2 class="section-title" id="protocolo">Protocolo de Aquisição</h2>
         <p class="protocol-description">
           Os vídeos podem ser gravados com câmeras comuns ou com smartphones, mas para isso, usa-se um tripé para garantir a estabilidade da câmera. Além disso, a fim de evitar ruídos no resultado final causados pelo balançar da cabeça do paciente, pede-se que este apoie os cotovelos em uma mesa, cerre os punhos, juntando-os e apoiando o queixo em ambos os punhos. O vídeo começa a ser gravado com o paciente olhando para a frente, com os olhos na posição primária (PPO). Ambos os olhos do paciente precisam estar visíveis no vídeo, e alinhados horizontalmente; não é preciso que o rosto inteiro do paciente esteja visível, mas não há problema se estiver. Em seguida, pede-se que o paciente olhe para a esquerda, depois que olhe para a direita. Esse movimento é repetido algumas vezes, com o objetivo de analisar a movimentação horizontal dos olhos
         </p>
@@ -112,14 +110,14 @@
       </section>
 
       <section class="velocity-calculation secao">
-        <h2 class="section-title">Método de Cálculo da Velocidade</h2>
+        <h2 class="section-title" id="metodo">Método de Cálculo da Velocidade</h2>
         <p class="calculation-description">
           Praesent in lobortis purus, id blandit leo. Vestibulum posuere urna vitae scelerisque lacinia. Donec nec elit efficitur, sollicitudin est nec, sodales mauris. Maecenas et purus vel massa varius sodales. mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section>
 
       <section class="team secao">
-        <h2 class="section-title">Equipe</h2>
+        <h2 class="section-title" >Equipe</h2>
         <div class="team-content">
           <p class="team-description">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna Morbi vulputate magna id magna tempus volutpat. Duis metus elit, egestas id lorem at, dictum sollicitudin nunc. Nunc a bibendum leo. Fusce efficitur nibh a pretium feugiat. In at facilisis ante. Nullam id velit sed dolor mattis fringilla. Aliquam id interdum lorem
@@ -160,8 +158,10 @@
 }
 
 .secao{
-  margin: 5vmin auto;
+  margin: 5vmin auto 0vmin auto;
 }
+
+/* classes principais */
 
 .cntr-1 {
   display: flex;
@@ -200,7 +200,7 @@
   align-items: center;
   position: relative;
   height: auto;
-  width: 50vw;
+  width: 100vmin;
   margin-top: 0px;
   margin-bottom: 1vmin;
 
@@ -208,7 +208,8 @@
 
 .titulo {
   color: #fff;
-  font-size: calc(1em/16em);
+  font-weight: 700;
+  font-size: clamp(20px, 35px, 60px);
   text-align: start;
   margin: auto;
   width:auto;
@@ -219,8 +220,8 @@
   background-color: #6113c6;
   position: relative;
   display: flex;
-  width: 27vmin;
-  height: 7vmin;
+  width: 200px;
+  height: 44px;
   border-radius: 59px;
   align-items: center;
   justify-content: center;
@@ -230,7 +231,8 @@
 .label-cta{
   border: none;
   font-size: 22px;
-  font-weight: bolder;
+  font-family: MontSerrat, Bold;
+  font-weight: bold;
   color: #fff;
   cursor: pointer;
   width: auto;
@@ -249,7 +251,7 @@ input{
   margin-top: 10vmin;
   margin-bottom: 0vmin;
   align-self: flex-start;
-  width: 9vmin;
+  width: 66px;
   height: auto;
   position: relative;
 }
@@ -276,22 +278,11 @@ input{
   width: 8vmin;
 }
 
-
-.color-item {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font: 600 14px Inter, sans-serif;
-}
-
-
 .section-title {
   font: 700 32px Montserrat, sans-serif;
   text-align: center;
   margin-bottom: 20px;
+  color: white;
 }
 
 .features {
@@ -339,11 +330,9 @@ input{
 #divisor{
   display: flex;
   justify-content: center;
-  width: 80%;
+  width: 1000px;
   height: auto;
-  margin: 3vmin auto;
-  border: solid #fff;
-  box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.59);
+  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.30);
 }
 
 .divider {
@@ -355,17 +344,27 @@ input{
 .about{
   background-color: #6113c6;
   color: white;
+  margin-right: 3vmin;
+  margin-left: 3vmin;
 }
 .titulo-about{
   color: white;
+  font-weight: 900;
+  font-size: 40px;
+  margin: 0px 0px 2vmin 2vmin;
 }
 .about-description{
   color: white;
+  font-weight: 900;
+  font-size: 25px;
+  margin: 0px 0px 2vmin 2vmin;
 }
 
-.about-description, .optic-nerve-description, .protocol-description, .method-description, .calculation-description, .team-description {
-  font: 500 24px Montserrat, sans-serif;
-  text-align: justify;
+.optic-nerve{
+  display: flex;
+  flex-direction: row;
+  margin-right: 3vmin;
+  margin-left: 3vmin;
 }
 
 .optic-nerve-content {
@@ -373,53 +372,89 @@ input{
   justify-content: space-between;
   align-items: center;
 }
-
+.titulo-nervo{
+  font-weight: 900;
+  font-size: 25px;
+  margin: 0px 0px 2vmin 0vmin;
+}
 .optic-nerve-text {
   flex: 1;
-  padding-right: 20px;
+  flex-shrink: 2;
+  margin: 0px 2vmin 0vmin 2vmin;
+
 }
 
 .optic-nerve-image {
-  max-width: 50%;
+  width: 25%;
   height: auto;
+  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.30);
+
 }
 
 .faq{
   background-color: #260B4A;
-  justify-content: center;
-  align-content: center;
+  --larg: 100vmax;
+  width: var(--larg);
+  height: auto;
+  padding: 3vmin 0vmin; 
+  display: flex;
+  flex-direction: column;
 }
 
 .faq-titulo{
   color: white;
   font-weight: 700;
   font-size: 32px;
+  align-self: center;
 }
 
 .faq-grid {
+  color: white;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  /* grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); */
+  grid-template-columns: 300px 300px 300px;
+  grid-template-rows: auto auto;
+  align-self: center;
   gap: 20px;
 }
 
 .faq-item {
-  background-color: #0e0021;
-  border-radius: 35px;
-  padding: 20px;
-  color: #fff;
+	background-color: #0e0021;
+	border-radius: 35px;
+	color: #fff;
+	display: flex;
+	flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .faq-question {
   font: 700 24px Montserrat, sans-serif;
   margin-bottom: 10px;
+  color: #fff;
 }
 
 .faq-answer {
   font: 500 18px Montserrat, sans-serif;
+  font-weight: 500;
+  color: #fff;
+  width: 200px;
 }
+
+#protocolo{
+  color: black;
+}
+
 
 .detection-method{
   background-color: #6113c6;
+  
+}
+#metodo{
+  color: black;
+}
+.method-description{
+  color: white;
 }
 
 .team{
@@ -435,6 +470,7 @@ input{
 .team-description {
   flex: 1;
   padding-right: 20px;
+  color: white;
 }
 
 .team-image {
