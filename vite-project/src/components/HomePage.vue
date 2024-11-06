@@ -1,7 +1,7 @@
 #CODIGO GERADO POR IA:
 <template>
   <div class="homepage">
-    <section class="cntr-1">
+    <section class="cntr-1 secao">
       <headerHome/> 
       <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"  />
       <div class="secao-1">
@@ -23,8 +23,8 @@
       </div> 
     </section> 
     
-      <section class="features">
-        <h2 class="section-title">Analisado e aprovado por oftalmologistas!</h2>
+      <section class="features secao">
+        <h2 class="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
         <div class="feature-list">
           <div class="feature-item">
             <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/e0033d25d235881892cce5e17aeaf2493168b6e5aec5796164abdcb10e94ba34?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise de vídeos" class="feature-icon" />
@@ -47,14 +47,14 @@
 
       <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Divider" class="divider" />
 
-      <section class="about">
-        <h2 class="section-title">Sobre o Software</h2>
+      <section class="about secao">
+        <h2 class="titulo-about">Sobre o Software</h2>
         <p class="about-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section>
 
-      <section class="optic-nerve">
+      <section class="optic-nerve secao">
         <div class="optic-nerve-content">
           <div class="optic-nerve-text">
             <h2 class="section-title">Sexto Nervo Óptico</h2>
@@ -66,8 +66,8 @@
         </div>
       </section>
 
-      <section class="faq">
-        <h2 class="section-title">Perguntas Frequentes</h2>
+      <section class="faq secao">
+        <h2 class="faq-titulo">Perguntas Frequentes</h2>
         <div class="faq-grid">
           <div class="faq-item">
             <h3 class="faq-question">Pergunta 1</h3>
@@ -96,28 +96,28 @@
         </div>
       </section>
 
-      <section class="acquisition-protocol">
+      <section class="acquisition-protocol secao">
         <h2 class="section-title">Protocolo de Aquisição</h2>
         <p class="protocol-description">
           Os vídeos podem ser gravados com câmeras comuns ou com smartphones, mas para isso, usa-se um tripé para garantir a estabilidade da câmera. Além disso, a fim de evitar ruídos no resultado final causados pelo balançar da cabeça do paciente, pede-se que este apoie os cotovelos em uma mesa, cerre os punhos, juntando-os e apoiando o queixo em ambos os punhos. O vídeo começa a ser gravado com o paciente olhando para a frente, com os olhos na posição primária (PPO). Ambos os olhos do paciente precisam estar visíveis no vídeo, e alinhados horizontalmente; não é preciso que o rosto inteiro do paciente esteja visível, mas não há problema se estiver. Em seguida, pede-se que o paciente olhe para a esquerda, depois que olhe para a direita. Esse movimento é repetido algumas vezes, com o objetivo de analisar a movimentação horizontal dos olhos
         </p>
       </section>
 
-      <section class="detection-method">
+      <section class="detection-method secao">
         <h2 class="section-title">Método de Detecção</h2>
         <p class="method-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section>
 
-      <section class="velocity-calculation">
+      <section class="velocity-calculation secao">
         <h2 class="section-title">Método de Cálculo da Velocidade</h2>
         <p class="calculation-description">
           Praesent in lobortis purus, id blandit leo. Vestibulum posuere urna vitae scelerisque lacinia. Donec nec elit efficitur, sollicitudin est nec, sodales mauris. Maecenas et purus vel massa varius sodales. mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section>
 
-      <section class="team">
+      <section class="team secao">
         <h2 class="section-title">Equipe</h2>
         <div class="team-content">
           <p class="team-description">
@@ -151,11 +151,15 @@
   width: 100vw;
   height: 400vmax;
   left: 0px;
-  justify-content: center;
+  align-content: center;
   display: flex;
   flex-direction: column;
   gap: 0px;
 
+}
+
+.secao{
+  margin: 5vmin auto;
 }
 
 .cntr-1 {
@@ -164,7 +168,9 @@
   width: 100vw;
   height: 100vh;
   justify-content: center;
+  margin-top: 0px;
 }
+
 
 .img-background {
   width: 100%;
@@ -201,16 +207,14 @@
 
 .titulo {
   color: #fff;
-  font-size: 3ch;
+  font-size: calc(1em/16em);
   text-align: start;
   margin: auto;
   width:auto;
 }
 
 .cntr-cta{
-  margin: auto;
-  margin-top: 35vmin;
-  margin-bottom: 0vmin;
+  margin: 35vmin auto 0vmin auto;
   background-color: #6113c6;
   position: relative;
   display: flex;
@@ -224,7 +228,7 @@
 
 .label-cta{
   border: none;
-  font-size: 3vmin;
+  font-size: 22px;
   font-weight: bolder;
   color: #fff;
   cursor: pointer;
@@ -234,9 +238,6 @@
 input{
   display: none;
 }
-
-
-
 
 .div-mouse-animado{
   aspect-ratio: 4/3;
@@ -285,10 +286,6 @@ input{
   font: 600 14px Inter, sans-serif;
 }
 
-.color-6113c6 { background-color: #6113c6; }
-.color-792359 { background-color: #792359; }
-.color-260b4a { background-color: #260b4a; }
-.color-0e0021 { background-color: #0e0021; }
 
 .section-title {
   font: 700 32px Montserrat, sans-serif;
@@ -297,44 +294,64 @@ input{
 }
 
 .features {
-  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
 }
 
+.titulo-conv{
+  margin: 0px;
+  margin-bottom: 2vmin;
+  left: 0px;
+  width: 60vmin;
+  font-size: 32px;
+  font-weight: 800;
+}
 .feature-list {
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
   flex-wrap: wrap;
 }
 
 .feature-item {
+  margin-bottom: 5px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  max-width: 250px;
-  margin: 20px;
 }
 
 .feature-icon {
-  width: 50px;
+  margin: 0px;
+  margin-right: 9px;
+  width: 25px;
   height: auto;
-  margin-bottom: 10px;
 }
 
 .feature-description {
+  margin: 0px;
   text-align: center;
+  width: auto;;
   font: 500 18px Montserrat, sans-serif;
   color: #792359;
 }
 
 .divider {
-  width: 100%;
-  max-width: 1200px;
+  aspect-ratio: 9/16s;
+  width: 80%;
   height: auto;
-  margin: 40px 0;
+  margin: 3vmin auto;
+
 }
 
-.about, .optic-nerve, .faq, .acquisition-protocol, .detection-method, .velocity-calculation, .team {
-  margin-bottom: 40px;
+.about{
+  background-color: #6113c6;
+  color: white;
+}
+.titulo-about{
+  color: white;
+}
+.about-description{
+  color: white;
 }
 
 .about-description, .optic-nerve-description, .protocol-description, .method-description, .calculation-description, .team-description {
@@ -358,6 +375,18 @@ input{
   height: auto;
 }
 
+.faq{
+  background-color: #260B4A;
+  justify-content: center;
+  align-content: center;
+}
+
+.faq-titulo{
+  color: white;
+  font-weight: 700;
+  font-size: 32px;
+}
+
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -378,6 +407,14 @@ input{
 
 .faq-answer {
   font: 500 18px Montserrat, sans-serif;
+}
+
+.detection-method{
+  background-color: #6113c6;
+}
+
+.team{
+  background-color: #6113c6;
 }
 
 .team-content {
@@ -492,10 +529,10 @@ export default {
       anime({
           targets: '.mouse-animado',
           duration: 1100,
-          translateY: '-5vmin',
+          translateY: '-4vmin',
           direction: 'alternate',
           loop: true,
-          easign: 'easeInOutQuint',
+          easign: 'easeOutQuint',
           autoplay: true,
         }
       )
