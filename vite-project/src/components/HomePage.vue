@@ -44,8 +44,9 @@
           </div>
         </div>
       </section>
-
-      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Divider" class="divider" />
+      <div id="divisor">
+        <img alt="Divider" class="divider" src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+      </div>
 
       <section class="about secao">
         <h2 class="titulo-about">Sobre o Software</h2>
@@ -335,12 +336,20 @@ input{
   color: #792359;
 }
 
-.divider {
-  aspect-ratio: 9/16s;
+#divisor{
+  display: flex;
+  justify-content: center;
   width: 80%;
   height: auto;
   margin: 3vmin auto;
+  border: solid #fff;
+  box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.59);
+}
 
+.divider {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
 }
 
 .about{
