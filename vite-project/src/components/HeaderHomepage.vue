@@ -6,10 +6,8 @@
       <label for="fileInput" ref="" class="botao-demo">
         Demonstração
       </label>
-    </div>
-    
+    </div>    
   </div>
-  <!--ADICIONAR ABA DE CONFIGURACOES -->
 </template>
 
 <script>

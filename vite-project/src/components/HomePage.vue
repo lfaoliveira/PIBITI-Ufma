@@ -1,59 +1,72 @@
 #CODIGO GERADO POR IA:
 <template>
-  <div class="homepage">
-    <section class="cntr-1 secao">
-      <headerHome/> 
-      <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"  />
-      <div class="secao-1">
-        <div class="div-titulo">
-          <h1 class="titulo">Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico</h1>
-        </div>
-        <div class="cntr-cta">
-          <input type="file" id="fileInput" accept="video/*">
-          <label for="fileInput" ref="" class="label-cta" >
-            Analisar Vídeo
-          </label>
-        </div>
-        <div class="div-mouse-animado">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/ae6f73a5d07025b884e2d477e8c31f66eac96b6f490dead53be2a993c4e98f4a?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" class="mouse-animado" />
-        </div>
-        <div class="div-seta-baixo">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ad9eb0a053b1dfcf3e7e3fa37d9161add87b3e60570b5405f7e6d1c6c7a7f28?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Decorative element" class="seta-baixo" />
-        </div>
-      </div> 
-    </section> 
-    
-      <section class="features secao">
-        <h2 class="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
-        <div class="feature-list">
-          <div class="feature-item">
-            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/e0033d25d235881892cce5e17aeaf2493168b6e5aec5796164abdcb10e94ba34?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise de vídeos" class="feature-icon" />
-            <p class="feature-description">Analise vídeos de paralisia do sexto nervo óptico</p>
-          </div>
-          <div class="feature-item">
-            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/95e58da8c90222eb0e720352016b62c3f47c3c3806e262ae5cb932bc70eb6bab?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Gráficos resultantes" class="feature-icon" />
-            <p class="feature-description">Observe os gráficos resultantes</p>
-          </div>
-          <div class="feature-item">
-            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d8286b21b5e9d2538bb41bbbcd482178068c7939e5d9e774456db0e2d7b84088?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Salvar gráficos" class="feature-icon" />
-            <p class="feature-description">Salve os gráficos a qualquer momento!</p>
-          </div>
-          <div class="feature-item">
-            <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/424b9bc6b50bb6934f77d4a6d574dda271f637a6d9ca5930eaf46ece496c0db8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise em velocidades diferentes" class="feature-icon" />
-            <p class="feature-description">Analise os vídeos em velocidades diferentes</p>
-          </div>
-        </div>
-      </section>
-      <div id="divisor" class="secao">
-        <img alt="Divider" class="divider" src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+  <section class="cntr-1 secao">
+    <headerHome />
+    <div class="secao-1">
+      <div id="div-imagem">
+        <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
       </div>
+
+      <div class="div-titulo">
+        <h1 class="titulo">
+          Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
+        </h1>
+      </div>
+      <div class="cntr-cta">
+        <input type="file" id="fileInput" accept="video/*" />
+        <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
+      </div>
+      <div class="div-mouse-animado">
+        <img
+          src="https://cdn.builder.io/api/v1/image/assets/TEMP/ae6f73a5d07025b884e2d477e8c31f66eac96b6f490dead53be2a993c4e98f4a?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
+          class="mouse-animado"
+        />
+      </div>
+      <div class="div-seta-baixo">
+        <img
+          src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ad9eb0a053b1dfcf3e7e3fa37d9161add87b3e60570b5405f7e6d1c6c7a7f28?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
+          alt="Decorative element"
+          class="seta-baixo"
+        />
+      </div>
+    </div>
+  </section>
+
+    <section class="features secao">
+      <h2 class="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
+      <div class="feature-list">
+        <div class="feature-item">
+          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/e0033d25d235881892cce5e17aeaf2493168b6e5aec5796164abdcb10e94ba34?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise de vídeos" class="feature-icon" />
+          <p class="feature-description">Analise vídeos de paralisia do sexto nervo óptico</p>
+        </div>
+        <div class="feature-item">
+          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/95e58da8c90222eb0e720352016b62c3f47c3c3806e262ae5cb932bc70eb6bab?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Gráficos resultantes" class="feature-icon" />
+          <p class="feature-description">Observe os gráficos resultantes</p>
+        </div>
+        <div class="feature-item">
+          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d8286b21b5e9d2538bb41bbbcd482178068c7939e5d9e774456db0e2d7b84088?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Salvar gráficos" class="feature-icon" />
+          <p class="feature-description">Salve os gráficos a qualquer momento!</p>
+        </div>
+        <div class="feature-item">
+          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/424b9bc6b50bb6934f77d4a6d574dda271f637a6d9ca5930eaf46ece496c0db8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise em velocidades diferentes" class="feature-icon" />
+          <p class="feature-description">Analise os vídeos em velocidades diferentes</p>
+        </div>
+      </div>
+    </section>
+  <div id="divisor" class="secao">
+    <img
+      alt="Divider"
+      class="divider"
+      src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
+    />
+  </div>
 
       <section class="about secao">
         <h2 class="titulo-about">Sobre o Software</h2>
         <p class="about-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
-      </section>
+      </section> 
 
       <section class="optic-nerve secao">
         <div class="optic-nerve-text">
@@ -107,16 +120,16 @@
         <p class="method-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
-      </section>
+      </section> 
 
-      <section class="velocity-calculation secao">
+  <section class="velocity-calculation secao">
         <h2 class="section-title" id="metodo">Método de Cálculo da Velocidade</h2>
         <p class="calculation-description">
           Praesent in lobortis purus, id blandit leo. Vestibulum posuere urna vitae scelerisque lacinia. Donec nec elit efficitur, sollicitudin est nec, sodales mauris. Maecenas et purus vel massa varius sodales. mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
-      </section>
+      </section>  
 
-      <section class="team secao">
+  <section class="team secao">
         <h2 class="section-title" >Equipe</h2>
         <div class="team-content">
           <p class="team-description">
@@ -124,11 +137,9 @@
           </p>
           <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Equipe" class="team-image" />
         </div>
-      </section>
-      
-     
+      </section> 
 
-    <!-- <footer class="footer">
+  <!-- <footer class="footer">
       <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/938d419ab519c103a1e0833b1a20709f879d21b943df87ce5a6ad7be4a35e7b8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Logo footer" class="footer-logo" />
       <nav class="footer-nav">
         <a href="#" class="footer-link">Avisos Legais</a>
@@ -136,29 +147,33 @@
         <a href="#" class="footer-link">Sobre</a>
       </nav>
     </footer> -->
-  </div>
+  <!-- <div class="homepage">
+  </div>  -->
 </template>
 
 <style scoped>
-*{
-  color: black;
-}
-
 
 .homepage {
-  background-color: #fff;
-  width: 100vw;
-  height: 400vmax;
+  background-color: #4200f9;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
   left: 0px;
   align-content: center;
   display: flex;
   flex-direction: column;
   gap: 0px;
-
+  flex-wrap: wrap;
 }
 
-.secao{
-  margin: 5vmin auto 0vmin auto;
+.secao {
+  margin: 5vmin 0vmin 0vmin 0vmin;
+  max-width: 100%;
+
+  align-self: center;
+  /* padding: 0vmin 2vmin; */
+  flex-wrap: wrap;
+
 }
 
 /* classes principais */
@@ -166,44 +181,60 @@
 .cntr-1 {
   display: flex;
   align-items: center;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   justify-content: center;
   margin-top: 0px;
+  align-self: center;
+  flex-wrap: wrap;
+  margin: 0px;
+  max-width: 100%;
+
 }
 
+#div-imagem {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  align-self: center;
+  height: 100%;
+  /* margin: 5vmin 0vmin 0vmin 0vmin; */
+  top: 0px;
+  flex-wrap: wrap;
+  justify-content: start;
+
+}
 
 .img-background {
   width: 100%;
-  height: 100vh;
-  position: absolute;
-  left: 0px;
+  height: 100%;
   object-fit: cover;
   z-index: 0;
+  align-self: center;  
 }
 
 .secao-1 {
   align-self: center;
   display: flex;
+  flex-wrap: wrap;
   flex-flow: column wrap;
   width: 75%;
   height: 90vh;
-  margin-top: 10vh;
+  margin-top: 10vmin;
   justify-content: space-between;
   align-content: center;
 }
 
-.div-titulo{
+.div-titulo {
   margin: auto;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   height: auto;
-  width: 100vmin;
+  width: 100%;
   margin-top: 0px;
   margin-bottom: 1vmin;
-
 }
 
 .titulo {
@@ -212,10 +243,10 @@
   font-size: clamp(20px, 35px, 60px);
   text-align: start;
   margin: auto;
-  width:auto;
+  width: auto;
 }
 
-.cntr-cta{
+.cntr-cta {
   margin: 35vmin auto 0vmin auto;
   background-color: #6113c6;
   position: relative;
@@ -225,10 +256,10 @@
   border-radius: 59px;
   align-items: center;
   justify-content: center;
-  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59)
+  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
 }
 
-.label-cta{
+.label-cta {
   border: none;
   font-size: 22px;
   font-family: MontSerrat, Bold;
@@ -238,11 +269,11 @@
   width: auto;
 }
 
-input{
+input {
   display: none;
 }
 
-.div-mouse-animado{
+.div-mouse-animado {
   aspect-ratio: 4/3;
   display: flex;
   align-items: center;
@@ -262,7 +293,7 @@ input{
   height: auto;
   position: relative;
 }
-.div-seta-baixo{
+.div-seta-baixo {
   margin: auto;
   align-self: center;
   margin-top: -1vh;
@@ -271,7 +302,7 @@ input{
   justify-content: center;
   align-items: center;
   z-index: 2;
-} 
+}
 
 .seta-baixo {
   margin: auto;
@@ -290,7 +321,7 @@ input{
   flex-direction: column;
 }
 
-.titulo-conv{
+.titulo-conv {
   margin: 0px;
   margin-bottom: 2vmin;
   left: 0px;
@@ -322,17 +353,18 @@ input{
 .feature-description {
   margin: 0px;
   text-align: center;
-  width: auto;;
+  width: auto;
   font: 500 18px Montserrat, sans-serif;
   color: #792359;
 }
 
-#divisor{
+#divisor {
   display: flex;
   justify-content: center;
-  width: 1000px;
+  width: 800px;
   height: auto;
-  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.30);
+  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
+  align-self: center;
 }
 
 .divider {
@@ -341,30 +373,26 @@ input{
   object-fit: cover;
 }
 
-.about{
+.about {
   background-color: #6113c6;
   color: white;
-  margin-right: 3vmin;
-  margin-left: 3vmin;
 }
-.titulo-about{
+.titulo-about {
   color: white;
   font-weight: 900;
   font-size: 40px;
   margin: 0px 0px 2vmin 2vmin;
 }
-.about-description{
+.about-description {
   color: white;
   font-weight: 900;
   font-size: 25px;
   margin: 0px 0px 2vmin 2vmin;
 }
 
-.optic-nerve{
+.optic-nerve {
   display: flex;
   flex-direction: row;
-  margin-right: 3vmin;
-  margin-left: 3vmin;
 }
 
 .optic-nerve-content {
@@ -372,7 +400,7 @@ input{
   justify-content: space-between;
   align-items: center;
 }
-.titulo-nervo{
+.titulo-nervo {
   font-weight: 900;
   font-size: 25px;
   margin: 0px 0px 2vmin 0vmin;
@@ -381,31 +409,30 @@ input{
   flex: 1;
   flex-shrink: 2;
   margin: 0px 2vmin 0vmin 2vmin;
-
 }
 
 .optic-nerve-image {
   width: 25%;
   height: auto;
-  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.30);
-
+  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
 }
 
-.faq{
-  background-color: #260B4A;
-  --larg: 100vmax;
-  width: var(--larg);
+.faq {
+  background-color: #260b4a;
+  width: 100%;
   height: auto;
-  padding: 3vmin 0vmin; 
+  padding: 0vmin 0vmin 4vmin 0vmin;
   display: flex;
   flex-direction: column;
+  box-shadow: 0px 0.2vmin 37px 0px rgba(66, 0, 255, 1);
 }
 
-.faq-titulo{
+.faq-titulo {
   color: white;
   font-weight: 700;
   font-size: 32px;
   align-self: center;
+  margin-top: 1vmin;
 }
 
 .faq-grid {
@@ -419,11 +446,11 @@ input{
 }
 
 .faq-item {
-	background-color: #0e0021;
-	border-radius: 35px;
-	color: #fff;
-	display: flex;
-	flex-direction: column;
+  background-color: #0e0021;
+  border-radius: 35px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
@@ -441,23 +468,21 @@ input{
   width: 200px;
 }
 
-#protocolo{
+#protocolo {
   color: black;
 }
 
-
-.detection-method{
+.detection-method {
   background-color: #6113c6;
-  
 }
-#metodo{
+#metodo {
   color: black;
 }
-.method-description{
+.method-description {
   color: white;
 }
 
-.team{
+.team {
   background-color: #6113c6;
 }
 
@@ -474,7 +499,7 @@ input{
 }
 
 .team-image {
-  max-width: 50%;
+  max-width: 25%;
   height: auto;
 }
 
@@ -505,83 +530,106 @@ input{
   text-decoration: none;
   font: 700 14px Montserrat, sans-serif;
 }
-
 </style>
 
 #FIM CODIGO GERADO POR IA
-
 
 <script>
 import headerHome from "./HeaderHomepage.vue";
 import rodape from "./Rodape.vue";
 import convencimento from "./HomeConvencimento.vue";
-import { mapActions } from 'vuex';
-import anime from 'animejs/lib/anime.es.js'
+import { mapActions } from "vuex";
+import anime from "animejs/lib/anime.es.js";
 
 export default {
   name: "Homepage",
   components: {
     headerHome,
     rodape,
-    convencimento
+    convencimento,
   },
   created() {},
   methods: {
-    ...mapActions(['updateSharedData']),
+    ...mapActions(["updateSharedData"]),
     sendData() {
-      this.updateSharedData({ message: 'Hello from HomePage' });
-      this.$router.push('/teste');
+      this.updateSharedData({ message: "Hello from HomePage" });
+      this.$router.push("/teste");
     },
 
-    handleFileUpload($evt){
-      console.log("UPLOAD FEITO")
+    handleFileUpload($evt) {
+      console.log("UPLOAD FEITO");
       const file = $evt.target.files[0];
       if (file) {
         this.videoFile = file;
-        this.videoURL =  URL.createObjectURL(this.videoFile); // filename = path relativo
-        this.$router.push('/teste');
+        this.videoURL = URL.createObjectURL(this.videoFile); // filename = path relativo
+        this.$router.push("/teste");
       }
     },
-    animarMouse(){
+    animarMouse() {
       console.log($evt);
       let loop = true;
       let i = 0;
       const mouse = document.getElementsByClassName("mouse-animado");
 
-      while(loop){
+      while (loop) {
         i += 1;
-        let animador = anime()
-        if (i >= 100){
-          loop=false;
+        let animador = anime();
+        if (i >= 100) {
+          loop = false;
           break;
         }
       }
-
     },
-
   },
-  computed: {
-    
-  },
+  computed: {},
   data() {
     return {
-      videoURL: '',
-      objAnimacao: {animar:true, y:0, frame: {}},
+      videoURL: "",
+      objAnimacao: { animar: true, y: 0, frame: {} },
+      overflowingElements: [],
     };
   },
-  mounted(){
-    window.addEventListener('load', () => {
+  mounted() {
+    window.addEventListener("load", () => {
       anime({
-          targets: '.mouse-animado',
-          duration: 1100,
-          translateY: '-4vmin',
-          direction: 'alternate',
-          loop: true,
-          easign: 'easeOutQuint',
-          autoplay: true,
-        }
-      )
+        targets: ".mouse-animado",
+        duration: 1100,
+        translateY: "-4vmin",
+        direction: "alternate",
+        loop: true,
+        easign: "easeOutQuint",
+        autoplay: true,
+      });
     });
+    this.overflowingElements = []; // Clear previous results
+
+      // Get all elements within #app
+      const elements = document.querySelectorAll("#app *");
+
+      // Loop through each element and check if it's overflowing
+      elements.forEach((element) => {
+        const isOverflowing =
+          element.scrollWidth > element.clientWidth ||
+          element.scrollHeight > element.clientHeight ||
+          element.scrollTop > element.clientTop ||
+          element.scrollLeft > element.clientLeft;
+
+        if (isOverflowing) {
+          // Add the overflowing element's info to the list
+          this.overflowingElements.push({
+            tagName: element.tagName,
+            id: element.id || "(no ID)"
+          });
+        }
+      });
+
+      if (this.overflowingElements.length === 0) {
+        console.log("No overflowing elements detected.");
+      } else {
+        console.log("Overflowing elements detected:", this.overflowingElements);
+      }
+    
+  
   },
   props: {},
 };
