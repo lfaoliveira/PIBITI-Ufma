@@ -1,39 +1,39 @@
 #CODIGO GERADO POR IA:
 <template>
-  <section class="cntr-1 secao">
-    <headerHome />
-    <div class="secao-1">
-      <div id="div-imagem">
-        <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
-      </div>
+      <section class="secao-landing secao">
+        <headerHome />
+        <div class="conteudo-secao">
+          <div id="div-imagem">
+            <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
+          </div>
 
-      <div class="div-titulo">
-        <h1 class="titulo">
-          Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
-        </h1>
-      </div>
-      <div class="cntr-cta">
-        <input type="file" id="fileInput" accept="video/*" />
-        <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
-      </div>
-      <div class="div-mouse-animado">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/ae6f73a5d07025b884e2d477e8c31f66eac96b6f490dead53be2a993c4e98f4a?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-          class="mouse-animado"
-        />
-      </div>
-      <div class="div-seta-baixo">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ad9eb0a053b1dfcf3e7e3fa37d9161add87b3e60570b5405f7e6d1c6c7a7f28?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-          alt="Decorative element"
-          class="seta-baixo"
-        />
-      </div>
-    </div>
-  </section>
+          <div class="div-titulo">
+            <h1 class="section-title" id="titulo">
+              Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
+            </h1>
+          </div>
+          <div class="cntr-cta">
+            <input type="file" id="fileInput" accept="video/*" />
+            <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
+          </div>
+          <div class="div-mouse-animado">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/ae6f73a5d07025b884e2d477e8c31f66eac96b6f490dead53be2a993c4e98f4a?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
+              class="mouse-animado"
+            />
+          </div>
+          <div class="div-seta-baixo">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ad9eb0a053b1dfcf3e7e3fa37d9161add87b3e60570b5405f7e6d1c6c7a7f28?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
+              alt="Decorative element"
+              class="seta-baixo"
+            />
+          </div>
+        </div>
+      </section>
 
-    <section class="features secao">
-      <h2 class="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
+      <section class="features secao">
+      <h2 class="section-title" id="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
       <div class="feature-list">
         <div class="feature-item">
           <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/e0033d25d235881892cce5e17aeaf2493168b6e5aec5796164abdcb10e94ba34?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise de vídeos" class="feature-icon" />
@@ -52,34 +52,34 @@
           <p class="feature-description">Analise os vídeos em velocidades diferentes</p>
         </div>
       </div>
-    </section>
-  <div id="divisor" class="secao">
-    <img
-      alt="Divider"
-      class="divider"
-      src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-    />
-  </div>
+      </section>
+      <div id="divisor" class="secao">
+        <img
+          alt="Divider"
+          class="divider"
+          src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
+        />
+      </div>
 
       <section class="about secao">
-        <h2 class="titulo-about">Sobre o Software</h2>
-        <p class="about-description">
+        <h2 class="section-title" id="titulo-about">Sobre o Software</h2>
+        <p class="texto-secoes" id="about-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section> 
 
       <section class="optic-nerve secao">
         <div class="optic-nerve-text">
-          <h2 class="titulo-nervo">Sexto Nervo Óptico</h2>
-          <p class="optic-nerve-description">
+          <h2 class="section-title" id="titulo-nervo">Sexto Nervo Óptico</h2>
+          <p class="texto-secoes" id="optic-nerve-description">
             O músculo reto lateral é inervado pelo sexto nervo óptico, também chamado de nervo abducente, como ilustra a figura. Este nervo é diretamente responsável pela contração do músculo reto lateral. O reto lateral permite que o olho faça o movimento de abdução, ou seja, que se mova em direção ao seu canto externo. Uma lesão no sexto nervo causa a paralisia parcial ou total do músculo reto lateral, impossibilitando ou limitando a abdução
           </p>
         </div>
-        <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" />
+        <img alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
       </section>
 
       <section class="faq secao">
-        <h2 class="faq-titulo">Perguntas Frequentes</h2>
+        <h2 class="section-title" id="faq-titulo">Perguntas Frequentes</h2>
         <div class="faq-grid">
           <div class="faq-item">
             <h3 class="faq-question">Pergunta 1</h3>
@@ -109,33 +109,33 @@
       </section>
 
       <section class="acquisition-protocol secao">
-        <h2 class="section-title" id="protocolo">Protocolo de Aquisição</h2>
-        <p class="protocol-description">
+        <h2 class="section-title" id="titulo-protocolo">Protocolo de Aquisição</h2>
+        <p class="texto-secoes" id="protocol-description">
           Os vídeos podem ser gravados com câmeras comuns ou com smartphones, mas para isso, usa-se um tripé para garantir a estabilidade da câmera. Além disso, a fim de evitar ruídos no resultado final causados pelo balançar da cabeça do paciente, pede-se que este apoie os cotovelos em uma mesa, cerre os punhos, juntando-os e apoiando o queixo em ambos os punhos. O vídeo começa a ser gravado com o paciente olhando para a frente, com os olhos na posição primária (PPO). Ambos os olhos do paciente precisam estar visíveis no vídeo, e alinhados horizontalmente; não é preciso que o rosto inteiro do paciente esteja visível, mas não há problema se estiver. Em seguida, pede-se que o paciente olhe para a esquerda, depois que olhe para a direita. Esse movimento é repetido algumas vezes, com o objetivo de analisar a movimentação horizontal dos olhos
         </p>
       </section>
 
       <section class="detection-method secao">
-        <h2 class="section-title">Método de Detecção</h2>
-        <p class="method-description">
+        <h2 class="section-title" id="titulo-deteccao">Método de Detecção</h2>
+        <p class="texto-secoes" id="method-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section> 
 
-  <section class="velocity-calculation secao">
+      <section class="velocity-calculation secao">
         <h2 class="section-title" id="metodo">Método de Cálculo da Velocidade</h2>
-        <p class="calculation-description">
+        <p class="texto-secoes" id="calculation-description">
           Praesent in lobortis purus, id blandit leo. Vestibulum posuere urna vitae scelerisque lacinia. Donec nec elit efficitur, sollicitudin est nec, sodales mauris. Maecenas et purus vel massa varius sodales. mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna
         </p>
       </section>  
 
-  <section class="team secao">
-        <h2 class="section-title" >Equipe</h2>
+      <section class="team secao">
+        <h2 class="section-title" id="titulo-equipe">Equipe</h2>
         <div class="team-content">
-          <p class="team-description">
+          <p class="texto-secoes" id="team-description">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna Morbi vulputate magna id magna tempus volutpat. Duis metus elit, egestas id lorem at, dictum sollicitudin nunc. Nunc a bibendum leo. Fusce efficitur nibh a pretium feugiat. In at facilisis ante. Nullam id velit sed dolor mattis fringilla. Aliquam id interdum lorem
           </p>
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Equipe" class="team-image" />
+          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Img-VipLab" class="team-image" />
         </div>
       </section> 
 
@@ -147,25 +147,11 @@
         <a href="#" class="footer-link">Sobre</a>
       </nav>
     </footer>
-  <!-- <div class="homepage">
-  </div>  -->
 </template>
 
 <style scoped>
 
-.homepage {
-  background-color: #4200f9;
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  left: 0px;
-  align-content: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-  flex-wrap: wrap;
-}
-
+/* classes principais */
 .secao {
   margin: 5vmin 0vmin 0vmin 0vmin;
   max-width: 100%;
@@ -175,10 +161,19 @@
   flex-wrap: wrap;
 
 }
+.section-title{
+  font-size: clamp(0.6em, 2em, 3em);
+  margin: 2vmin;
+  font-weight: 700;
+}
 
-/* classes principais */
+.texto-secoes{
+  margin: 2vmin;
+  font-size: clamp(0.5em, 1em, 1.5em);
+}
 
-.cntr-1 {
+
+.secao-landing {
   display: flex;
   align-items: center;
   width: 100%;
@@ -194,7 +189,7 @@
 
 #div-imagem {
   position: absolute;
-  width: 100%;
+  width: 98%;
   display: flex;
   align-self: center;
   height: 100%;
@@ -213,7 +208,7 @@
   align-self: center;  
 }
 
-.secao-1 {
+.conteudo-secao {
   align-self: center;
   display: flex;
   flex-wrap: wrap;
@@ -232,18 +227,17 @@
   align-items: center;
   position: relative;
   height: auto;
-  width: 100%;
-  margin-top: 0px;
-  margin-bottom: 1vmin;
+  width: 42%;
+  margin: 0vmin auto 1vmin auto;
 }
 
-.titulo {
+#titulo {
   color: #fff;
   font-weight: 700;
   font-size: clamp(20px, 35px, 60px);
   text-align: start;
-  margin: auto;
   width: auto;
+  margin: 0vmin auto;
 }
 
 .cntr-cta {
@@ -309,19 +303,12 @@ input {
   width: 8vmin;
 }
 
-.section-title {
-  font: 700 32px Montserrat, sans-serif;
-  text-align: center;
-  margin-bottom: 20px;
-  color: white;
-}
-
 .features {
   display: flex;
   flex-direction: column;
 }
 
-.titulo-conv {
+#titulo-conv {
   margin: 0px;
   margin-bottom: 2vmin;
   left: 0px;
@@ -375,13 +362,11 @@ input {
 
 .about {
   background-color: #6113c6;
+  width: 100%;
   color: white;
 }
-.titulo-about {
+#titulo-about {
   color: white;
-  font-weight: 900;
-  font-size: 40px;
-  margin: 0px 0px 2vmin 2vmin;
 }
 .about-description {
   color: white;
@@ -400,10 +385,9 @@ input {
   justify-content: space-between;
   align-items: center;
 }
-.titulo-nervo {
+#titulo-nervo {
   font-weight: 900;
   font-size: 25px;
-  margin: 0px 0px 2vmin 0vmin;
 }
 .optic-nerve-text {
   flex: 1;
@@ -412,9 +396,10 @@ input {
 }
 
 .optic-nerve-image {
-  width: 25%;
+  width: 25rem;
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
+  margin-right: 2vmin;
 }
 
 .faq {
@@ -427,7 +412,7 @@ input {
   box-shadow: 0px 0.2vmin 37px 0px rgba(66, 0, 255, 1);
 }
 
-.faq-titulo {
+#faq-titulo {
   color: white;
   font-weight: 700;
   font-size: 32px;
@@ -468,18 +453,24 @@ input {
   width: 200px;
 }
 
-#protocolo {
+#titulo-protocolo{
   color: black;
 }
 
+
+#titulo-deteccao{
+  color: white;
+}
+#method-description {
+  color: white;
+}
 .detection-method {
   background-color: #6113c6;
+  width: 100%;
 }
+
 #metodo {
   color: black;
-}
-.method-description {
-  color: white;
 }
 
 .team {
@@ -492,14 +483,19 @@ input {
   align-items: center;
 }
 
-.team-description {
+#team-description {
   flex: 1;
   padding-right: 20px;
   color: white;
 }
+#titulo-equipe{
+  color: white;
+  margin-bottom: 0vmin;;
+}
+
 
 .team-image {
-  max-width: 25%;
+  width: clamp(15rem, 20rem, 25rem);
   height: auto;
 }
 

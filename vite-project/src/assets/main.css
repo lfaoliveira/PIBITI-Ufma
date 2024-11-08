@@ -1,13 +1,4 @@
 @import './base.css';
-#app {
-  display: flex;
-  font-weight: normal;
-  background-color: white;
-  flex-direction: column;
-  flex-wrap: wrap;
-  height: auto;
-  color: black;
-} 
 
 a,
 .green {
@@ -27,6 +18,9 @@ body {
   font-family: 'Montserrat', Inter;
   margin: 0;
   background-color: red;
+  display: flex;
+  align-items: start;
+  justify-content: center;
   /* overflow-x: hidden; */
 }
 
@@ -35,6 +29,14 @@ html, body, #app {
   max-width: 100%;
 }
 
-*{
-  max-width: 100%;
-}
+#app {
+  --app-width: 98%;
+  display: flex;
+  font-weight: normal;
+  background-color: white;
+  flex-direction: column;
+  flex-wrap: wrap;
+  height: auto;
+  color: black;
+  width: var(--app-width);
+} 

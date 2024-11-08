@@ -1,4 +1,3 @@
-<template>
   <!-- PARTE GERADA POR IA -->
 
   <template>
@@ -114,7 +113,7 @@
       </template>
     </videoplayer>
   </div> -->
-</template>
+
 
 <style scoped>
 .analysis-view {
