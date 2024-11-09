@@ -30,7 +30,6 @@ html, body, #app {
 }
 
 #app {
-  --app-width: 98%;
   display: flex;
   font-weight: normal;
   background-color: white;
@@ -38,5 +37,5 @@ html, body, #app {
   flex-wrap: wrap;
   height: auto;
   color: black;
-  width: var(--app-width);
+  width: clamp( 92%, 95%, 98%);
 } 

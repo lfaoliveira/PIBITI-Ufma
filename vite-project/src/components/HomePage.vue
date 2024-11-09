@@ -54,11 +54,10 @@
       </div>
       </section>
       <div id="divisor" class="secao">
-        <img
-          alt="Divider"
-          class="divider"
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-        />
+        <!-- <img alt="Divider"class="divider" src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/> -->
+        <img src="../assets/logo_VIP_Lab.png" alt="Logo VIpLab" class="img-logos" id="logo-vip">
+        <img src="../assets/logo ufma.png" alt="Logo UFMA" class="img-logos" id="logo-ufma">
+        <img src="../assets/LogoNCAFundBranco2000_2021.png" alt="Logo VIpLab"class="img-logos"  id="logo-nca">
       </div>
 
       <section class="about secao">
@@ -189,7 +188,7 @@
 
 #div-imagem {
   position: absolute;
-  width: 98%;
+  width: clamp( 92%, 95%, 98%);
   display: flex;
   align-self: center;
   height: 100%;
@@ -346,13 +345,24 @@ input {
 }
 
 #divisor {
+  max-width: 100%;
   display: flex;
   justify-content: center;
-  width: 800px;
+  width: 100%;
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
   align-self: center;
+  justify-content: space-around;
 }
+
+.img-logos{
+  aspect-ratio: 14/16;
+  margin: 2vmin;
+  width: 10%;
+  height: auto;
+}
+
+
 
 .divider {
   width: 100%;
@@ -495,7 +505,8 @@ input {
 
 
 .team-image {
-  width: clamp(15rem, 20rem, 25rem);
+  width: clamp( 20%, 25%, 20%);
+  margin-right: 2vmin;
   height: auto;
 }
 
