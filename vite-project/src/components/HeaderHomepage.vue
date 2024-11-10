@@ -61,24 +61,21 @@ input{
 }
 
 .div-header {
-  max-width: 90%;
+  max-width: 80%;
   width: auto;
   position: absolute;
   margin: 0 auto 0 auto;
   height: auto;
   top: 0%;
   z-index: 1;
-  display: flex;
-  gap: 50vw;
-  justify-content: space-between;
+  gap: 20%;
+  display: grid;
   align-items: center;
-  flex-direction: row;
-  justify-self: center;
+  grid-template-rows: repeat(auto-fit, minmax(6em, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(30em, 2fr));
 }
 
 .cntr-demo{
-  margin: auto;
-  margin-right: 0%;
   position: relative;
   text-align: center;
   background-color: #6113c6;
@@ -89,6 +86,9 @@ input{
   justify-content: center;
   border-radius: 0.75rem;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
+  margin: auto;
+  align-self: center;
+  justify-self: center;
 }
 
 .botao-demo{
@@ -110,13 +110,12 @@ input{
 #imagemHamburguer{
   background-color: #6113c6;
   border-radius: 0.5rem;
-  width: 45px;
+  width: 5rem;
   height: auto;
   margin: auto;
-  margin-top: 0px;
-  margin-bottom: 0px;
-  margin-left: 0vmin;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
+  justify-self: center;
+  
 }
 
 </style>
