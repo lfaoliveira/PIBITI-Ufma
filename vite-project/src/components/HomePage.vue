@@ -1,6 +1,7 @@
 #CODIGO GERADO POR IA:
 <template>
       <section class="secao-landing secao">
+      <!-- TODO: AJEITAR HEADER E SECAO INICIAL -->
         <headerHome />
         <div class="conteudo-secao">
           <div id="div-imagem">
@@ -131,10 +132,10 @@
       <section class="team secao">
         <h2 class="section-title" id="titulo-equipe">Equipe</h2>
         <div class="team-content">
+          <img alt="Img-VipLab" class="team-image" src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
           <p class="texto-secoes" id="team-description">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna Morbi vulputate magna id magna tempus volutpat. Duis metus elit, egestas id lorem at, dictum sollicitudin nunc. Nunc a bibendum leo. Fusce efficitur nibh a pretium feugiat. In at facilisis ante. Nullam id velit sed dolor mattis fringilla. Aliquam id interdum lorem
           </p>
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Img-VipLab" class="team-image" />
         </div>
       </section> 
 
@@ -162,16 +163,16 @@
 }
 .section-title{
   font-size: clamp(0.6em, 2em, 3em);
-  margin: 2vmin;
+  margin: 2vmin 0vmin 2vmin 2vmin;
   font-weight: 700;
 }
 
 .texto-secoes{
-  margin: 2vmin;
+  margin: var(--margem-geral);
   font-size: clamp(0.5em, 1em, 1.5em);
 }
 
-
+/* classes específicas */
 .secao-landing {
   display: flex;
   align-items: center;
@@ -346,22 +347,26 @@ input {
 
 #divisor {
   max-width: 100%;
-  display: flex;
-  justify-content: center;
+  display: grid;
   width: 100%;
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
-  align-self: center;
-  justify-content: space-around;
+  grid-template-rows: repeat(auto-fit, minmax(6em, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(30em, 2fr));
 }
 
 .img-logos{
-  aspect-ratio: 14/16;
-  margin: 2vmin;
-  width: 10%;
+  /* aspect-ratio: 57/64; */
+  margin: 5% auto; 
+  width: 30%;
+  height: auto;
+  justify-self: center;
+  align-self: center;
+}
+#logo-ufma{
+  margin: 5% auto;
   height: auto;
 }
-
 
 
 .divider {
@@ -377,6 +382,7 @@ input {
 }
 #titulo-about {
   color: white;
+  font-weight: 700;
 }
 .about-description {
   color: white;
@@ -398,18 +404,23 @@ input {
 #titulo-nervo {
   font-weight: 900;
   font-size: 25px;
+  margin-left: 0vmin;;
+}
+#optic-nerve-description{
+margin-left: 0vmin;
 }
 .optic-nerve-text {
   flex: 1;
   flex-shrink: 2;
-  margin: 0px 2vmin 0vmin 2vmin;
+  margin: 0vmin 2vmin;
 }
 
 .optic-nerve-image {
-  width: 25rem;
+  max-width: 100%;
+	width: clamp(10vmin, 25rem, 30rem);
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
-  margin-right: 2vmin;
+  margin: 0vmin 2vmin;
 }
 
 .faq {
@@ -420,24 +431,26 @@ input {
   display: flex;
   flex-direction: column;
   box-shadow: 0px 0.2vmin 37px 0px rgba(66, 0, 255, 1);
+  align-content: center;
+  justify-content: center;
 }
 
 #faq-titulo {
   color: white;
   font-weight: 700;
-  font-size: 32px;
-  align-self: center;
-  margin-top: 1vmin;
+  font-size: clamp(25px,32px,45px);
+  margin: 1vmin auto;
+  width: auto
 }
 
 .faq-grid {
+  width: 75%;
   color: white;
   display: grid;
-  /* grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); */
-  grid-template-columns: 300px 300px 300px;
-  grid-template-rows: auto auto;
-  align-self: center;
-  gap: 20px;
+  grid-template-rows: repeat(auto-fit, minmax(10em, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
+  gap: 2em;
+  margin: auto;
 }
 
 .faq-item {
@@ -445,6 +458,7 @@ input {
   border-radius: 35px;
   color: #fff;
   display: flex;
+  padding: 0em 2em;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -478,11 +492,15 @@ input {
   background-color: #6113c6;
   width: 100%;
 }
-
+.velocity-calculation{
+  width: 100%;
+}
 #metodo {
   color: black;
 }
 
+
+/* TODO: TRANSFORMAR secao da equipe em display: grid e ajustar */
 .team {
   background-color: #6113c6; 
 }
@@ -505,7 +523,7 @@ input {
 
 
 .team-image {
-  width: clamp( 20%, 25%, 20%);
+  width: clamp( 20%, 25%, 30%);
   margin-right: 2vmin;
   height: auto;
 }

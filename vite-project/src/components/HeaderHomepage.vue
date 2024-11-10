@@ -61,6 +61,7 @@ input{
 }
 
 .div-header {
+  max-width: 90%;
   width: auto;
   position: absolute;
   margin: 0 auto 0 auto;
