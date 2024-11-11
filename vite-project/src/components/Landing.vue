@@ -122,19 +122,17 @@ export default {
   background-color: #6113c6;
   position: relative;
   display: flex;
-  width: 200px;
-  height: 44px;
   border-radius: 59px;
   align-items: center;
   justify-content: center;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
+  padding: clamp(1px, 4px, 10px) clamp(6px, 19px, 22px);
 }
 
 .label-cta {
   border: none;
-  font-size: 22px;
+  font-size: clamp(2vmin, 18px, 20px);
   font-family: MontSerrat, Bold;
-  font-weight: bold;
   color: #fff;
   cursor: pointer;
   width: auto;
