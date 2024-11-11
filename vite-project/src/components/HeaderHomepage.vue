@@ -18,16 +18,10 @@ export default {
   data() {
     return {
       path_hamburg: path.join(".", "src", "assets", "menu-sanduiche.png"),
-      scaleFactor:  1,
     };
   },
   methods: {
-    getScalFactor(){
-      return this.scaleFactor;
-    },
-    setScaleFactor(valor){
-      this.scaleFactor = valor;
-    },
+
   },
   computed: {
   /*  styleImagem() {
@@ -62,17 +56,17 @@ input{
 
 .div-header {
   max-width: 80%;
-  width: auto;
+  width: 97vmin;
   position: absolute;
   margin: 0 auto 0 auto;
   height: auto;
   top: 0%;
   z-index: 1;
-  gap: 20%;
+  gap: 0px;
   display: grid;
   align-items: center;
-  grid-template-rows: repeat(auto-fit, minmax(6em, 1fr));
-  grid-template-columns: repeat(auto-fit, minmax(30em, 2fr));
+  grid-template-rows: 50% ;
+  grid-template-columns: 1fr 1fr;
 }
 
 .cntr-demo{
@@ -80,15 +74,17 @@ input{
   text-align: center;
   background-color: #6113c6;
   display: flex;
-  width: clamp(50px, 200px, 200px);
+  width: auto;
   height: auto;
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
   margin: auto;
+  margin-right: 0px;
   align-self: center;
   justify-self: center;
+  padding: 0vmin clamp(0%, 3%, 5%);
 }
 
 .botao-demo{
@@ -96,7 +92,7 @@ input{
   color: white;
   position: relative;
   white-space: nowrap;
-  font-size: 20px;
+  font-size: clamp(20px, 20px, 1.6px);
   letter-spacing: 0;
   align-items: center;
   display: flex;
@@ -109,12 +105,14 @@ input{
 
 #imagemHamburguer{
   background-color: #6113c6;
-  border-radius: 0.5rem;
-  width: 5rem;
+  border-radius: clamp(10px, 3%, 15px);
+  width: clamp(5vmin, 60px, 11vmin);
   height: auto;
   margin: auto;
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
   justify-self: center;
+  margin-left: 0px;
+  padding: clamp(10px, 2%, 20px);
   
 }
 

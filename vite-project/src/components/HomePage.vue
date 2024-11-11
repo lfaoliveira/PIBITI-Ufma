@@ -256,7 +256,7 @@ margin-left: 0vmin;
 }
 
 .optic-nerve-image {
-  max-width: 100%;
+  max-width: 96%;
 	width: clamp(10vmin, 25rem, 30rem);
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
