@@ -24,7 +24,6 @@
       </div>
       </section>
       <div id="divisor" class="secao">
-        <!-- <img alt="Divider"class="divider" src="https://cdn.builder.io/api/v1/image/assets/TEMP/755b349ce9a7d050187785ec1ae9d2f96efaac9ad22315bdfbc53c6604cf1da6?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/> -->
         <img src="../assets/logo_VIP_Lab.png" alt="Logo VIpLab" class="img-logos" id="logo-vip">
         <img src="../assets/logo ufma.png" alt="Logo UFMA" class="img-logos" id="logo-ufma">
         <img src="../assets/LogoNCAFundBranco2000_2021.png" alt="Logo VIpLab"class="img-logos"  id="logo-nca">
@@ -108,14 +107,7 @@
         </div>
       </section> 
 
-    <footer class="footer secao">
-      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/938d419ab519c103a1e0833b1a20709f879d21b943df87ce5a6ad7be4a35e7b8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Logo footer" class="footer-logo" />
-      <nav class="footer-nav">
-        <a href="#" class="footer-link">Avisos Legais</a>
-        <a href="mailto:contato@email.ufma.br" class="footer-link">Contato: contato@email.ufma.br</a>
-        <a href="#" class="footer-link">Sobre</a>
-      </nav>
-    </footer>
+    <rodape class="secao"/>
 </template>
 
 <style scoped>
@@ -137,11 +129,13 @@
 }
 
 .texto-secoes{
-  margin: var(--margem-geral);
+  margin: 2vmin;
   font-size: clamp(0.5em, 1em, 1.5em);
 }
 
 /* classes específicas */
+
+/* convencimento */
 
 .features {
   display: flex;
@@ -185,6 +179,7 @@
   color: #792359;
 }
 
+/* divisor e logos*/
 #divisor {
   max-width: 100%;
   display: grid;
@@ -208,12 +203,8 @@
   height: auto;
 }
 
+/*  Sobre o software*/
 
-.divider {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-}
 
 .about {
   background-color: #6113c6;
@@ -231,11 +222,11 @@
   margin: 0px 0px 2vmin 2vmin;
 }
 
+/*  Nervo Optico*/
 .optic-nerve {
   display: flex;
   flex-direction: row;
 }
-
 .optic-nerve-content {
   display: flex;
   justify-content: space-between;
@@ -262,6 +253,8 @@ margin-left: 0vmin;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
   margin: 0vmin 2vmin;
 }
+
+/* FAQ */
 
 .faq {
   background-color: #260b4a;
@@ -317,9 +310,13 @@ margin-left: 0vmin;
   width: 200px;
 }
 
+/* PROTOCOLO */
+
 #titulo-protocolo{
   color: black;
 }
+
+/* DETECCAO */
 
 
 #titulo-deteccao{
@@ -332,6 +329,9 @@ margin-left: 0vmin;
   background-color: #6113c6;
   width: 100%;
 }
+
+/* calculo de velocidade */
+
 .velocity-calculation{
   width: 100%;
 }
@@ -339,6 +339,7 @@ margin-left: 0vmin;
   color: black;
 }
 
+/* TIME */
 
 /* TODO: TRANSFORMAR secao da equipe em display: grid e ajustar */
 .team {
@@ -361,36 +362,10 @@ margin-left: 0vmin;
   margin-bottom: 0vmin;;
 }
 
-
 .team-image {
   width: clamp( 20%, 25%, 30%);
   margin-right: 2vmin;
   height: auto;
-}
-
-.footer {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.footer-logo {
-  width: 100px;
-  height: auto;
-  margin-bottom: 20px;
-}
-
-.footer-nav {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  max-width: 600px;
-}
-
-.footer-link {
-  color: #000;
-  font: 700 14px Montserrat, sans-serif;
 }
 </style>
 
@@ -463,35 +438,7 @@ export default {
         autoplay: true,
       });
     });
-    this.overflowingElements = []; // Clear previous results
 
-      // Get all elements within #app
-      const elements = document.querySelectorAll("#app *");
-
-      // Loop through each element and check if it's overflowing
-      elements.forEach((element) => {
-        const isOverflowing =
-          element.scrollWidth > element.clientWidth ||
-          element.scrollHeight > element.clientHeight ||
-          element.scrollTop > element.clientTop ||
-          element.scrollLeft > element.clientLeft;
-
-        if (isOverflowing) {
-          // Add the overflowing element's info to the list
-          this.overflowingElements.push({
-            tagName: element.tagName,
-            id: element.id || "(no ID)"
-          });
-        }
-      });
-
-      if (this.overflowingElements.length === 0) {
-        console.log("No overflowing elements detected.");
-      } else {
-        console.log("Overflowing elements detected:", this.overflowingElements);
-      }
-    
-  
   },
   props: {},
 };

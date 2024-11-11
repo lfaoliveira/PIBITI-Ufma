@@ -1,19 +1,9 @@
   <!-- PARTE GERADA POR IA -->
 
-  <template>
+<template>
   <main class="analysis-view">
-    <header class="header">
-      <nav class="navigation">
-        <button class="back-button">
-          <img src="https://cdn.builder.io/api/v1/image/assets%2F8b29090e827e422ea4601ed102c7c8ec%2F8073b5ee0f8d4d1f9ccf2dd8deaf2852" alt="Back arrow" class="back-icon" />
-          <span>Voltar</span>
-        </button>
-        <button class="save-button">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/bcdb4d424162515c6065f11e425d579318bf22d447dbea27d81b9649e4b2dc8e?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Save icon" class="save-icon" />
-          <span>Salvar Resultado</span>
-        </button>
-      </nav>
-    </header>
+    <HeaderAnalise id="header"></HeaderAnalise>
+
     <h1 class="page-title">Análise de Paralisia</h1>
     <section class="analysis-content">
       <div class="analysis-grid">
@@ -26,17 +16,18 @@
         <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Analysis graph" class="analysis-graph" />
       </div>
     </section>
-    <section class="additional-graphs">
-      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/ebe87e1942af688064c5388f00dd308ff4d20bf4833f49fdfcbee8164828034c?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Additional analysis graph" class="additional-graph" />
-      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/31716a680375eeece1f52072bad79d6e8ff3886573af8e13c0d04e7a3e0c662a?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Analysis icon" class="analysis-icon" />
+    <section class="video-res">
+      <img src="../assets/Video exemplo.png" alt="Additional analysis graph" class="imagem-exemplo" />
+      <div class="ctrl-video">
+        <div class="slider">
+          <!-- inserir controles e logica -->
+        </div>
+        <div class="butao-play">
+          <img class="icone-atual"/>
+        </div>
+      </div>
     </section>
-    <footer class="footer">
-      <nav class="footer-nav">
-        <a href="#" class="footer-link">Avisos Legais</a>
-        <a href="mailto:contato@email.ufma.br" class="footer-link">Contato: contato@email.ufma.br</a>
-        <a href="#" class="footer-link">Sobre</a>
-      </nav>
-    </footer>
+    <Rodape></Rodape>
   </main>
 </template>
 
@@ -116,21 +107,16 @@
 
 
 <style scoped>
+
+
 .analysis-view {
   background-color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 80px;
   overflow: hidden;
 }
 
-.header {
-  width: 100%;
-  max-width: 1280px;
-  padding: 12px 16px 0 8px;
-  border: 1px solid #f00;
-}
 
 .navigation {
   display: flex;
@@ -139,31 +125,6 @@
   gap: 20px;
   color: #fff;
   font: 500 20px Montserrat, sans-serif;
-}
-
-.back-button,
-.save-button {
-  display: flex;
-  align-items: center;
-  border-radius: 16px;
-  background-color: #6113c6;
-  box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.33);
-  padding: 8px 16px;
-  border: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-.save-button {
-  box-shadow: 0 0 8px 3px rgba(0, 0, 0, 0.93);
-}
-
-.back-icon,
-.save-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
 }
 
 .page-title {
@@ -283,7 +244,8 @@ import videoplayer from "./VideoPlayer.vue";
 import videotrack from "./VideoPlayerTracker.vue";
 import seta from "./icons/Seta.vue";
 import { mapGetters } from 'vuex';
-
+import Rodape from "./Rodape.vue";
+import HeaderAnalise from "./HeaderAnalise.vue"
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DA HOMEPAGE
   name: "HomePage",
@@ -291,6 +253,8 @@ export default {
     videoplayer,
     videotrack,
     seta,
+    Rodape,
+    HeaderAnalise,
   },
   created() {},
   data() {
@@ -386,7 +350,7 @@ export default {
 </script>
 
 <style scoped>
-CSS DO UPLOAD
+/* CSS DO UPLOAD */
 
 .custom-file-upload{
   background-color: #43C3DD;
@@ -414,7 +378,7 @@ CSS DO UPLOAD
 }
 
 
-
+CSS ORIGINAL
 
 .edicaoVideo{
   font-family: 'Roboto Serif', serif !important;

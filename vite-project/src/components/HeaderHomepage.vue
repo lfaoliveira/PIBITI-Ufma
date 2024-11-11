@@ -65,7 +65,7 @@ input{
   gap: 0px;
   display: grid;
   align-items: center;
-  grid-template-rows: 50% ;
+  grid-template-rows: 50%;
   grid-template-columns: 1fr 1fr;
 }
 

@@ -15,7 +15,12 @@ a,
 }
 
 body {
-  --margem-geral: 2vmin;
+  --primary-clor: #fff;
+  --sec-color: #6113C6;
+  --terc-color: #792359;
+  --quart-color: #3A0D75;
+  --quint-color: #0E0021;
+
   font-family: 'Montserrat', Inter;
   margin: 0;
   background-color: rgb(199, 219, 14);

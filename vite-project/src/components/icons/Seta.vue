@@ -1,51 +1,55 @@
 <template>
-  <div class="containerSeta">
-    <img :src="this.path_seta" alt="Imagem Seta" id="imagemSeta"> 
+  <button class="containerSeta">
+    <img src="../../assets/seta.png" alt="Seta" id="imagemSeta"> 
     <div class="texto">Voltar</div>
-  </div>
+  </button>
 </template>
 
 <script>
-import path from "path";
 
 export default {
-  name: "Seta",
+  name: "seta",
   created() {},
   data() {
-    return {
-      path_seta: path.join("src", "assets", "arrow.png")
-    };
+    return {}
   },
   props: {},
 };
 </script>
 
 <style scoped>
+.containerSeta{
+  padding: clamp(10px, 2%, 20px);
+  border-radius: clamp(10px, 10%, 16px);
+  margin-left: 0px;
+  background-color: var(--sec-color);
+  display: flex;
+  justify-content: center;
+  gap: clamp(4vmin, 4.5vmin, 5vmin);
+
+  align-items: center;
+  width: auto;
+  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.29);
+  margin: auto;
+  cursor: pointer;
+}
+
+
 #imagemSeta{
   aspect-ratio: 4/3;
   width: 6vmin;
   height:auto;
 }
-#imagemSeta:hover{
-  width: 8vmin;
-  height: auto;
-}
 
 .texto{
-  --seta-font-size: 2vmin;
+  
   position:relative;
-  left: 4vmin;
-  font-size: clamp(1rem, var(--seta-font-size), 10vmin);
-  color: #001B2C;
-  font-weight: 700;
+  font-size: clamp(1rem, 3vmin, 10vmin);
+  color: #fff;
+  font-weight: 800;
 
 }
 
-.containerSeta{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: max-content;
-}
+
 
 </style>
