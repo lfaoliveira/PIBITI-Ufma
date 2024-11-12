@@ -2,6 +2,18 @@
 /* componente geral de video player */
 
 <template>
+  
+  <section class="video-demo">
+    <div class="video-container">
+      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Video thumbnail" class="video-thumbnail" />
+      <div class="video-controls">
+        <span class="time-display">00:00</span>
+        <div class="progress-indicator"></div>
+        <img alt="ICONE PLAY" class="control-icon" src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc26523d69cd2e893ce066b39edd92af909bf86c844b1ccb3bb4e63e02f6869f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
+      </div>
+    </div>
+  </section>
+<!--   
   <div class="div-video">
     <video
       :src="videoURL"
@@ -30,11 +42,13 @@
       :video-muted="videoMuted"
       :toggle-mute="toggleMute"
     ></slot>
-  </div>
+  </div> -->
 
 </template>
 
-<script lang="js">
+<script>
+
+// eventos pro player checar durante execução
 const EVENTS = [
   "play",
   "pause",
@@ -221,6 +235,92 @@ export default {
 </script>
 
 <style scoped>
+
+.video-demo {
+  width: 75%;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  margin-bottom: 2%;
+}
+
+.video-container {
+  display: flex;
+  flex-direction: column;
+  border-radius: 31px;
+  position: relative;
+  min-height: 474px;
+  width: 100%;
+  padding-top: 132px;
+}
+
+.video-thumbnail {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.play-button {
+  position: relative;
+  align-self: center;
+  width: 136px;
+  height: 93px;
+  border: 5px solid #ed1818;
+}
+
+.video-controls {
+  position: relative;
+  display: flex;
+  margin-top: 186px;
+  width: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 80px 4px 0;
+}
+
+.progress-indicator {
+  background-color: #d9d9d9;
+  border-radius: 50%;
+  width: 10px;
+  height: 11px;
+  margin-top: 5px;
+}
+
+.control-icon {
+  aspect-ratio: 0.94;
+  object-fit: contain;
+  object-position: center;
+  width: 31px;
+  border-radius: 0;
+}
+
+@media (max-width: 991px) {
+  .video-demo {
+    white-space: initial;
+  }
+
+  .video-container {
+    max-width: 100%;
+    padding-top: 100px;
+    white-space: initial;
+  }
+
+  .video-controls {
+    max-width: 100%;
+    padding-right: 20px;
+    margin-top: 40px;
+    white-space: initial;
+  }
+}
+
+/* FIM CSS DE IA */
+
+
+
 input[type="file"] {
   display: none;
 }

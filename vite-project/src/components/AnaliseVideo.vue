@@ -16,17 +16,8 @@
       <img class="grafico secao" alt="Analysis graph" src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
     </div>
     
-    <section class="video-res">
-      <img src="../assets/Video exemplo.png" alt="Additional analysis graph" class="imagem-exemplo" />
-      <div class="ctrl-video">
-        <div class="slider">
-          <!-- inserir controles e logica -->
-        </div>
-        <div class="butao-play">
-          <img class="icone-atual"/>
-        </div>
-      </div>
-    </section>
+    <VideoPlayer class="video-res"></VideoPlayer>
+    
     <Rodape></Rodape>
   </main>
 </template>
@@ -187,36 +178,24 @@
   object-fit: contain;
 }
 
-.additional-graphs {
-  width: 100%;
-  margin-top: 43px;
+.video-res{
+  margin-bottom: 100px;
 }
-
-.additional-graph {
-  width: 100%;
-  object-fit: contain;
-}
-
-.analysis-icon {
-  width: 108px;
-  margin-top: 14px;
-}
-
 </style>
 
 
 <script>
-import videoplayer from "./VideoPlayer.vue";
 import videotrack from "./VideoPlayerTracker.vue";
 import seta from "./icons/Seta.vue";
 import { mapGetters } from 'vuex';
 import Rodape from "./Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue"
+import VideoPlayer from "./VideoPlayer.vue";
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DA HOMEPAGE
   name: "HomePage",
   components:{
-    videoplayer,
+    VideoPlayer,
     videotrack,
     seta,
     Rodape,
