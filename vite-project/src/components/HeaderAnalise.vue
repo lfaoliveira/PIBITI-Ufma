@@ -26,8 +26,8 @@ export default {
 
 <style scoped>
 *{
-  --alt-butao: clamp(40px, 50px, 70px);
-  --raio-butao: clamp(10px, 28%, 16px);
+  --alt-butao: clamp(40px, 5vmin, 77px);
+  --raio-butao: clamp(10px, 40%, 20px);
   font-family: 'Montserrat', 'Inter';
   border: 0px;
 }
@@ -36,17 +36,16 @@ input{
 }
 
 .div-header {
-  max-width: 80%;
+  max-width: 95%;
   position: absolute;
-  margin: 1vmin auto 0 auto;
+  margin: 1vmin 0px 0px 0px;
   height: auto;
-  width: max-content;
-  gap: clamp(10%, 200px, 50%);
+  width: 97vmin;
   z-index: 1;
-  display: grid;
+  display: flex;
   align-items: center;
-  grid-template-rows: 1fr;
-  grid-template-columns: 1fr 1fr;
+  /* grid-template-rows: 1fr;
+  grid-template-columns: 1fr 1fr; */
 }
 
 
@@ -56,9 +55,9 @@ input{
   justify-content: center;
   align-items: center;
   margin: auto;
-  width: min-content;
+  width: clamp(80px, 40vmin, 200px);
   height: var(--alt-butao);
-
+  margin-right: 0px;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr 1fr;
   border-radius: var(--raio-butao);
@@ -68,7 +67,7 @@ input{
 
 .icone-download{
   border-radius: clamp(10px, 3%, 15px);
-  width: clamp(5vmin, 45px, 11vmin);
+  width: clamp(40px, 5vmin, 11vmin);
   height: auto;
 
   /* box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59); */
@@ -85,7 +84,7 @@ input{
   margin-right: 2vmin;
 
   
-  font-size: clamp(10px, 18px, 22px);
+  font-size: clamp(10px, 20px, 4vmin);
   justify-self: start;
   width: max-content;
 

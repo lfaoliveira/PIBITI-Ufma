@@ -134,7 +134,7 @@
 .page-title {
   color: #3a0d75;
   font: 400 48px Montserrat, sans-serif;
-  margin-top: 20px;
+  margin-top: clamp(70px, 15vmin, 120px);
 }
 
 .analysis-content {

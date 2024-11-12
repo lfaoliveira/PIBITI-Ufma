@@ -24,13 +24,12 @@ export default {
   background-color: var(--sec-color);
   display: flex;
   justify-content: center;
-  gap: clamp(4vmin, 4.5vmin, 5vmin);
+  /* gap: clamp(4vmin, 4.5vmin, 5vmin); */
   align-items: center;
   width: auto;
   height: calc(var(--alt-butao) - clamp(2px, 5px, 8px));
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.29);
-  margin: auto;
-  margin-left: 0px;
+  margin: auto 20vmin auto 0px;
 
   cursor: pointer;
 }
@@ -38,14 +37,15 @@ export default {
 
 #imagemSeta{
   aspect-ratio: 4/3;
-  width: clamp(30px, 40px, 60px);
+  width: clamp(25px, 40px, 6vmin);
   height:auto;
+  margin-right: clamp(10px,2vmin, 50px);
 }
 
 .texto{
   
   position:relative;
-  font-size: clamp(10px, 20px, 35px);
+  font-size: clamp(10px, 20px, 4vmin);
   color: #fff;
   font-weight: 800;
 
