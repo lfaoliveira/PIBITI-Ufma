@@ -23,7 +23,8 @@ body {
 
   font-family: 'Montserrat', Inter;
   margin: 0;
-  background-color: rgb(199, 219, 14);
+  background-color: #dcc0ff;
+  /* background: linear-gradient(180deg, rgba(220,192,255,1) 0%, rgba(255,255,255,1) 52%); */
   display: flex;
   align-items: start;
   justify-content: center;

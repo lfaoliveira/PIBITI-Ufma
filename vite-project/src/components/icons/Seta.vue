@@ -20,31 +20,32 @@ export default {
 <style scoped>
 .containerSeta{
   padding: clamp(10px, 2%, 20px);
-  border-radius: clamp(10px, 10%, 16px);
-  margin-left: 0px;
+  border-radius: var(--raio-butao);
   background-color: var(--sec-color);
   display: flex;
   justify-content: center;
   gap: clamp(4vmin, 4.5vmin, 5vmin);
-
   align-items: center;
   width: auto;
+  height: calc(var(--alt-butao) - clamp(2px, 5px, 8px));
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.29);
   margin: auto;
+  margin-left: 0px;
+
   cursor: pointer;
 }
 
 
 #imagemSeta{
   aspect-ratio: 4/3;
-  width: 6vmin;
+  width: clamp(30px, 40px, 60px);
   height:auto;
 }
 
 .texto{
   
   position:relative;
-  font-size: clamp(1rem, 3vmin, 10vmin);
+  font-size: clamp(10px, 20px, 35px);
   color: #fff;
   font-weight: 800;
 

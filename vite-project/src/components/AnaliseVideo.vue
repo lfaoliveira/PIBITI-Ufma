@@ -8,7 +8,7 @@
     <section class="analysis-content">
       <div class="analysis-grid">
         <div class="diagnosis-card">
-          <h2 class="diagnosis-title">Diagnóstico: Paralisia no Olho {X}/ Olho Saudável</h2>
+          <h2 class="diagnosis-title">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
           <p class="speed-difference">Diferença de Velocidade: XX.dd %</p>
           <p class="right-eye-speed">Olho Direito: XX.dd mm/s</p>
           <p class="left-eye-speed">Olho Esquerdo: XX.dd mm/s</p>
@@ -108,13 +108,17 @@
 
 <style scoped>
 
+*{
+  max-width: 100%;
+}
 
 .analysis-view {
+	max-width: 100%;
   background-color: #fff;
+  /* box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.34); */
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
 }
 
 
@@ -186,60 +190,10 @@
   margin-top: 14px;
 }
 
-.footer {
-  width: 100%;
-  margin-top: 20px;
-}
-
-.footer-nav {
-  display: flex;
-  justify-content: space-between;
-  max-width: 452px;
-  margin: 0 auto;
-  color: #000;
-  font: 700 14px Montserrat, sans-serif;
-}
-
-.footer-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (max-width: 991px) {
-  .analysis-view {
-    padding: 0 20px;
-  }
-
-  .page-title {
-    font-size: 40px;
-  }
-
-  .analysis-content {
-    margin-top: 40px;
-  }
-
-  .analysis-grid {
-    flex-direction: column;
-  }
-
-  .diagnosis-card {
-    padding: 20px;
-  }
-
-  .diagnosis-title {
-    margin-bottom: 40px;
-  }
-
-  .analysis-graph,
-  .additional-graph {
-    margin-top: 14px;
-  }
-}
 </style>
 
 
 <script>
-import Seta from "./icons/Seta.vue";
 import videoplayer from "./VideoPlayer.vue";
 import videotrack from "./VideoPlayerTracker.vue";
 import seta from "./icons/Seta.vue";
