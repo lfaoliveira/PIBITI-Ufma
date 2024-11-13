@@ -5,15 +5,11 @@
   
   <section class="video-demo">
     <div class="video-container">
-      <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Video thumbnail" class="video-thumbnail" />
-      <div class="video-controls">
-        <span class="time-display">00:00</span>
-        <div class="progress-indicator"></div>
-        <img alt="ICONE PLAY" class="control-icon" src="https://cdn.builder.io/api/v1/image/assets/TEMP/fc26523d69cd2e893ce066b39edd92af909bf86c844b1ccb3bb4e63e02f6869f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
-      </div>
+      <img class="video-thumbnail" alt="Video thumbnail" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
+      <videocontrols class="video-controls"> </videocontrols>
     </div>
   </section>
-<!--   
+
   <div class="div-video">
     <video
       :src="videoURL"
@@ -42,11 +38,134 @@
       :video-muted="videoMuted"
       :toggle-mute="toggleMute"
     ></slot>
-  </div> -->
+  </div>
 
 </template>
 
+<style scoped>
+
+.video-demo {
+  width: 75%;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+  margin-bottom: 2%;
+}
+
+.video-container {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: column;
+  border-radius: 31px;
+  position: relative;
+  min-height: 474px;
+  width: 100%;
+  padding-top: 132px;
+}
+
+.video-thumbnail {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.play-button {
+  position: relative;
+  align-self: center;
+  width: 136px;
+  height: 93px;
+  border: 5px solid #ed1818;
+}
+
+.video-controls {
+  position: relative;
+  display: flex;
+  z-index: 1;
+  margin-top: 186px;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(95,95,95,0.66) 0%, rgba(33,33,33,0.85) 52%, rgba(17,0,0,1) 97%);
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 4px 0px 4px 0;
+}
+
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: rgba(255, 255, 255, 0.62);
+  width: 100%;
+  height: clamp(5px, 1vmin,12px );
+  margin-top: 5px;
+}
+.bola-slider{
+  --tam: clamp(5px, 2vmin, 20px);
+  width: var(--tam);
+  height: var(--tam);
+  background-color: #D9D9D9;
+  border-radius: 100%;
+}
+
+.control-icon {
+  aspect-ratio: 0.94;
+  object-fit: contain;
+  object-position: center;
+  width: 31px;
+  border-radius: 0;
+}
+
+@media (max-width: 991px) {
+  .video-demo {
+    white-space: initial;
+  }
+
+  .video-container {
+    max-width: 100%;
+    padding-top: 100px;
+    white-space: initial;
+  }
+
+  .video-controls {
+    max-width: 100%;
+    padding-right: 20px;
+    margin-top: 40px;
+    white-space: initial;
+  }
+}
+
+/* FIM CSS DE IA */
+
+input[type="file"] {
+  display: none;
+}
+
+.div-video{
+  max-width: 100%;
+  max-height: 100%;
+  position: relative;
+  /*display: inline-block; */
+
+}
+video {
+  max-width: 100%;
+  max-height: 100%;
+  display: flex;
+  /*display: inline-block; */
+  /* padding: 5px; */
+  border: 0.16rem solid rgba(85, 85, 85, 0.426);
+}
+</style>
+
+
 <script>
+const VIDEO_RATIO = 0.7
+
+import videocontrols from "./VideoControls.vue";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -61,11 +180,12 @@ const EVENTS = [
   "canplaythrough",
   "statechanged",
 ];
-const VIDEO_RATIO = 0.7
-
 export default {
   
   name: "Videoplayer",
+  components: {
+    videocontrols,
+  },
   props: {
     
     controls: { type: Boolean, required: false, default: false },
@@ -96,6 +216,15 @@ export default {
     }
   },
   methods: {
+    loadIconePlay(){
+      if (this.playing){
+        return "../assets/play.svg"
+      }
+      else{
+        return "../assets/pause.svg"
+      }
+
+    },
     handleFileUpload($evt){
       console.log("UPLOAD FEITO")
       const file = $evt.target.files[0];
@@ -118,7 +247,7 @@ export default {
     },
 
     bindEvents() {
-      console.log("BINDING")
+      console.log("BINDING");
 
       EVENTS.forEach((event) => {
         this.bindVideoEvent(event);
@@ -234,110 +363,3 @@ export default {
 };
 </script>
 
-<style scoped>
-
-.video-demo {
-  width: 75%;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
-  color: #fff;
-  margin-bottom: 2%;
-}
-
-.video-container {
-  display: flex;
-  flex-direction: column;
-  border-radius: 31px;
-  position: relative;
-  min-height: 474px;
-  width: 100%;
-  padding-top: 132px;
-}
-
-.video-thumbnail {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.play-button {
-  position: relative;
-  align-self: center;
-  width: 136px;
-  height: 93px;
-  border: 5px solid #ed1818;
-}
-
-.video-controls {
-  position: relative;
-  display: flex;
-  margin-top: 186px;
-  width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 4px 80px 4px 0;
-}
-
-.progress-indicator {
-  background-color: #d9d9d9;
-  border-radius: 50%;
-  width: 10px;
-  height: 11px;
-  margin-top: 5px;
-}
-
-.control-icon {
-  aspect-ratio: 0.94;
-  object-fit: contain;
-  object-position: center;
-  width: 31px;
-  border-radius: 0;
-}
-
-@media (max-width: 991px) {
-  .video-demo {
-    white-space: initial;
-  }
-
-  .video-container {
-    max-width: 100%;
-    padding-top: 100px;
-    white-space: initial;
-  }
-
-  .video-controls {
-    max-width: 100%;
-    padding-right: 20px;
-    margin-top: 40px;
-    white-space: initial;
-  }
-}
-
-/* FIM CSS DE IA */
-
-
-
-input[type="file"] {
-  display: none;
-}
-
-.div-video{
-  max-width: 100%;
-  max-height: 100%;
-  position: relative;
-  /*display: inline-block; */
-
-}
-video {
-  max-width: 100%;
-  max-height: 100%;
-  display: flex;
-  /*display: inline-block; */
-  /* padding: 5px; */
-  border: 0.16rem solid rgba(85, 85, 85, 0.426);
-}
-</style>

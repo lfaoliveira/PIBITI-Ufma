@@ -16,7 +16,7 @@
       <img class="grafico secao" alt="Analysis graph" src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
     </div>
     
-    <VideoPlayer class="video-res"></VideoPlayer>
+    <VideoPlayer class="secao"></VideoPlayer>
     
     <Rodape></Rodape>
   </main>
@@ -185,7 +185,7 @@
 
 
 <script>
-import videotrack from "./VideoPlayerTracker.vue";
+import videotrack from "./VideoControls.vue";
 import seta from "./icons/Seta.vue";
 import { mapGetters } from 'vuex';
 import Rodape from "./Rodape.vue";
