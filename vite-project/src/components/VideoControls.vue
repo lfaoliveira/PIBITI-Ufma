@@ -10,10 +10,10 @@
     />
   </div> -->
   <span class="time-display">00:00</span>
-  <div class="progress-indicator">
+  <button class="slider">
     <!-- TODO: AJUSTAR BOLA DO SLIDER DENTRO DO SLIDER -->
     <div class="bola-slider"></div>
-  </div>
+  </button>
   <div class="bola-play">
     <img alt="ICONE PLAY" class="control-icon" src=""/>
   </div>
@@ -38,41 +38,8 @@ export default {
 <style>
 
 
-.play-button {
-  position: relative;
-  align-self: center;
-  width: 136px;
-  height: 93px;
-  border: 5px solid #ed1818;
-}
-
-.video-controls {
-  position: relative;
-  display: flex;
+*{
   z-index: 1;
-  margin-top: 186px;
-  width: 100%;
-  background: linear-gradient(180deg, rgba(95,95,95,0.66) 0%, rgba(33,33,33,0.85) 52%, rgba(17,0,0,1) 97%);
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 4px 0px 4px 0;
-}
-
-.progress-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: rgba(255, 255, 255, 0.62);
-  width: 100%;
-  height: clamp(5px, 1vmin,12px );
-  margin-top: 5px;
-}
-.bola-slider{
-  --tam: clamp(5px, 2vmin, 20px);
-  width: var(--tam);
-  height: var(--tam);
-  background-color: #D9D9D9;
-  border-radius: 100%;
 }
 
 
@@ -81,7 +48,9 @@ export default {
 
 
 
-
+.slider{
+  background-color: red;
+}
 
 
 input[type="range"] {

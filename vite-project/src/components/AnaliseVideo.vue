@@ -13,7 +13,7 @@
         <p class="right-eye-speed">Olho Direito: XX.dd mm/s</p>
         <p class="left-eye-speed">Olho Esquerdo: XX.dd mm/s</p>
       </div>
-      <img class="grafico secao" alt="Analysis graph" src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+      <img class="grafico" alt="Analysis graph" src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
     </div>
     
     <VideoPlayer class="secao"></VideoPlayer>
@@ -100,7 +100,7 @@
 <style scoped>
 
 *{
-  max-width: 100%;
+  max-width: 100vmax;
 }
 
 
@@ -145,8 +145,10 @@
 }
 
 .analysis-grid {
-  display: flex;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100vmin, 2fr));
+  width: 100%;
+  margin: auto;
 }
 
 .diagnosis-card {
@@ -157,6 +159,7 @@
   padding: 22px 32px 37px;
   color: #6113c6;
   font: 600 16px Montserrat, sans-serif;
+  width: clamp(200px, 40ch, 100%);
 }
 
 .diagnosis-title {
@@ -173,8 +176,10 @@
 
 .grafico {
   /* flex: 0 0 72%; */
-  width: 50%;
-  height: auto;
+  width: clamp(200px, 100%, 1200px);
+  justify-self: start;
+  align-self: center;
+  height: 100%;
   object-fit: contain;
 }
 
