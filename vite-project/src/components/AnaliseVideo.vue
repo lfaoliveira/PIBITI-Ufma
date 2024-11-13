@@ -6,16 +6,21 @@
 
     <h1 class="page-title">Análise de Paralisia</h1>
     
-    <div class="analysis-grid">
+  <div class="responsive-container">
       <div class="diagnosis-card secao">
         <h2 class="diagnosis-title">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
         <p class="speed-difference">Diferença de Velocidade: XX.dd %</p>
         <p class="right-eye-speed">Olho Direito: XX.dd mm/s</p>
         <p class="left-eye-speed">Olho Esquerdo: XX.dd mm/s</p>
       </div>
+    <div class="graph-section">
+      <!-- Placeholder for your graph (image or canvas) -->
       <img class="grafico" alt="Analysis graph" src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
     </div>
-    
+  </div>
+
+
+
     <VideoPlayer class="secao"></VideoPlayer>
     
     <Rodape></Rodape>
@@ -101,18 +106,57 @@
 
 *{
   max-width: 100vmax;
+  font-family: Montserrat, 'Inter';
 }
 
-
+/* 
 .secao {
   margin: 0vmin 2vmin;
   max-width: 100%;
 
   align-self: center;
-  /* padding: 0vmin 2vmin; */
+  padding: 0vmin 2vmin; 
   flex-wrap: wrap;
 
+} */
+
+
+
+.responsive-container {
+  height: 50%;
+  display: flex;
+  flex-wrap: wrap; /* Allows the items to wrap to the next line */
+  gap: 20px;
+  margin: 0 2%; /* 2% lateral margins */
 }
+
+.graph-section {
+  flex: 1; /* Take equal space by default */
+  min-width: 300px; /* Minimum width before breaking */
+}
+
+.graph-section img{
+  width: 100%; /* Make the image responsive */
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Container Query for screen width greater than 800px */
+@media only screen  and (min-width: 1200px) {
+  .responsive-container {
+    flex-direction: row; /* Horizontal layout */
+  }
+}
+
+@media only screen  and (max-width: 1200px) {
+  .responsive-container {
+    flex-direction: column; /* Vertical layout */
+  }
+}
+
+
+
+
 
 .analysis-view {
 	width: clamp(100%,100%, 100%);
@@ -144,22 +188,25 @@
   margin-top: 86px;
 }
 
+
 .analysis-grid {
+  --tam-grid: clamp(400px, 95%, 100%);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100vmin, 2fr));
-  width: 100%;
+  grid-template-rows: repeat(auto-fill, minmax(40vmin, 2fr));
+  grid-template-columns: 1fr fit-content(20%);
+  width: var(--tam-grid);
   margin: auto;
 }
 
 .diagnosis-card {
-  flex: 0 0 28%;
   border-radius: 31px;
   background-color: #fff;
   box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.34);
   padding: 22px 32px 37px;
   color: #6113c6;
-  font: 600 16px Montserrat, sans-serif;
-  width: clamp(200px, 40ch, 100%);
+  font-size: clamp(5px, 14px, 20px);
+  width: clamp(200px, 40vmin, 100%);
+  flex: 0.3;
 }
 
 .diagnosis-title {
@@ -176,7 +223,7 @@
 
 .grafico {
   /* flex: 0 0 72%; */
-  width: clamp(200px, 100%, 1200px);
+  width: clamp(300px, 100vmin, 100% - 0.8*var(--tam-grid));
   justify-self: start;
   align-self: center;
   height: 100%;

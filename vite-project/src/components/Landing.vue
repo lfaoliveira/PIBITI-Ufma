@@ -85,6 +85,8 @@ export default {
   align-self: center;  
 }
 
+
+/* MUDAR CONTAINER PRA GRID */
 .conteudo-secao {
   align-self: center;
   display: flex;
