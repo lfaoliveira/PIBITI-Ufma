@@ -15,22 +15,29 @@
     <div class="bola-slider"></div>
   </button>
   <div class="bola-play">
-    <img alt="ICONE PLAY" class="control-icon" src=""/>
+    <object type="image/svg+xml" class="control-icon" :data="urlICone" />
   </div>
 
 </template>
 
-<script lang="js">
+<script>
 export default {
   name: "videotrack",
   props: {
     percentage: { type: Number, required: true },
+  },
+  data() {
+    return {
+      urlICone: 'src/assets/play.svg',
+    }
   },
   methods: {
     onInput(e) {
       console.log("INPUT no slider")
       this.$emit("seek", e.target.value);
     },
+  },
+  mounted() {
   },
 };
 </script>
@@ -41,17 +48,24 @@ export default {
 *{
   z-index: 1;
 }
+.bola-play{
+  display: flex;
+  width: clamp(3%, 20px, 40px);
+  height: clamp(3%, 20px, 40px);
+  background-color: #fff;
+  margin: 2vmin 0 2vmin 2vmin;
+  justify-content: center;
+  border-radius: 100%;
+}
 
-
-
-
-
-
+.control-icon{
+  padding: 1%;
+width: clamp(1vmin, 22px, 100%);
+}
 
 .slider{
   background-color: red;
 }
-
 
 input[type="range"] {
   position: relative;

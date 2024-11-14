@@ -8,10 +8,10 @@
     
   <div class="responsive-container">
       <div class="diagnosis-card secao">
-        <h2 class="diagnosis-title">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
-        <p class="speed-difference">Diferença de Velocidade: XX.dd %</p>
-        <p class="right-eye-speed">Olho Direito: XX.dd mm/s</p>
-        <p class="left-eye-speed">Olho Esquerdo: XX.dd mm/s</p>
+        <h2 class="diagnostico texto-diag">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
+        <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
+        <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>
+        <p class="velocidade-esq texto-diag">Olho Esquerdo: XX.dd mm/s</p>
       </div>
     <div class="graph-section">
       <!-- Placeholder for your graph (image or canvas) -->
@@ -120,7 +120,10 @@
 
 } */
 
-
+.texto-diag{
+  --fonte-diag: clamp(10px, 15px, 20px);
+  font-size: var(--fonte-diag);
+}
 
 .responsive-container {
   height: 50%;
@@ -142,15 +145,19 @@
 }
 
 /* Container Query for screen width greater than 800px */
-@media only screen  and (min-width: 1200px) {
+@media only screen  and (min-width: 800px) {
   .responsive-container {
     flex-direction: row; /* Horizontal layout */
   }
 }
 
-@media only screen  and (max-width: 1200px) {
+@media only screen  and (max-width: 800px) {
   .responsive-container {
     flex-direction: column; /* Vertical layout */
+    justify-content: center;
+  }
+  .diagnosis-card{
+    justify-self: center;
   }
 }
 
@@ -205,19 +212,19 @@
   padding: 22px 32px 37px;
   color: #6113c6;
   font-size: clamp(5px, 14px, 20px);
-  width: clamp(200px, 40vmin, 100%);
+  width: clamp(200px, 100vmin, 100%);
   flex: 0.3;
 }
 
-.diagnosis-title {
+.diagnostico {
   color: #38d200;
-  font-size: 16px;
   margin-bottom: 44px;
+  font-size: calc( var(--fonte-diag) + 25%);
 }
 
-.speed-difference,
-.right-eye-speed,
-.left-eye-speed {
+.dif-velocidade,
+.velocidade-dir,
+.velocidade-esq {
   margin-top: 35px;
 }
 
