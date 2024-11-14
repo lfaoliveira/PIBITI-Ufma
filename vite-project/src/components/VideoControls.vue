@@ -9,14 +9,15 @@
       @input="onInput"
     />
   </div> -->
-  <span class="time-display">00:00</span>
-  <button class="slider">
-    <!-- TODO: AJUSTAR BOLA DO SLIDER DENTRO DO SLIDER -->
+  <div class="controles">
+    <span class="time-display">00:00</span>
+    <button class="slider"></button>
     <div class="bola-slider"></div>
-  </button>
-  <div class="bola-play">
-    <object type="image/svg+xml" class="control-icon" :data="urlICone" />
+    <div class="bola-play">
+      <object type="image/svg+xml" class="control-icon" :data="urlICone" />
+    </div>
   </div>
+  
 
 </template>
 
@@ -46,25 +47,54 @@ export default {
 
 
 *{
+  --tam-slider: clamp(1%, 5px, 10px); 
   z-index: 1;
+  border: none;
+  margin: 0;
 }
+
+.controles{
+  background: linear-gradient(180deg, rgba(95,95,95,0.66) 0%, rgba(33,33,33,0.85) 39%, rgba(17,0,0,1) 97%);
+  height: clamp(2vmin, 14vmin, 120px);
+}
+
+.time-display{
+  font-size: clamp(8px, 12px, 15px);
+  position: relative;
+  top: clamp(10px, 15px, 20px);
+}
+
 .bola-play{
+  --tam-bola: clamp(3%, 38px, 40px);
   display: flex;
-  width: clamp(3%, 20px, 40px);
-  height: clamp(3%, 20px, 40px);
+  width: var(--tam-bola);
+  height: var(--tam-bola);
   background-color: #fff;
-  margin: 2vmin 0 2vmin 2vmin;
+  margin: -1vmin 0 0vmin 0.7vmin;
   justify-content: center;
   border-radius: 100%;
+  cursor: pointer;
 }
 
 .control-icon{
-  padding: 1%;
-width: clamp(1vmin, 22px, 100%);
+  padding: 12%;
+  width: clamp(1vmin, 22px, 100%);
 }
 
 .slider{
-  background-color: red;
+  background-color: rgba(255, 255, 255, 0.72);
+  width: 100%;
+  height: var(--tam-slider);
+}
+
+.bola-slider{
+  --tam-bolinha: clamp(1.6vmin, 12px, 16px);
+  width: var(--tam-bolinha);
+  height: var(--tam-bolinha);
+  background-color: #ccc;
+  position: relative;
+  top: clamp(-11px - var(--tam-slider)/2, -20px - var(--tam-slider)/2, -30px - var(--tam-slider)/2);
+  border-radius: 100%;
 }
 
 input[type="range"] {

@@ -13,14 +13,11 @@
         <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>
         <p class="velocidade-esq texto-diag">Olho Esquerdo: XX.dd mm/s</p>
       </div>
-    <div class="graph-section">
+    <div class="div-grafico">
       <!-- Placeholder for your graph (image or canvas) -->
-      <img class="grafico" alt="Analysis graph" src="https://cdn.builder.io/api/v1/image/assets/TEMP/6fc3fc6b7a4ffe40c62e0b7ba344a361d1040c5d2b60098c23ae6d95ca1836d0?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+      <img class="grafico" alt="Analysis graph" src="../assets/Video exemplo.png" />
     </div>
   </div>
-
-
-
     <VideoPlayer class="secao"></VideoPlayer>
     
     <Rodape></Rodape>
@@ -133,12 +130,12 @@
   margin: 0 2%; /* 2% lateral margins */
 }
 
-.graph-section {
+.div-grafico {
   flex: 1; /* Take equal space by default */
   min-width: 300px; /* Minimum width before breaking */
 }
 
-.graph-section img{
+.div-grafico img{
   width: 100%; /* Make the image responsive */
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -148,6 +145,9 @@
 @media only screen  and (min-width: 800px) {
   .responsive-container {
     flex-direction: row; /* Horizontal layout */
+  }
+  .grafico{
+    object-fit: scale-down;
   }
 }
 
@@ -234,7 +234,7 @@
   justify-self: start;
   align-self: center;
   height: 100%;
-  object-fit: contain;
+  object-fit:fill;
 }
 
 .video-res{

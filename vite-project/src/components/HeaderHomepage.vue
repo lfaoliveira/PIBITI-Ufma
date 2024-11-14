@@ -92,7 +92,7 @@ input{
   color: white;
   position: relative;
   white-space: nowrap;
-  font-size: clamp(20px, 20px, 1.6px);
+  font-size: clamp(1.5vmin, 5vmin, 22px);
   letter-spacing: 0;
   align-items: center;
   display: flex;

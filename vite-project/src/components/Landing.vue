@@ -4,7 +4,8 @@
     <headerHome />
     <div class="conteudo-secao">
       <div id="div-imagem">
-        <img alt="Header background" class="img-background" src="https://cdn.builder.io/api/v1/image/assets/TEMP/f3ca9b3d261c46282ed04ff940f4cc22606eb7e3ebb989886eb51637d0e210fe?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
+        <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
+        <video alt="Header background" class="video-background"  src="../assets/video-oftalmo.mp4"/>
       </div>
       <div class="div-titulo">
         <h1 class="section-title" id="titulo">
@@ -49,12 +50,15 @@ export default {
 }
 </script>
 <style scoped>
+*{
+  --height-video: 100%;
+}
 
 .secao-landing {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 100%;
+  height: var(--height-video);
   justify-content: center;
   margin-top: 0px;
   align-self: center;
@@ -77,9 +81,9 @@ export default {
 
 }
 
-.img-background {
+.video-background {
   width: 100%;
-  height: 100%;
+  height: var(--height-video);
   object-fit: cover;
   z-index: 0;
   align-self: center;  
@@ -92,9 +96,9 @@ export default {
   display: flex;
   flex-wrap: wrap;
   flex-flow: column wrap;
-  width: 75%;
+  width: 95%;
   height: 90vh;
-  margin-top: 10vmin;
+  margin-top: clamp(5vmin, 9vmin, 10vmin);
   justify-content: space-between;
   align-content: center;
 }
@@ -106,21 +110,21 @@ export default {
   align-items: center;
   position: relative;
   height: auto;
-  width: 42%;
+  width: clamp(200px, 46ch, 100%);
   margin: 0vmin auto 1vmin auto;
 }
 
 #titulo {
   color: #fff;
   font-weight: 700;
-  font-size: clamp(20px, 35px, 60px);
+  font-size: clamp(16px, 28px, 30px);
   text-align: start;
   width: auto;
   margin: 0vmin auto;
 }
 
 .cntr-cta {
-  margin: 35vmin auto 0vmin auto;
+  margin: 30vmin auto 0vmin auto;
   background-color: #6113c6;
   position: relative;
   display: flex;
@@ -133,7 +137,7 @@ export default {
 
 .label-cta {
   border: none;
-  font-size: clamp(2vmin, 18px, 20px);
+  font-size: clamp(1.5vmin, 5vmin, 22px);
   font-family: MontSerrat, Bold;
   color: #fff;
   cursor: pointer;
@@ -149,11 +153,9 @@ input {
   display: flex;
   align-items: center;
   justify-items: center;
-  margin: auto;
-  margin-top: 10vmin;
-  margin-bottom: 0vmin;
+  margin: 10vmin auto 0vmin auto;
   align-self: flex-start;
-  width: 66px;
+  width: clamp(54px, 10vmin,120px);
   height: auto;
   position: relative;
 }
@@ -167,8 +169,9 @@ input {
 .div-seta-baixo {
   margin: auto;
   align-self: center;
-  margin-top: -1vh;
-  margin-bottom: 0px;
+  width: clamp(50px, 8vmin, 10vmin);
+  margin-top: -5vh;
+  margin-bottom: clamp(0vh, 0vh, 3vh);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -177,7 +180,7 @@ input {
 
 .seta-baixo {
   margin: auto;
-  width: 8vmin;
+  width: 100%;
 }
 
 </style>

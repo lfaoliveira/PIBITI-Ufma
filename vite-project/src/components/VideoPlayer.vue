@@ -44,6 +44,9 @@
 
 <style scoped>
 
+*{
+  max-width: 100%;
+}
 
 .video-demo {
   width: 75%;
@@ -58,11 +61,11 @@
   display: flex;
   justify-content: flex-end;
   flex-direction: column;
+  margin-top: 5vmin;
   border-radius: 31px;
   position: relative;
   min-height: 474px;
   width: 100%;
-  padding-top: 132px;
 }
 
 .video-thumbnail {
@@ -89,16 +92,13 @@
   }
 
   .video-container {
-    max-width: 100%;
     padding-top: 100px;
     white-space: initial;
   }
 
   .video-controls {
-    max-width: 100%;
-    padding-right: 20px;
-    margin-top: 40px;
     white-space: initial;
+    
   }
 }
 

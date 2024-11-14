@@ -1,6 +1,6 @@
 #CODIGO GERADO POR IA:
 <template>
-      <landing class="secao"></landing>
+      <Landing></Landing>
 
       <section class="features secao">
       <h2 class="section-title" id="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
@@ -43,7 +43,9 @@
             O músculo reto lateral é inervado pelo sexto nervo óptico, também chamado de nervo abducente, como ilustra a figura. Este nervo é diretamente responsável pela contração do músculo reto lateral. O reto lateral permite que o olho faça o movimento de abdução, ou seja, que se mova em direção ao seu canto externo. Uma lesão no sexto nervo causa a paralisia parcial ou total do músculo reto lateral, impossibilitando ou limitando a abdução
           </p>
         </div>
-        <img alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+        <div class="div-nervo">
+          <img alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+        </div>
       </section>
 
       <section class="faq secao">
@@ -167,7 +169,7 @@
 .feature-icon {
   margin: 0px;
   margin-right: 9px;
-  width: 25px;
+  width: clamp(2vmin, 25px, 30px);
   height: auto;
 }
 
@@ -224,8 +226,9 @@
 
 /*  Nervo Optico*/
 .optic-nerve {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-rows: repeat(auto-fit, minmax(40vmin, 2fr));
+  grid-template-columns: repeat(auto-fit, minmax(20em, 2fr));
 }
 .optic-nerve-content {
   display: flex;
@@ -242,16 +245,24 @@ margin-left: 0vmin;
 }
 .optic-nerve-text {
   flex: 1;
-  flex-shrink: 2;
+  flex-shrink: 1;
   margin: 0vmin 2vmin;
 }
 
+.div-nervo{
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  flex: 1;
+}
+
 .optic-nerve-image {
-  max-width: 96%;
-	width: clamp(10vmin, 25rem, 30rem);
+  aspect-ratio: 130/64;
+	width: clamp(10vmin, 430px, 96%);
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
-  margin: 0vmin 2vmin;
+  margin: 10px 2vmin;
+  flex: 1;
 }
 
 /* FAQ */
@@ -281,7 +292,8 @@ margin-left: 0vmin;
   color: white;
   display: grid;
   grid-template-rows: repeat(auto-fit, minmax(10em, 1fr));
-  grid-template-columns: repeat(auto-fit, minmax(16em, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(31ch, 1fr));
+  grid-auto-columns: 20%;
   gap: 2em;
   margin: auto;
 }
@@ -291,7 +303,7 @@ margin-left: 0vmin;
   border-radius: 35px;
   color: #fff;
   display: flex;
-  padding: 0em 2em;
+  padding: clamp(1em, 2em, 3em) 2em;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -374,7 +386,7 @@ margin-left: 0vmin;
 <script>
 import rodape from "./Rodape.vue";
 import convencimento from "./HomeConvencimento.vue";
-import landing from "./Landing.vue"
+import Landing from "./Landing.vue"
 import { mapActions } from "vuex";
 import anime from "animejs/lib/anime.es.js";
 
@@ -383,7 +395,7 @@ export default {
   components: {
     rodape,
     convencimento,
-    landing,
+    Landing,
   },
   created() {},
   methods: {
