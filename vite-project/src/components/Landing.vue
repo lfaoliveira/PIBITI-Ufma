@@ -5,7 +5,7 @@
     <div class="conteudo-secao">
       <div id="div-imagem">
         <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
-        <video alt="Header background" class="video-background"  src="../assets/video-oftalmo.mp4"/>
+        <video alt="Header background" class="video-background" autoplay loop  src="../assets/video-oftalmo.mp4"/>
       </div>
       <div class="div-titulo">
         <h1 class="section-title" id="titulo">

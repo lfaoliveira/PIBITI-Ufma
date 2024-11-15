@@ -261,7 +261,7 @@ margin-left: 0vmin;
 	width: clamp(10vmin, 430px, 96%);
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
-  margin: 10px 2vmin;
+  margin: 5px 2vmin 5px 8vmin;
   flex: 1;
 }
 

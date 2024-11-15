@@ -34,6 +34,7 @@ export default {
   border-radius: var(--raio-butao);
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.39);
   cursor: pointer;
+  
 }
 
 .icone-download{
@@ -43,9 +44,9 @@ export default {
 
   /* box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59); */
   justify-self: start;
-  margin-left: clamp(3px, 15px, 2vmin);
+  margin-left: clamp(3px, 25px, 6vmin);
   /* margin-right: clamp(15px, 20px, 28px); */
-  padding: clamp(1px, 3px, 6px);
+  padding: clamp(2px, 4px, 7px);
 }
 
 .texto-salvar{

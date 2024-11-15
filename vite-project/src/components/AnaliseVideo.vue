@@ -6,7 +6,7 @@
 
     <h1 class="page-title">Análise de Paralisia</h1>
     
-  <div class="responsive-container">
+  <div class="analysis-grid">
       <div class="diagnosis-card secao">
         <h2 class="diagnostico texto-diag">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
         <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
@@ -15,7 +15,7 @@
       </div>
     <div class="div-grafico">
       <!-- Placeholder for your graph (image or canvas) -->
-      <img class="grafico" alt="Analysis graph" src="../assets/Video exemplo.png" />
+      <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
     </div>
   </div>
     <VideoPlayer class="secao"></VideoPlayer>
@@ -120,48 +120,51 @@
 .texto-diag{
   --fonte-diag: clamp(10px, 15px, 20px);
   font-size: var(--fonte-diag);
+  margin: clamp(3%, 20px, 50px) 4%;
+
 }
 
 .responsive-container {
-  height: 50%;
+  width: 97%;
   display: flex;
   flex-wrap: wrap; /* Allows the items to wrap to the next line */
   gap: 20px;
-  margin: 0 2%; /* 2% lateral margins */
 }
 
 .div-grafico {
-  flex: 1; /* Take equal space by default */
-  min-width: 300px; /* Minimum width before breaking */
+  display: flex;
+  /* Minimum width before breaking */ 
+  width: clamp(100%, 100%, 100%); /* Make the image responsive */
+  border-radius: 10px;
+  box-shadow: 0 0px 7px rgba(0, 0, 0, 0.7);
 }
 
-.div-grafico img{
-  width: 100%; /* Make the image responsive */
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+.grafico{
+  object-fit: contain;
+  width: clamp(100%, 100%, 100%);
+
 }
 
 /* Container Query for screen width greater than 800px */
-@media only screen  and (min-width: 800px) {
+/* @media only screen  and (min-width: 1050px) {
   .responsive-container {
-    flex-direction: row; /* Horizontal layout */
+    flex-direction: row; 
   }
   .grafico{
-    object-fit: scale-down;
+    object-fit: cover;
+
   }
 }
 
-@media only screen  and (max-width: 800px) {
+@media only screen  and (max-width: 1050px) {
   .responsive-container {
-    flex-direction: column; /* Vertical layout */
+    flex-direction: column; 
     justify-content: center;
   }
   .diagnosis-card{
-    justify-self: center;
+    align-self: center;
   }
-}
-
-
+} */
 
 
 
@@ -174,38 +177,25 @@
   align-items: center;
 }
 
-
-.navigation {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-  color: #fff;
-  font: 500 20px Montserrat, sans-serif;
-}
-
 .page-title {
   color: #3a0d75;
-  font: 400 48px Montserrat, sans-serif;
-  margin: clamp(70px, 15vmin, 120px) auto 0px auto;
-}
-
-.analysis-content {
-  width: 100%;
-  margin-top: 86px;
+  font-size: clamp(35px, 52px, 70px);
+  margin: clamp(70px, 10vmin, 120px) auto 0px auto;
 }
 
 
 .analysis-grid {
-  --tam-grid: clamp(400px, 95%, 100%);
+  --tam-grid: 97%;
   display: grid;
   grid-template-rows: repeat(auto-fill, minmax(40vmin, 2fr));
-  grid-template-columns: 1fr fit-content(20%);
+  grid-template-columns: repeat(auto-fit, minmax(85vmin, 2fr));
+  gap: clamp(2%, 20px, 4vmin);
   width: var(--tam-grid);
-  margin: auto;
+  margin-top: 2%;
 }
 
 .diagnosis-card {
+
   border-radius: 31px;
   background-color: #fff;
   box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.34);
@@ -214,32 +204,16 @@
   font-size: clamp(5px, 14px, 20px);
   width: clamp(200px, 100vmin, 100%);
   flex: 0.3;
+  display: flex;
+  flex-direction: column;
 }
 
 .diagnostico {
   color: #38d200;
-  margin-bottom: 44px;
-  font-size: calc( var(--fonte-diag) + 25%);
+  font-size: calc( var(--fonte-diag) + 15%);
 }
 
-.dif-velocidade,
-.velocidade-dir,
-.velocidade-esq {
-  margin-top: 35px;
-}
 
-.grafico {
-  /* flex: 0 0 72%; */
-  width: clamp(300px, 100vmin, 100% - 0.8*var(--tam-grid));
-  justify-self: start;
-  align-self: center;
-  height: 100%;
-  object-fit:fill;
-}
-
-.video-res{
-  margin-bottom: 100px;
-}
 </style>
 
 
