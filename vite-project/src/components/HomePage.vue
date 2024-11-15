@@ -3,22 +3,33 @@
       <Landing></Landing>
 
       <section class="features secao">
+      <div class="sobre-titulo">
+        <img class="img-medicos" src="../assets/medicos.png">
+        <div class="estrelas">
+          <img class="estrela-img" src="../assets/estrela.png">
+          <img class="estrela-img" src="../assets/estrela.png">
+          <img class="estrela-img" src="../assets/estrela.png">
+          <img class="estrela-img" src="../assets/estrela.png">
+          <img class="estrela-img" src="../assets/estrela.png">
+        </div>
+
+      </div>
       <h2 class="section-title" id="titulo-conv">Analisado e aprovado por oftalmologistas!</h2>
       <div class="feature-list">
         <div class="feature-item">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/e0033d25d235881892cce5e17aeaf2493168b6e5aec5796164abdcb10e94ba34?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise de vídeos" class="feature-icon" />
+          <img src="../assets/aprovado.png" alt="Análise de vídeos" class="feature-icon" />
           <p class="feature-description">Analise vídeos de paralisia do sexto nervo óptico</p>
         </div>
         <div class="feature-item">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/95e58da8c90222eb0e720352016b62c3f47c3c3806e262ae5cb932bc70eb6bab?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Gráficos resultantes" class="feature-icon" />
+          <img src="../assets/aprovado.png" alt="Gráficos resultantes" class="feature-icon" />
           <p class="feature-description">Observe os gráficos resultantes</p>
         </div>
         <div class="feature-item">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/d8286b21b5e9d2538bb41bbbcd482178068c7939e5d9e774456db0e2d7b84088?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Salvar gráficos" class="feature-icon" />
+          <img src="../assets/aprovado.png" alt="Salvar gráficos" class="feature-icon" />
           <p class="feature-description">Salve os gráficos a qualquer momento!</p>
         </div>
         <div class="feature-item">
-          <img src="https://cdn.builder.io/api/v1/image/assets/TEMP/424b9bc6b50bb6934f77d4a6d574dda271f637a6d9ca5930eaf46ece496c0db8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" alt="Análise em velocidades diferentes" class="feature-icon" />
+          <img src="../assets/aprovado.png" alt="Análise em velocidades diferentes" class="feature-icon" />
           <p class="feature-description">Analise os vídeos em velocidades diferentes</p>
         </div>
       </div>
@@ -26,7 +37,7 @@
       <div id="divisor" class="secao">
         <img src="../assets/logo_VIP_Lab.png" alt="Logo VIpLab" class="img-logos" id="logo-vip">
         <img src="../assets/logo ufma.png" alt="Logo UFMA" class="img-logos" id="logo-ufma">
-        <img src="../assets/LogoNCAFundBranco2000_2021.png" alt="Logo VIpLab"class="img-logos"  id="logo-nca">
+        <img src="../assets/LogoNCAFundBranco2000_2021.png" alt="Logo VIpLab" class='img-logos'  :id="this.idNCA">
       </div>
 
       <section class="about secao">
@@ -44,7 +55,7 @@
           </p>
         </div>
         <div class="div-nervo">
-          <img alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" src="https://cdn.builder.io/api/v1/image/assets/TEMP/a769a1c9f92cad58fce2cc6c7e65fbeb3a79f2a69487664a135648f5c5cb8d9f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec" />
+          <img alt="Ilustração do sexto nervo óptico" class="optic-nerve-image" src="../assets/sexto-nervo.png" />
         </div>
       </section>
 
@@ -102,7 +113,7 @@
       <section class="team secao">
         <h2 class="section-title" id="titulo-equipe">Equipe</h2>
         <div class="team-content">
-          <img alt="Img-VipLab" class="team-image" src="https://cdn.builder.io/api/v1/image/assets/TEMP/fcfe2cdb996150e5df5afb3ce81a9f03167d1403be3baac42d65f96f974ae11f?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
+          <img alt="Imagem Time do VipLab" class="team-image" src=""/>
           <p class="texto-secoes" id="team-description">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna Morbi vulputate magna id magna tempus volutpat. Duis metus elit, egestas id lorem at, dictum sollicitudin nunc. Nunc a bibendum leo. Fusce efficitur nibh a pretium feugiat. In at facilisis ante. Nullam id velit sed dolor mattis fringilla. Aliquam id interdum lorem
           </p>
@@ -143,6 +154,30 @@
   display: flex;
   flex-direction: column;
 }
+.sobre-titulo{
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  width: 75%;
+}
+.estrelas{
+  display: flex;
+  align-content: center;
+  flex: 1.5;
+}
+
+.img-medicos{
+  width: auto;
+  height: 50%;
+  margin: 0vmin 2vmin;
+}
+
+.estrela-img{
+  width: clamp(20px, 5.4vmin, 59px);
+  height: clamp(20px, 6vmin, 60px);
+  align-self: center;
+}
 
 #titulo-conv {
   margin: 0px;
@@ -177,7 +212,7 @@
   margin: 0px;
   text-align: center;
   width: auto;
-  font: 500 18px Montserrat, sans-serif;
+  font-size: clamp(15px, 3vmin, 25px);
   color: #792359;
 }
 
@@ -189,9 +224,11 @@
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
   grid-template-rows: repeat(auto-fit, minmax(6em, 1fr));
-  grid-template-columns: repeat(auto-fit, minmax(30em, 2fr));
+  grid-template-columns: repeat(auto-fit, minmax(22em, 2fr));
   justify-content: center;
 }
+
+
 
 .img-logos{
   /* aspect-ratio: 57/64; */
@@ -201,9 +238,18 @@
   justify-self: center;
   align-self: center;
 }
+
 #logo-ufma{
   margin: 5% auto;
   height: auto;
+}
+
+#logo-nca-shift{
+  position: relative;
+  left: 50%;
+}
+#logo-nca-normal{
+  align-self: center;
 }
 
 /*  Sobre o software*/
@@ -258,12 +304,12 @@ margin-left: 0vmin;
 }
 
 .optic-nerve-image {
-  aspect-ratio: 113/64;
+  aspect-ratio: 88/64;
 	width: clamp(10vmin, 430px, 96%);
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
   margin: 5px 2vmin 5px 2vmin;
-  flex: 1;
+  flex: 0.7;
 }
 @media only screen and (max-width: 799px ){
 
@@ -297,6 +343,7 @@ margin-left: 0vmin;
 }
 
 .faq-grid {
+  min-width: 200px;
   width: 75%;
   color: white;
   display: grid;
@@ -325,7 +372,7 @@ margin-left: 0vmin;
 }
 
 .faq-answer {
-  font: 500 18px Montserrat, sans-serif;
+  font-size: clamp(12px, 1.1em, 30px);
   font-weight: 500;
   color: #fff;
   width: 200px;
@@ -423,28 +470,12 @@ export default {
         this.$router.push("/teste");
       }
     },
-    animarMouse() {
-      console.log($evt);
-      let loop = true;
-      let i = 0;
-      const mouse = document.getElementsByClassName("mouse-animado");
-
-      while (loop) {
-        i += 1;
-        let animador = anime();
-        if (i >= 100) {
-          loop = false;
-          break;
-        }
-      }
-    },
   },
-  computed: {},
   data() {
     return {
       videoURL: "",
       objAnimacao: { animar: true, y: 0, frame: {} },
-      overflowingElements: [],
+      linhasDivisor: 0,
     };
   },
   mounted() {
@@ -460,6 +491,23 @@ export default {
       });
     });
 
+
+  },
+  computed: {
+    idNCA() {
+      const divisor = document.getElementById('divisor');
+      if (divisor == null) {
+        return "logo-nca-normal";
+      }
+      this.linhasDivisor = window.getComputedStyle(divisor).gridTemplateRows.split(' ').length;
+      if (this.linhasDivisor == 2){
+        return 'logo-nca-shift';
+      }
+      else{
+        return 'logo-nca-normal';
+      }
+
+    }
   },
   props: {},
 };

@@ -13,9 +13,9 @@
     <span class="time-display">00:00</span>
     <button class="slider"></button>
     <div class="bola-slider"></div>
-    <div class="bola-play">
+    <button class="bola-play">
       <object type="image/svg+xml" class="control-icon" :data="urlICone" />
-    </div>
+    </button>
   </div>
   
 

@@ -18,16 +18,11 @@
         <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
       </div>
       <div class="div-mouse-animado">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/ae6f73a5d07025b884e2d477e8c31f66eac96b6f490dead53be2a993c4e98f4a?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-          class="mouse-animado"
+        <img src="../assets/mouse-animado.png" alt="Mouse animado" class="mouse-animado"
         />
       </div>
       <div class="div-seta-baixo">
-        <img
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/7ad9eb0a053b1dfcf3e7e3fa37d9161add87b3e60570b5405f7e6d1c6c7a7f28?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-          alt="Decorative element"
-          class="seta-baixo"
+        <img src="../assets/seta-baixo.png" alt="Decorative element" class="seta-baixo"
         />
       </div>
     </div>
@@ -160,19 +155,17 @@ input {
 }
 
 .div-mouse-animado {
-  aspect-ratio: 4/3;
   display: flex;
   align-items: center;
   justify-items: center;
   margin: 10vmin auto 0vmin auto;
   align-self: flex-start;
-  width: clamp(54px, 10vmin,120px);
+  width: clamp(54px, 8vmin,120px);
   height: auto;
   position: relative;
 }
 
 .mouse-animado {
-  aspect-ratio: 4/3;
   width: 100%;
   height: auto;
   position: relative;
@@ -180,7 +173,7 @@ input {
 .div-seta-baixo {
   margin: auto;
   align-self: center;
-  width: clamp(50px, 8vmin, 10vmin);
+  width: clamp(8vmin, 45px, 70px);
   margin-top: -5vh;
   margin-bottom: clamp(0vh, 0vh, 3vh);
   display: flex;
