@@ -60,7 +60,7 @@ input{
   position: absolute;
   margin: 0 auto 0 auto;
   height: auto;
-  top: 0%;
+  top: 1%;
   z-index: 3;
   gap: 0px;
   display: grid;

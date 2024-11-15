@@ -15,6 +15,7 @@
       </div>
     <div class="div-grafico">
       <!-- Placeholder for your graph (image or canvas) -->
+      <div class="overlay"></div>
       <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
     </div>
   </div>

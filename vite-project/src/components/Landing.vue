@@ -3,8 +3,9 @@
     <!-- TODO: AJEITAR HEADER E SECAO INICIAL -->
     <headerHome />
     <div class="conteudo-secao">
-      <div id="div-imagem">
+      <div id="div-video-home">
         <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
+        <div class="overlay"></div>
         <video alt="Header background" class="video-background" autoplay loop  src="../assets/video-oftalmo.mp4"/>
       </div>
       <div class="div-titulo">
@@ -68,7 +69,7 @@ export default {
 
 }
 
-#div-imagem {
+#div-video-home {
   position: absolute;
   width: clamp( 92%, 95%, 98%);
   display: flex;
@@ -78,8 +79,17 @@ export default {
   top: 0px;
   flex-wrap: wrap;
   justify-content: start;
-
 }
+
+.overlay{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 4;
+  background-color: rgba(68,68,68.1,0.51);
+}
+
+
 
 .video-background {
   width: 100%;
@@ -96,9 +106,8 @@ export default {
   display: flex;
   flex-wrap: wrap;
   flex-flow: column wrap;
-  width: 95%;
-  height: 90vh;
-  margin-top: clamp(5vmin, 9vmin, 10vmin);
+  width: 98%;
+  height: 98vh;
   justify-content: space-between;
   align-content: center;
 }
@@ -110,21 +119,23 @@ export default {
   align-items: center;
   position: relative;
   height: auto;
-  width: clamp(200px, 46ch, 100%);
-  margin: 0vmin auto 1vmin auto;
+  width: clamp(290px,59ch, 100%);
+  margin: 0vmin auto;
+  margin-top: clamp(10vmin, 13vmin, 17vmin);
+  --fonte-titulo: clamp(14px, 5.33vmin, 41px);
 }
 
 #titulo {
   color: #fff;
-  font-weight: 700;
-  font-size: clamp(16px, 28px, 30px);
+  font-weight: 600;
+  font-size: var(--fonte-titulo);
   text-align: start;
   width: auto;
   margin: 0vmin auto;
 }
 
 .cntr-cta {
-  margin: 30vmin auto 0vmin auto;
+  margin: clamp(30px, 8vmin, 80px) auto 0vmin auto;
   background-color: #6113c6;
   position: relative;
   display: flex;

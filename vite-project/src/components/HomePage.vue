@@ -148,7 +148,7 @@
   margin: 0px;
   margin-bottom: 2vmin;
   left: 0px;
-  width: 60vmin;
+  flex: 1;
   font-size: 32px;
   font-weight: 800;
 }
@@ -190,6 +190,7 @@
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
   grid-template-rows: repeat(auto-fit, minmax(6em, 1fr));
   grid-template-columns: repeat(auto-fit, minmax(30em, 2fr));
+  justify-content: center;
 }
 
 .img-logos{
@@ -228,7 +229,7 @@
 .optic-nerve {
   display: grid;
   grid-template-rows: repeat(auto-fit, minmax(40vmin, 2fr));
-  grid-template-columns: repeat(auto-fit, minmax(20em, 2fr));
+  grid-template-columns: repeat(auto-fit, minmax(23em, 2fr));
 }
 .optic-nerve-content {
   display: flex;
@@ -257,12 +258,20 @@ margin-left: 0vmin;
 }
 
 .optic-nerve-image {
-  aspect-ratio: 130/64;
+  aspect-ratio: 113/64;
 	width: clamp(10vmin, 430px, 96%);
   height: auto;
   box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.3);
-  margin: 5px 2vmin 5px 8vmin;
+  margin: 5px 2vmin 5px 2vmin;
   flex: 1;
+}
+@media only screen and (max-width: 799px ){
+
+  .optic-nerve-image{
+    aspect-ratio: 110/64;
+    width: clamp(5vmin, 200px, 96%);
+    flex: 0.95;
+  }
 }
 
 /* FAQ */

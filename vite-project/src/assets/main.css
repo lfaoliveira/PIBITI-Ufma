@@ -23,7 +23,7 @@ body {
 
   font-family: 'Montserrat', Inter;
   margin: 0;
-  background-color: #dcc0ff;
+  background-color: #fff;
   /* background: linear-gradient(180deg, rgba(220,192,255,1) 0%, rgba(255,255,255,1) 52%); */
   display: flex;
   align-items: start;
@@ -45,4 +45,5 @@ html, body, #app {
   height: auto;
   color: black;
   width: clamp( 92%, 95%, 98%);
+  box-shadow: 0px 0vmin 1.6px 1px rgba(66, 0, 255, 1);
 } 
