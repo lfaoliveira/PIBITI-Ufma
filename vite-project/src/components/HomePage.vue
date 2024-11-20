@@ -113,10 +113,11 @@
       <section class="team secao">
         <h2 class="section-title" id="titulo-equipe">Equipe</h2>
         <div class="team-content">
-          <img alt="Imagem Time do VipLab" class="team-image" src=""/>
           <p class="texto-secoes" id="team-description">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis lectus. Curabitur vehicula nibh urna Morbi vulputate magna id magna tempus volutpat. Duis metus elit, egestas id lorem at, dictum sollicitudin nunc. Nunc a bibendum leo. Fusce efficitur nibh a pretium feugiat. In at facilisis ante. Nullam id velit sed dolor mattis fringilla. Aliquam id interdum lorem
           </p>
+          <img alt="Imagem Time do VipLab" class="team-image" src="../assets/foto time.png">
+          
         </div>
       </section> 
 
@@ -175,7 +176,7 @@
 
 .estrela-img{
   width: clamp(20px, 5.4vmin, 59px);
-  height: clamp(20px, 6vmin, 60px);
+  height: clamp(20px, 5vmin, 60px);
   align-self: center;
 }
 
@@ -415,15 +416,19 @@ margin-left: 0vmin;
 }
 
 .team-content {
-  display: flex;
+  display: grid;
+  grid-template-rows: repeat(auto-fit, minmax(6em, 1fr));
+grid-template-columns: repeat(auto-fit, minmax(100vmin, 2fr));
   justify-content: space-between;
   align-items: center;
 }
 
 #team-description {
-  flex: 1;
   padding-right: 20px;
+  align-self: start;
   color: white;
+  width: 79%;
+  font-size: clamp(0.5em, 1em + 4px, 1.5em + 4px);
 }
 #titulo-equipe{
   color: white;
@@ -431,9 +436,10 @@ margin-left: 0vmin;
 }
 
 .team-image {
-  width: clamp( 20%, 25%, 30%);
-  margin-right: 2vmin;
+  aspect-ratio: 2/1;
+  width: clamp(90%, 95%,95%);
   height: auto;
+  padding: calc(exp(2%)) 2%;
 }
 </style>
 

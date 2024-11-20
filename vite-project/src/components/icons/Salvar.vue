@@ -44,18 +44,20 @@ export default {
 
   /* box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59); */
   justify-self: start;
-  margin-left: clamp(3px, 25px, 6vmin);
+  margin: 0px 0px clamp(2px, 0.5vmin, 10px) 0px;
   /* margin-right: clamp(15px, 20px, 28px); */
-  padding: clamp(2px, 4px, 7px);
+  padding: clamp(1px, 3px, 6px);
 }
 
 .texto-salvar{
   color: #fff;
   font-weight: 800;
   margin: auto;
-  margin-right: 2vmin;
-  font-size: clamp(10px, 16px, 4vmin);
+  /* margin: 0px 0px 0px clamp(2px, 4px, 10px) ; */
+  width: clamp(8ch, 9.92vmax, 14ch);
+  padding: 0px 0.5ch;
+  font-size: clamp(8px, 4vmin, 16px);
   justify-self: start;
-  width: clamp(8ch, 27vmin, 14ch);
+  align-self: start;
 }
 </style>
