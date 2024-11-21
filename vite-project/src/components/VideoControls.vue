@@ -55,7 +55,7 @@ export default {
 
 .controles{
   background: linear-gradient(180deg, rgba(95,95,95,0.66) 0%, rgba(33,33,33,0.85) 39%, rgba(17,0,0,1) 97%);
-  height: clamp(2vmin, 14vmin, 120px);
+  height: clamp(2vmin, 101px, 150px);
 }
 
 .time-display{
@@ -79,12 +79,14 @@ export default {
 .control-icon{
   padding: 12%;
   width: clamp(1vmin, 22px, 100%);
+  cursor: pointer;
 }
 
 .slider{
   background-color: rgba(255, 255, 255, 0.72);
   width: 100%;
   height: var(--tam-slider);
+  
 }
 
 .bola-slider{
@@ -95,6 +97,7 @@ export default {
   position: relative;
   top: clamp(-11px - var(--tam-slider)/2, -20px - var(--tam-slider)/2, -30px - var(--tam-slider)/2);
   border-radius: 100%;
+  cursor: pointer;
 }
 
 input[type="range"] {

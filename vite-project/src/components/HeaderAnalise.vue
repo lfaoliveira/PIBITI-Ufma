@@ -1,17 +1,23 @@
 <template>
-    <div class="div-header">
-    <Seta></Seta>
+  <div class="div-header">
+    <Voltar class="botao-voltar" :onclick="fnVoltar"></Voltar>
     <Salvar></Salvar>
   </div>
 </template>
 
 <script>
-import Seta from "./icons/Seta.vue"
+import Voltar from "./icons/Voltar.vue"
 import Salvar from "./icons/Salvar.vue";
 export default {
   name: "headerAnalise",
+  methods: {
+    fnVoltar(){
+      this.$router.push("/");
+    },
+    
+  },
   components: {
-    Seta,
+    Voltar,
     Salvar,
   },
   created() {},
@@ -19,7 +25,7 @@ export default {
     return {};
   },
   props: {},
-  methods: {},
+  
 };
 </script>
 
@@ -46,6 +52,7 @@ input{
   /* grid-template-rows: 1fr;
   grid-template-columns: 1fr 1fr; */
 }
+
 
 
 </style>

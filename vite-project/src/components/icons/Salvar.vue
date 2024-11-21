@@ -21,7 +21,7 @@ export default {
 
 .salvar{
   background-color: #6113c6;
-  display: grid;
+  display: flex;
   justify-content: center;
   align-items: center;
   margin: auto;

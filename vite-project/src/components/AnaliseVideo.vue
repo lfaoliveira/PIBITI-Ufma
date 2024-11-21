@@ -15,7 +15,6 @@
       </div>
     <div class="div-grafico">
       <!-- Placeholder for your graph (image or canvas) -->
-      <div class="overlay"></div>
       <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
     </div>
   </div>
@@ -137,7 +136,7 @@
   /* Minimum width before breaking */ 
   width: clamp(100%, 100%, 100%); /* Make the image responsive */
   border-radius: 10px;
-  box-shadow: 0 0px 7px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0px 7px rgba(0, 0, 0, 0.5);
 }
 
 .grafico{
@@ -181,7 +180,7 @@
 .page-title {
   color: #3a0d75;
   font-size: clamp(35px, 52px, 70px);
-  margin: clamp(70px, 10vmin, 120px) auto 0px auto;
+  margin: clamp(30px, 6vmin, 120px) auto 0px auto;
 }
 
 
@@ -197,9 +196,9 @@
 
 .diagnosis-card {
 
-  border-radius: 31px;
+  border-radius: 13px;
   background-color: #fff;
-  box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.34);
+  box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.21);
   padding: 22px 32px 37px;
   color: #6113c6;
   font-size: clamp(5px, 14px, 20px);
@@ -220,7 +219,7 @@
 
 <script>
 import videotrack from "./VideoControls.vue";
-import seta from "./icons/Seta.vue";
+import seta from "./icons/Voltar.vue";
 import { mapGetters } from 'vuex';
 import Rodape from "./Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue"

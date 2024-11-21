@@ -14,7 +14,7 @@
         </h1>
       </div>
       <div class="cntr-cta">
-        <input type="file" id="fileInput" accept="video/*" />
+        <input type="file" id="fileInput" accept="video/*"/>
         <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
       </div>
       <div class="div-mouse-animado">
@@ -32,16 +32,32 @@
 
 <script>
 import headerHome  from "./HeaderHomepage.vue";
+
 export default {
   name:"Landing",
   components: {
     headerHome,
+  },
+  methods: {
+    handleFileUpload($evt) {
+      console.log("UPLOAD FEITO");
+      const file = $evt.target.files[0];
+      
+      if (file) {
+        this.videoFile = file;
+        this.videoURL = URL.createObjectURL(this.videoFile); // filename = path relativo
+        this.$router.push("/analise");
+      }
+    },
   },
   props: {  },
   data() {
     return {
       _: 0,
     };
+  },
+  mounted(){
+    document.getElementById('fileInput').onchange = this.handleFileUpload;
   }
 }
 </script>
@@ -101,8 +117,8 @@ export default {
   display: flex;
   flex-wrap: wrap;
   flex-flow: column wrap;
-  width: 98%;
-  height: 98vh;
+  width: 100%;
+  height: 100vh;
   justify-content: space-between;
   align-content: center;
 }
@@ -130,7 +146,7 @@ export default {
 }
 
 .cntr-cta {
-  margin: clamp(30px, 8vmin, 80px) auto 0vmin auto;
+  margin: clamp(30px, 27vmin, 165px) auto 0vmin auto;
   background-color: #6113c6;
   position: relative;
   display: flex;
@@ -160,7 +176,7 @@ input {
   justify-items: center;
   margin: 10vmin auto 0vmin auto;
   align-self: flex-start;
-  width: clamp(54px, 8vmin,120px);
+  width: clamp(2em, 7vmin,120px);
   height: auto;
   position: relative;
 }
@@ -174,7 +190,7 @@ input {
   margin: auto;
   align-self: center;
   width: clamp(8vmin, 45px, 70px);
-  margin-top: -5vh;
+  margin-top: -4vh;
   margin-bottom: clamp(0vh, 0vh, 3vh);
   display: flex;
   justify-content: center;

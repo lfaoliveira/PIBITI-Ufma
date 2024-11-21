@@ -466,40 +466,6 @@ export default {
       this.updateSharedData({ message: "Hello from HomePage" });
       this.$router.push("/teste");
     },
-
-    handleFileUpload($evt) {
-      console.log("UPLOAD FEITO");
-      const file = $evt.target.files[0];
-      if (file) {
-        this.videoFile = file;
-        this.videoURL = URL.createObjectURL(this.videoFile); // filename = path relativo
-        this.$router.push("/teste");
-      }
-    },
-  },
-  data() {
-    return {
-      videoURL: "",
-      objAnimacao: { animar: true, y: 0, frame: {} },
-      linhasDivisor: 0,
-    };
-  },
-  mounted() {
-    window.addEventListener("load", () => {
-      anime({
-        targets: ".mouse-animado",
-        duration: 1100,
-        translateY: "-4vmin",
-        direction: "alternate",
-        loop: true,
-        easign: "easeOutQuint",
-        autoplay: true,
-      });
-    });
-
-
-  },
-  computed: {
     idNCA() {
       const divisor = document.getElementById('divisor');
       if (divisor == null) {
@@ -513,7 +479,35 @@ export default {
         return 'logo-nca-normal';
       }
 
-    }
+    },
+  },
+  data() {
+    return {
+      videoURL: "",
+      objAnimacao: { animar: true, y: 0, frame: {} },
+      linhasDivisor: 0,
+    };
+  },
+  mounted() {
+    const animateMouse = () => {
+    anime({
+      targets: ".mouse-animado",
+      duration: 1100,
+      translateY: "-6vmin",
+      direction: "alternate",
+      loop: true,
+      easing: "easeOutQuint", // Fixed typo from "easign" to "easing"
+      autoplay: true,
+    });
+  };
+  window.addEventListener("pageshow", animateMouse);
+
+// Start the animation immediately after mounting
+animateMouse();
+    
+  },
+  computed: {
+    
   },
   props: {},
 };
