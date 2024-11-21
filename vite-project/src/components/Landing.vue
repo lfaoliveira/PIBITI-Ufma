@@ -46,7 +46,8 @@ export default {
       if (file) {
         this.videoFile = file;
         this.videoURL = URL.createObjectURL(this.videoFile); // filename = path relativo
-        this.$router.push("/analise");
+        alert(this.videoURL);
+        this.$router.push(`/analise:${this.videoUrl}`);
       }
     },
   },
@@ -57,6 +58,7 @@ export default {
     };
   },
   mounted(){
+    // listener pra quando fileInput recebe mudança
     document.getElementById('fileInput').onchange = this.handleFileUpload;
   }
 }

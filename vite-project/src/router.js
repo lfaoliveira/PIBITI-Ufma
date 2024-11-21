@@ -5,8 +5,8 @@ import Demo from './components/Demo.vue'
 
 const routes = [
   { path: '/', component: Homepage },       // Root path (Home page)
-  { path: '/analise', component: AnaliseVideo }, // pagina de analise
-  { path: '/demo', component: Demo }, // pagina de analise
+  { path: '/analise:urlVideo', component: AnaliseVideo, props: true }, // pagina de analise
+  { path: '/demo', component: Demo, props: true }, // pagina de exibição da demonstração
 ];
 
 const router = createRouter({

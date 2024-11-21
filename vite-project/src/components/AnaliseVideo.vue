@@ -240,7 +240,10 @@ export default {
       time: 0,
     };
   },
-  props: {},
+  props: {
+    // url passada como argumento da requisicao
+    urlVideo: String,
+  },
   methods: {
     onPlayerPlay({ event, player }) {
       console.log(event.type);

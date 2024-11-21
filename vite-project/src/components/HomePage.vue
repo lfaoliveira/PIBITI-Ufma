@@ -461,11 +461,11 @@ export default {
   },
   created() {},
   methods: {
-    ...mapActions(["updateSharedData"]),
+    /* ...mapActions(["updateSharedData"]),
     sendData() {
       this.updateSharedData({ message: "Hello from HomePage" });
       this.$router.push("/teste");
-    },
+    }, */
     idNCA() {
       const divisor = document.getElementById('divisor');
       if (divisor == null) {
@@ -492,19 +492,17 @@ export default {
     const animateMouse = () => {
     anime({
       targets: ".mouse-animado",
-      duration: 1100,
-      translateY: "-6vmin",
+      duration: 950,
+      translateY: "-7vmin",
       direction: "alternate",
       loop: true,
-      easing: "easeOutQuint", // Fixed typo from "easign" to "easing"
+      easing: "cubicBezier(0.230, 1.000, 0.065, 1.005)",
       autoplay: true,
     });
   };
-  window.addEventListener("pageshow", animateMouse);
 
-// Start the animation immediately after mounting
-animateMouse();
-    
+  // Start the animation immediately after mounting
+  animateMouse();    
   },
   computed: {
     
