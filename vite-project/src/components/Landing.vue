@@ -6,7 +6,7 @@
       <div id="div-video-home">
         <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
         <div class="overlay"></div>
-        <video alt="Header background" class="video-background" autoplay loop  src="../assets/video-oftalmo.mp4"/>
+        <video alt="Header background" class="video-background" preload="true" autoplay loop  src="../assets/video-oftalmo.mp4"/>
       </div>
       <div class="div-titulo">
         <h1 class="section-title" id="titulo">
@@ -31,6 +31,7 @@
 
 
 <script>
+import { useStore } from "vuex/dist/vuex.cjs.js";
 import headerHome  from "./HeaderHomepage.vue";
 
 export default {
@@ -38,16 +39,21 @@ export default {
   components: {
     headerHome,
   },
+  setup(){
+    
+  },
   methods: {
     handleFileUpload($evt) {
+      
       console.log("UPLOAD FEITO");
       const file = $evt.target.files[0];
       
       if (file) {
         this.videoFile = file;
         this.videoURL = URL.createObjectURL(file); // filename = path relativo
-        alert(this.videoURL)
-        this.$router.push({ name: "analiseVideo", query: { urlVideo: this.videoURL } });
+        // this.$router.push({ name: "analiseVideo", query: { arqVideo: this.videoFile } });
+        this.store.dispatch('updateVideoURL', this.videoURL);
+        this.$router.push({ name: "analiseVideo"});
 
       }
     },
@@ -56,6 +62,7 @@ export default {
   data() {
     return {
       _: 0,
+      store: useStore(),
     };
   },
   mounted(){

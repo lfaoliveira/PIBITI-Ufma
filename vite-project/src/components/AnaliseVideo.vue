@@ -19,7 +19,6 @@
       </div>
     </div>
     <VideoPlayer class="secao"></VideoPlayer>
-    <video class="video-exemplo" :src="this.urlVideo"></video>
     <Rodape></Rodape>
   </main>
 </template>
@@ -315,6 +314,9 @@ button{
 
 
 <script>
+import { useStore } from 'vuex';
+
+
 import videotrack from "./VideoControls.vue";
 import seta from "./icons/Voltar.vue";
 import { mapGetters } from 'vuex';
@@ -322,7 +324,7 @@ import Rodape from "./Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue"
 import VideoPlayer from "./VideoPlayer.vue";
 export default {
-  // COMPONENTE QUE VAI IMPORTAR COMPONENTES DA HOMEPAGE
+  // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
   name: "Analise de Video",
   components:{
     VideoPlayer,
@@ -337,9 +339,10 @@ export default {
   data() {
     return {
       time: 0,
+      urlVideo: "asdafefaf",
     };
   },
-  props: ['urlVideo'],
+  props: ['arqVideo'],
   methods: {
     onPlayerPlay({ event, player }) {
       console.log(event.type);
@@ -421,11 +424,9 @@ export default {
     sharedData() {
       return this.getSharedData;
     },
-  
+    
   },
   mounted() {
-    alert(this.urlVideo);
-
   },
 };
 </script>

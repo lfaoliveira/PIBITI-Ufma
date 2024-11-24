@@ -12,7 +12,7 @@
 
     <div class="div-video">
       <video
-        :src="videoURL"
+        :src="this.videoSource"
         :muted="muted"
         :autoplay="autoplay"
         :controls="controls"
@@ -130,6 +130,7 @@ video {
 const VIDEO_RATIO = 0.7
 
 import videocontrols from "./VideoControls.vue";
+import { useStore } from "vuex/dist/vuex.cjs.js";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -151,7 +152,6 @@ export default {
     videocontrols,
   },
   props: {
-    
     controls: { type: Boolean, required: false, default: false },
     loop: { type: Boolean, required: false, default: false },
     width: { type: Number, required: false},
@@ -166,14 +166,15 @@ export default {
       playing: true,
       duration: 0,
       percentagePlayed: 0,
+      source: "",
       videoMuted: false,
-      videoURL: '',
       videoWidth: window.innerWidth * VIDEO_RATIO,
       videoHeight: window.innerHeight * VIDEO_RATIO,
     };
   },
   mounted() {
     console.log("BINDING:");
+    
     //this.bindEvents();
     if (this.$refs.player.muted) {
       this.setMuted(true);
@@ -188,14 +189,6 @@ export default {
         return "../assets/pause.svg"
       }
 
-    },
-    handleFileUpload($evt){
-      console.log("UPLOAD FEITO")
-      const file = $evt.target.files[0];
-      if (file) {
-        this.videoFile = file;
-        this.videoURL =  URL.createObjectURL(this.videoFile) // filename = path relativo
-      }
     },
     resizeVideo() {
       const aspectRatio = 16 / 9; // Assuming a standard aspect ratio of 16:9
@@ -282,6 +275,12 @@ export default {
     
   },
   computed: {
+    videoSource(){
+      const store = useStore(); 
+      
+      
+      return store.getters.getVideoURL;
+    },
     videoStyle() {
       return {
         backgroundColor: `#000`,
@@ -320,6 +319,7 @@ export default {
   mounted() {
     window.addEventListener('resize', this.resizeVideo);
     this.bindEvents();
+    
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeVideo);

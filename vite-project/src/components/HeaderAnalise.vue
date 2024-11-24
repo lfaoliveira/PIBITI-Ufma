@@ -12,7 +12,7 @@ export default {
   name: "headerAnalise",
   methods: {
     fnVoltar(){
-      this.$router.push("/");
+      this.$router.push({name: "home"});
     },
     
   },
