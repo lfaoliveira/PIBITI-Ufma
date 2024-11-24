@@ -14,7 +14,7 @@
     <button class="slider"></button>
     <div class="bola-slider"></div>
     <button class="bola-play">
-      <object type="image/svg+xml" class="control-icon" :data="urlICone" />
+      <img  class="control-icon" :src="this.icone" />
     </button>
   </div>
   
@@ -25,11 +25,12 @@
 export default {
   name: "videotrack",
   props: {
+    icone: {type: String, default: ""},
     percentage: { type: Number, default: 0 },
   },
   data() {
     return {
-      urlICone: 'src/assets/play.svg',
+      
     }
   },
   methods: {
@@ -39,11 +40,12 @@ export default {
     },
   },
   mounted() {
+    
   },
 };
 </script>
 
-<style>
+<style scoped>
 
 
 *{
@@ -56,6 +58,7 @@ export default {
 .controles{
   background: linear-gradient(180deg, rgba(95,95,95,0.66) 0%, rgba(33,33,33,0.85) 39%, rgba(17,0,0,1) 97%);
   height: clamp(2vmin, 101px, 150px);
+  position: relative;
 }
 
 .time-display{
@@ -78,6 +81,7 @@ export default {
 
 .control-icon{
   padding: 12%;
+  pointer-events: all;
   width: clamp(1vmin, 22px, 100%);
   cursor: pointer;
 }

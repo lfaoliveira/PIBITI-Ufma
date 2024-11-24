@@ -31,9 +31,8 @@
 
 
 <script>
-import { useStore } from "vuex/dist/vuex.cjs.js";
 import headerHome  from "./HeaderHomepage.vue";
-import BaseDados from '../db';
+import db from '../db';
 
 export default {
   name:"Landing",
@@ -50,18 +49,16 @@ export default {
       const file = $evt.target.files[0];
       
       if (file) {
-         // filename = path relativo
-        // this.$router.push({ name: "analiseVideo", query: { arqVideo: this.videoFile } });
-        // this.store.dispatch('updateVideoFile', this.videoFile);
-        this.db.open();
+        db.open();
         const videoData = {
           name: file.name,
           size: file.size,
           type: file.type,
           data: file // The video file as a Blob
         };
-        const constId = await this.db.add(videoData);
-        console.log(constId);
+        let constId = await db.add(videoData);
+        console.log(constId +" " + typeof constId);
+        
         alert(constId);
         this.$router.push({ name: "analiseVideo", query: {idVideoAnalise: constId} });
 
@@ -71,9 +68,7 @@ export default {
   props: {  },
   data() {
     return {
-      _: 0,
-      store: useStore(),
-      db: new BaseDados("MeuBanco","Arquivos"),
+      _: 0,      
     };
   },
   mounted(){

@@ -105,4 +105,6 @@ class BaseDados {
 }
 
 
-export default BaseDados;
+const db = new BaseDados("MeuBanco", "Arquivos");
+// INSERIR OUTROS BANCOS DE DADOS CASO SEJA NECESSARIO
+export default db;

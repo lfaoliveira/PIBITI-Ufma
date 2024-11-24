@@ -7,7 +7,7 @@
     <h1 class="page-title">Análise de Paralisia</h1>
     
     <div class="analysis-grid">
-        <div class="diagnosis-card secao">
+        <div class="diagnosis-card">
           <h2 class="diagnostico texto-diag">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
           <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
           <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>
@@ -18,17 +18,10 @@
         <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
       </div>
     </div>
-    <VideoPlayer :idVideoAtual="this.idVideoAnalise" class="secao"></VideoPlayer>
+    <VideoPlayer :idVideoAtual="this.idVideoAnalise" ></VideoPlayer>
     <Rodape></Rodape>
   </main>
 </template>
-
-
-
-
-
-
-
 
   <!-- PARTE ORIGINAL -->
 
@@ -43,7 +36,6 @@
     <input type="file" id="fileInput" accept="video/*" @change="handleFileUpload" 
     @focus="addFocusClass" @blur="removeFocusClass">
   </div>    
-  
   
   <seta class="setaClasse" @click="onVoltar"></seta>
   <div  class="edicaoVideo">
@@ -96,25 +88,12 @@
       </template>
     </videoplayer>
   </div> -->
-
-
 <style scoped>
 
 *{
   max-width: 100vmax;
   font-family: Montserrat, 'Inter';
 }
-
-/* 
-.secao {
-  margin: 0vmin 2vmin;
-  max-width: 100%;
-
-  align-self: center;
-  padding: 0vmin 2vmin; 
-  flex-wrap: wrap;
-
-} */
 
 .texto-diag{
   --fonte-diag: clamp(10px, 15px, 20px);
@@ -148,30 +127,6 @@
   height: 50%;
 
 }
-
-
-/* Container Query for screen width greater than 800px */
-/* @media only screen  and (min-width: 1050px) {
-  .responsive-container {
-    flex-direction: row; 
-  }
-  .grafico{
-    object-fit: cover;
-
-  }
-}
-
-@media only screen  and (max-width: 1050px) {
-  .responsive-container {
-    flex-direction: column; 
-    justify-content: center;
-  }
-  .diagnosis-card{
-    align-self: center;
-  }
-} */
-
-
 
 .analysis-view {
 	width: clamp(100%,100%, 100%);
@@ -314,6 +269,12 @@ button{
 
 
 <script>
+/* SCRIPT
+
+
+
+
+*/
 
 import videotrack from "./VideoControls.vue";
 import seta from "./icons/Voltar.vue";
@@ -401,7 +362,6 @@ export default {
         height: `${videoplayer.videoHeight/window.innerHeight}%`,
         width: `${videoplayer.videoWidth/window.innerWidth}%`,
       }
-
     },
     estiloUpload(){
       return {
@@ -428,8 +388,9 @@ export default {
     
   },
   mounted() {
+    console.log("MONTADO ANALISE:");
     // this.idVideoAnalise = this.$route.query.idVideoAnalise;
-    
+    // id sendo passado pra baixo corretamente
   },
 };
 </script>

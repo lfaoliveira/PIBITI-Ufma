@@ -1,51 +1,57 @@
-
 /* componente geral de video player */
 
 <template>
-  <main>
+  <main class="wrapper-player">
     <section class="video-demo">
-      <div class="video-container">
+      <!-- <div class="video-container">
         <img class="video-thumbnail" alt="Video thumbnail" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
-        <videocontrols :percentage="0" class="video-controls"> </videocontrols>
+        
+      </div> -->
+      <div class="video-container">
+        <video
+          class="video-analise"
+          :src="this.videoSource"
+          :muted="muted"
+          :autoplay="autoplay"
+          :controls="controls"
+          :loop="loop"
+          :poster="poster"
+          :preload="preload"
+          ref="player"
+        />
+        <videocontrols
+          :percentage="0"
+          :icone="this.loadIconePlay()"
+          class="video-controls"
+        >
+        </videocontrols>
+        <slot
+          name="controls"
+          :play="play"
+          :pause="pause"
+          :toggle-play="togglePlay"
+          :playing="playing"
+          :percentage-played="percentagePlayed"
+          :seek-to-percentage="seekToPercentage"
+          :duration="duration"
+          :convert-time-to-duration="convertTimeToDuration"
+          :video-muted="videoMuted"
+          :toggle-mute="toggleMute"
+        ></slot>
       </div>
     </section>
-
-    <div class="div-video">
-      <video
-        :src="this.videoSource"
-        :muted="muted"
-        :autoplay="autoplay"
-        :controls="controls"
-        :loop="loop"
-        :width="width"
-        :height="height"
-        :poster="poster"
-        :preload="preload"
-        :style="videoStyle"
-        ref="player"
-      />
-
-      <slot
-        name="controls"
-        :play="play"
-        :pause="pause"
-        :toggle-play="togglePlay"
-        :playing="playing"
-        :percentage-played="percentagePlayed"
-        :seek-to-percentage="seekToPercentage"
-        :duration="duration"
-        :convert-time-to-duration="convertTimeToDuration"
-        :video-muted="videoMuted"
-        :toggle-mute="toggleMute"
-      ></slot>
-    </div>
   </main>
 </template>
 
 <style scoped>
-
-*{
+* {
   max-width: 100%;
+}
+
+.wrapper-player {
+  display: flex;
+  justify-content: center;
+  align-content: center;
 }
 
 .video-demo {
@@ -55,6 +61,7 @@
   flex-direction: column;
   color: #fff;
   margin-bottom: 2%;
+  align-self: center;
 }
 
 .video-container {
@@ -86,6 +93,12 @@
   border-radius: 0;
 }
 
+.video-analise {
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
 @media (max-width: 991px) {
   .video-demo {
     white-space: initial;
@@ -98,7 +111,6 @@
 
   .video-controls {
     white-space: initial;
-    
   }
 }
 
@@ -108,13 +120,14 @@ input[type="file"] {
   display: none;
 }
 
-.div-video{
+/* .div-video{
   max-width: 100%;
   max-height: 100%;
   position: relative;
-  /*display: inline-block; */
+  /*display: inline-block; 
 
-}
+} */
+
 video {
   max-width: 100%;
   max-height: 100%;
@@ -125,12 +138,11 @@ video {
 }
 </style>
 
-
 <script>
-const VIDEO_RATIO = 0.7
+const VIDEO_RATIO = 0.7;
 
 import videocontrols from "./VideoControls.vue";
-import BaseDados from '../db';
+import db from "../db";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -146,79 +158,70 @@ const EVENTS = [
   "statechanged",
 ];
 export default {
-  
   name: "Videoplayer",
   components: {
     videocontrols,
   },
   props: {
-    idVideoAtual: null,
+    idVideoAtual: { type: String, required: true, default: "" },
     controls: { type: Boolean, required: false, default: false },
-    loop: { type: Boolean, required: false, default: false },
-    width: { type: Number, required: false},
+    loop: { type: Boolean, required: false, default: true },
+    width: { type: Number, required: false },
     height: { type: Number, required: false },
-    autoplay: { type: Boolean, required: false, default: false },
-    muted: { type: Boolean, required: false, default: false },
+    autoplay: { type: Boolean, required: false, default: true },
+    muted: { type: Boolean, required: false, default: true },
     poster: { type: String, required: false },
-    preload: { type: String, required: false, default: "auto" },
+    preload: { type: String, required: false, default: "true" },
   },
   data() {
     return {
       playing: true,
       duration: 0,
       percentagePlayed: 0,
-      db: new BaseDados("MeuBanco","Arquivos"),
-      source: "",
+      videoSource: "  ",
       videoMuted: false,
       videoWidth: window.innerWidth * VIDEO_RATIO,
       videoHeight: window.innerHeight * VIDEO_RATIO,
     };
   },
-  mounted() {
-    console.log("MONTADO:");
-    
+  async mounted() {
+    console.log("MONTADO VIDEOPLAYER:");
+    this.videoSource = await this.pegarVideo();
+
     //this.bindEvents();
     if (this.$refs.player.muted) {
       this.setMuted(true);
     }
-    window.addEventListener('resize', this.resizeVideo);
+    window.addEventListener("resize", this.resizeVideo);
     this.bindEvents();
-    
   },
+
   methods: {
-    isValidUrl(url) {
+    async pegarVideo() {
       try {
-        new URL(url); // Validates the URL format
-        return true;
-      } catch (e) {
-        return false;
+        await db.open();
+        console.log(
+          `idVIDEO ATUAL: ${parseInt(this.idVideoAtual)} TIPO: ${typeof parseInt(
+            this.idVideoAtual
+          )}`
+        );
+
+        const videoData = await db.get(parseInt(this.idVideoAtual));
+
+        const url = URL.createObjectURL(videoData.data);
+        console.log(`URL ATUAL: ${url} TIPO: ${typeof url}`);
+        return url;
+      } catch (error) {
+        console.error("ERRO! " + error);
       }
-    },
-    async pegarVideo(){
-      this.db.open();
-      alert(this.idVideoAtual);
-      const file = await this.db.get(this.idVideoAtual).then( (videoData) => {return videoData});
-      alert(file);
-      const url = URL.createObjectURL(file);
-      alert(url);
-      return url;
-    },
-    
-    videoSource(){
-      const a = pegarVideo();
-      alert(a);
-      console.log(a);
-      return a
     },
 
-    loadIconePlay(){
-      if (this.playing){
-        return "../assets/play.svg"
+    loadIconePlay() {
+      if (this.playing) {
+        return "src/assets/play.svg";
+      } else {
+        return "src/assets/pause.svg";
       }
-      else{
-        return "../assets/pause.svg"
-      }
-
     },
     resizeVideo() {
       const aspectRatio = 16 / 9; // Assuming a standard aspect ratio of 16:9
@@ -243,20 +246,17 @@ export default {
     bindVideoEvent(which) {
       const player = this.$refs.player;
 
-      player.addEventListener(
-        which,
-        (event) => {
-          if (which === "loadeddata") {
-            this.duration = player.duration;
-          }
-          if (which === "timeupdate") {
-            this.percentagePlayed = (player.currentTime / player.duration) * 100;
-          }
-          this.$emit(which, { event, player: this });
-        },
-      );
+      player.addEventListener(which, (event) => {
+        if (which === "loadeddata") {
+          this.duration = player.duration;
+        }
+        if (which === "timeupdate") {
+          this.percentagePlayed = (player.currentTime / player.duration) * 100;
+        }
+        this.$emit(which, { event, player: this });
+      });
     },
-    
+
     play() {
       this.$refs.player.play();
       this.setPlaying(true);
@@ -302,47 +302,10 @@ export default {
     setMuted(state) {
       this.videoMuted = state;
     },
-    
   },
-  computed: {
-    videoStyle() {
-      return {
-        backgroundColor: `#000`,
-        width: `${this.videoWidth}px`,
-        height: `${this.videoHeight}px`,
-      };
-    },
-    estiloUpload(){
-      const height_but = 6 // vmin
-      const width_but = 10
-      const height_text = height_but
-      return {
-        // COR E FONTE
-        backgroundColor: `#43C3DD`,
-        borderRadius: `51px`,
-        border: `none`,
-        color: `black`,        
-        //TAMANHO
-        position: `relative`,
-        height: `${4}vmin`,
-        width: `${12}vmin`,
-
-        //POSICIONAMENTO
-        whiteSpace: `nowrap`,
-        letterSpacing: `0`,
-        alignItems: `center`,
-        display: `flex`,
-        justifyContent: `center`,
-        marginBottom: `1.2vh`,
-        marginTop: `1vh`,
-        textAlign: `center`,
-      }
-    },
-
-  },
+  computed: {},
   beforeDestroy() {
-    window.removeEventListener('resize', this.resizeVideo);
+    window.removeEventListener("resize", this.resizeVideo);
   },
 };
 </script>
-
