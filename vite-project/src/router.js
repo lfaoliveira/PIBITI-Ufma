@@ -9,7 +9,7 @@ const routes = [
     path: '/analise', // pagina de analise
     name: 'analiseVideo', 
     component: AnaliseVideo,
-    props: (route) => ({ arqVideo: route.query.arqVideo }), 
+    props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }), 
   },
   { path: '/demo', component: Demo, props: true }, // pagina de exibição da demonstração
 ];

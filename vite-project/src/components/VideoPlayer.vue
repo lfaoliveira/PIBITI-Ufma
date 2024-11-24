@@ -130,7 +130,7 @@ video {
 const VIDEO_RATIO = 0.7
 
 import videocontrols from "./VideoControls.vue";
-import { useStore } from "vuex/dist/vuex.cjs.js";
+import BaseDados from '../db';
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -152,6 +152,7 @@ export default {
     videocontrols,
   },
   props: {
+    idVideoAtual: null,
     controls: { type: Boolean, required: false, default: false },
     loop: { type: Boolean, required: false, default: false },
     width: { type: Number, required: false},
@@ -166,6 +167,7 @@ export default {
       playing: true,
       duration: 0,
       percentagePlayed: 0,
+      db: new BaseDados("MeuBanco","Arquivos"),
       source: "",
       videoMuted: false,
       videoWidth: window.innerWidth * VIDEO_RATIO,
@@ -173,14 +175,42 @@ export default {
     };
   },
   mounted() {
-    console.log("BINDING:");
+    console.log("MONTADO:");
     
     //this.bindEvents();
     if (this.$refs.player.muted) {
       this.setMuted(true);
     }
+    window.addEventListener('resize', this.resizeVideo);
+    this.bindEvents();
+    
   },
   methods: {
+    isValidUrl(url) {
+      try {
+        new URL(url); // Validates the URL format
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+    async pegarVideo(){
+      this.db.open();
+      alert(this.idVideoAtual);
+      const file = await this.db.get(this.idVideoAtual).then( (videoData) => {return videoData});
+      alert(file);
+      const url = URL.createObjectURL(file);
+      alert(url);
+      return url;
+    },
+    
+    videoSource(){
+      const a = pegarVideo();
+      alert(a);
+      console.log(a);
+      return a
+    },
+
     loadIconePlay(){
       if (this.playing){
         return "../assets/play.svg"
@@ -275,12 +305,6 @@ export default {
     
   },
   computed: {
-    videoSource(){
-      const store = useStore(); 
-      
-      
-      return store.getters.getVideoURL;
-    },
     videoStyle() {
       return {
         backgroundColor: `#000`,
@@ -315,11 +339,6 @@ export default {
       }
     },
 
-  },
-  mounted() {
-    window.addEventListener('resize', this.resizeVideo);
-    this.bindEvents();
-    
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.resizeVideo);

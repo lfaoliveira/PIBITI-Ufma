@@ -18,7 +18,7 @@
         <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
       </div>
     </div>
-    <VideoPlayer class="secao"></VideoPlayer>
+    <VideoPlayer :idVideoAtual="this.idVideoAnalise" class="secao"></VideoPlayer>
     <Rodape></Rodape>
   </main>
 </template>
@@ -314,8 +314,6 @@ button{
 
 
 <script>
-import { useStore } from 'vuex';
-
 
 import videotrack from "./VideoControls.vue";
 import seta from "./icons/Voltar.vue";
@@ -339,10 +337,13 @@ export default {
   data() {
     return {
       time: 0,
-      urlVideo: "asdafefaf",
+      
     };
   },
-  props: ['arqVideo'],
+  props: {
+    idVideoAnalise: "",
+
+  },
   methods: {
     onPlayerPlay({ event, player }) {
       console.log(event.type);
@@ -427,6 +428,8 @@ export default {
     
   },
   mounted() {
+    // this.idVideoAnalise = this.$route.query.idVideoAnalise;
+    
   },
 };
 </script>

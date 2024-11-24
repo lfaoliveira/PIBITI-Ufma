@@ -1,34 +1,38 @@
 // src/store/index.js
 import { createStore } from 'vuex';
+const savedState = JSON.parse(localStorage.getItem('vuex-state')) || {};
 
 
 //gerencia de estados do vuex
+/* ATUALMENTE INÚTIL POIS NÃO ARMAZENA DADOS BINÁRIOS */
 
-export default createStore({
+const store = createStore({
   state: {
-      videoURL: null // Centralized state for video URLs
+      // Centralized state for video files
+      videoFile: savedState.videoFile || null,
   },
   mutations: {
     setSharedData(state, data) {
       state.sharedData = data;
     },
-    setVideoURL(state, url) {
-      state.videoURL = url;
-    }
+    setVideoFile(state, file){
+      state.videoFile = file;
+    },
   },
   actions: {
-    updateVideoURL({ commit }, url) {
-      commit('setVideoURL', url);
-    },
-    updateSharedData({ commit }, data) {
-      commit('setSharedData', data);
+    updateVideoFile({ commit }, data) {
+      commit('setvideoFile', data);
     }
   },
   getters: {
-    /* getVideoURL(state) {
-      return state.videoURL;
-    }, */
-    getVideoURL: (state) => state.videoURL,
+    getVideoFile: (state) => state.videoFile,
     getSharedData: (state) => state.sharedData
   }
 });
+
+store.subscribe((mutation, state) => {
+  localStorage.setItem('vuex-state', JSON.stringify(state));
+});
+
+
+export default store;

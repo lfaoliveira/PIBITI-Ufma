@@ -6,7 +6,7 @@
       <div id="div-video-home">
         <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
         <div class="overlay"></div>
-        <video alt="Header background" class="video-background" preload="true" autoplay loop  src="../assets/video-oftalmo.mp4"/>
+        <video alt="Header background" class="video-background" preload="auto" autoplay loop  src="../assets/video-oftalmo.mp4"/>
       </div>
       <div class="div-titulo">
         <h1 class="section-title" id="titulo">
@@ -33,6 +33,7 @@
 <script>
 import { useStore } from "vuex/dist/vuex.cjs.js";
 import headerHome  from "./HeaderHomepage.vue";
+import BaseDados from '../db';
 
 export default {
   name:"Landing",
@@ -43,17 +44,26 @@ export default {
     
   },
   methods: {
-    handleFileUpload($evt) {
+    async handleFileUpload($evt) {
       
       console.log("UPLOAD FEITO");
       const file = $evt.target.files[0];
       
       if (file) {
-        this.videoFile = file;
-        this.videoURL = URL.createObjectURL(file); // filename = path relativo
+         // filename = path relativo
         // this.$router.push({ name: "analiseVideo", query: { arqVideo: this.videoFile } });
-        this.store.dispatch('updateVideoURL', this.videoURL);
-        this.$router.push({ name: "analiseVideo"});
+        // this.store.dispatch('updateVideoFile', this.videoFile);
+        this.db.open();
+        const videoData = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: file // The video file as a Blob
+        };
+        const constId = await this.db.add(videoData);
+        console.log(constId);
+        alert(constId);
+        this.$router.push({ name: "analiseVideo", query: {idVideoAnalise: constId} });
 
       }
     },
@@ -63,6 +73,7 @@ export default {
     return {
       _: 0,
       store: useStore(),
+      db: new BaseDados("MeuBanco","Arquivos"),
     };
   },
   mounted(){
