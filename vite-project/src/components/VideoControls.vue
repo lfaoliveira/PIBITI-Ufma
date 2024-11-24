@@ -25,7 +25,7 @@
 export default {
   name: "videotrack",
   props: {
-    percentage: { type: Number, required: true },
+    percentage: { type: Number, default: 0 },
   },
   data() {
     return {

@@ -6,20 +6,20 @@
 
     <h1 class="page-title">Análise de Paralisia</h1>
     
-  <div class="analysis-grid">
-      <div class="diagnosis-card secao">
-        <h2 class="diagnostico texto-diag">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
-        <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
-        <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>
-        <p class="velocidade-esq texto-diag">Olho Esquerdo: XX.dd mm/s</p>
+    <div class="analysis-grid">
+        <div class="diagnosis-card secao">
+          <h2 class="diagnostico texto-diag">Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis</h2>
+          <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
+          <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>
+          <p class="velocidade-esq texto-diag">Olho Esquerdo: XX.dd mm/s</p>
+        </div>
+      <div class="div-grafico">
+        <!-- Placeholder for your graph (image or canvas) -->
+        <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
       </div>
-    <div class="div-grafico">
-      <!-- Placeholder for your graph (image or canvas) -->
-      <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
     </div>
-  </div>
     <VideoPlayer class="secao"></VideoPlayer>
-    
+    <video class="video-exemplo" :src="this.urlVideo"></video>
     <Rodape></Rodape>
   </main>
 </template>
@@ -144,6 +144,12 @@
   width: clamp(100%, 100%, 100%);
 
 }
+.video-exemplo{
+  width: 100%;
+  height: 50%;
+
+}
+
 
 /* Container Query for screen width greater than 800px */
 /* @media only screen  and (min-width: 1050px) {
@@ -214,124 +220,6 @@
 }
 
 
-</style>
-
-
-<script>
-import videotrack from "./VideoControls.vue";
-import seta from "./icons/Voltar.vue";
-import { mapGetters } from 'vuex';
-import Rodape from "./Rodape.vue";
-import HeaderAnalise from "./HeaderAnalise.vue"
-import VideoPlayer from "./VideoPlayer.vue";
-export default {
-  // COMPONENTE QUE VAI IMPORTAR COMPONENTES DA HOMEPAGE
-  name: "HomePage",
-  components:{
-    VideoPlayer,
-    videotrack,
-    seta,
-    Rodape,
-    HeaderAnalise,
-  },
-  created() {},
-  data() {
-    return {
-      time: 0,
-    };
-  },
-  props: {
-    // url passada como argumento da requisicao
-    urlVideo: String,
-  },
-  methods: {
-    onPlayerPlay({ event, player }) {
-      console.log(event.type);
-      player.setPlaying(true);
-    },
-    onPlayerPause({ event, player }) {
-      console.log(event.type);
-      player.setPlaying(false);
-    },
-    onPlayerEnded({ event, player }) {
-      console.log(event.type);
-      player.setPlaying(false);
-    },
-    onPlayerLoadeddata({ event }) {
-      console.log(event.type);
-    },
-    onPlayerWaiting({ event }) {
-      console.log(event.type);
-    },
-    onPlayerPlaying({ event }) {
-      console.log(event.type);
-    },
-    onPlayerTimeupdate({ event }) {
-      this.time = event.target.currentTime;
-      console.log({ event: event.type, time: event.target.currentTime });
-    },
-    onPlayerCanplay({ event }) {
-      console.log(event.type);
-    },
-    onPlayerCanplaythrough({ event }) {
-      console.log(event.type);
-    },
-    playerStateChanged({ event }) {
-      console.log(event.type);
-    },
-
-    onVoltar(){
-      this.$router.push('/');
-    },
-    addFocusClass() {
-      // Manually add the 'focus' class to the label
-      const label = document.querySelector('.custom-file-upload');
-      label.classList.add('focus');
-      
-    },
-    removeFocusClass() {
-      // Manually remove the 'focus' class from the label
-      const label = document.querySelector('.custom-file-upload');
-      label.classList.remove('focus');
-    },
-  },
-  computed: {
-    controlStyle(){
-      return {
-        height: `${videoplayer.videoHeight/window.innerHeight}%`,
-        width: `${videoplayer.videoWidth/window.innerWidth}%`,
-      }
-
-    },
-    estiloUpload(){
-      return {
-        // COR E FONTE
-        borderRadius: `51px`,
-        border: `none`,
-        color: `black`,        
-        //TAMANHO
-        position: `relative`,
-        //POSICIONAMENTO
-        whiteSpace: `nowrap`,
-        letterSpacing: `0`,
-        alignItems: `center`,
-        display: `flex`,
-        justifyContent: `center`,
-        textAlign: `center`,
-      }
-    },
-
-    ...mapGetters(['getSharedData']),
-    sharedData() {
-      return this.getSharedData;
-    },
-  
-  }
-};
-</script>
-
-<style scoped>
-/* CSS DO UPLOAD */
 
 .custom-file-upload{
   background-color: #43C3DD;
@@ -422,4 +310,123 @@ button{
   margin-right: 1rem;
 }
 
+
 </style>
+
+
+<script>
+import videotrack from "./VideoControls.vue";
+import seta from "./icons/Voltar.vue";
+import { mapGetters } from 'vuex';
+import Rodape from "./Rodape.vue";
+import HeaderAnalise from "./HeaderAnalise.vue"
+import VideoPlayer from "./VideoPlayer.vue";
+export default {
+  // COMPONENTE QUE VAI IMPORTAR COMPONENTES DA HOMEPAGE
+  name: "Analise de Video",
+  components:{
+    VideoPlayer,
+    videotrack,
+    seta,
+    Rodape,
+    HeaderAnalise,
+  },
+  created() {
+
+  },
+  data() {
+    return {
+      time: 0,
+    };
+  },
+  props: ['urlVideo'],
+  methods: {
+    onPlayerPlay({ event, player }) {
+      console.log(event.type);
+      player.setPlaying(true);
+    },
+    onPlayerPause({ event, player }) {
+      console.log(event.type);
+      player.setPlaying(false);
+    },
+    onPlayerEnded({ event, player }) {
+      console.log(event.type);
+      player.setPlaying(false);
+    },
+    onPlayerLoadeddata({ event }) {
+      console.log(event.type);
+    },
+    onPlayerWaiting({ event }) {
+      console.log(event.type);
+    },
+    onPlayerPlaying({ event }) {
+      console.log(event.type);
+    },
+    onPlayerTimeupdate({ event }) {
+      this.time = event.target.currentTime;
+      console.log({ event: event.type, time: event.target.currentTime });
+    },
+    onPlayerCanplay({ event }) {
+      console.log(event.type);
+    },
+    onPlayerCanplaythrough({ event }) {
+      console.log(event.type);
+    },
+    playerStateChanged({ event }) {
+      console.log(event.type);
+    },
+
+    onVoltar(){
+      this.$router.push('/');
+    },
+    addFocusClass() {
+      // Manually add the 'focus' class to the label
+      const label = document.querySelector('.custom-file-upload');
+      label.classList.add('focus');
+      
+    },
+    removeFocusClass() {
+      // Manually remove the 'focus' class from the label
+      const label = document.querySelector('.custom-file-upload');
+      label.classList.remove('focus');
+    },
+  },
+  computed: {
+    controlStyle(){
+      return {
+        height: `${videoplayer.videoHeight/window.innerHeight}%`,
+        width: `${videoplayer.videoWidth/window.innerWidth}%`,
+      }
+
+    },
+    estiloUpload(){
+      return {
+        // COR E FONTE
+        borderRadius: `51px`,
+        border: `none`,
+        color: `black`,        
+        //TAMANHO
+        position: `relative`,
+        //POSICIONAMENTO
+        whiteSpace: `nowrap`,
+        letterSpacing: `0`,
+        alignItems: `center`,
+        display: `flex`,
+        justifyContent: `center`,
+        textAlign: `center`,
+      }
+    },
+
+    ...mapGetters(['getSharedData']),
+    sharedData() {
+      return this.getSharedData;
+    },
+  
+  },
+  mounted() {
+    alert(this.urlVideo);
+
+  },
+};
+</script>
+

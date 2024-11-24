@@ -2,44 +2,44 @@
 /* componente geral de video player */
 
 <template>
-  
-  <section class="video-demo">
-    <div class="video-container">
-      <img class="video-thumbnail" alt="Video thumbnail" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
-      <videocontrols class="video-controls"> </videocontrols>
+  <main>
+    <section class="video-demo">
+      <div class="video-container">
+        <img class="video-thumbnail" alt="Video thumbnail" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
+        <videocontrols :percentage="0" class="video-controls"> </videocontrols>
+      </div>
+    </section>
+
+    <div class="div-video">
+      <video
+        :src="videoURL"
+        :muted="muted"
+        :autoplay="autoplay"
+        :controls="controls"
+        :loop="loop"
+        :width="width"
+        :height="height"
+        :poster="poster"
+        :preload="preload"
+        :style="videoStyle"
+        ref="player"
+      />
+
+      <slot
+        name="controls"
+        :play="play"
+        :pause="pause"
+        :toggle-play="togglePlay"
+        :playing="playing"
+        :percentage-played="percentagePlayed"
+        :seek-to-percentage="seekToPercentage"
+        :duration="duration"
+        :convert-time-to-duration="convertTimeToDuration"
+        :video-muted="videoMuted"
+        :toggle-mute="toggleMute"
+      ></slot>
     </div>
-  </section>
-
-  <div class="div-video">
-    <video
-      :src="videoURL"
-      :muted="muted"
-      :autoplay="autoplay"
-      :controls="controls"
-      :loop="loop"
-      :width="width"
-      :height="height"
-      :poster="poster"
-      :preload="preload"
-      :style="videoStyle"
-      ref="player"
-    />
-
-    <slot
-      name="controls"
-      :play="play"
-      :pause="pause"
-      :toggle-play="togglePlay"
-      :playing="playing"
-      :percentage-played="percentagePlayed"
-      :seek-to-percentage="seekToPercentage"
-      :duration="duration"
-      :convert-time-to-duration="convertTimeToDuration"
-      :video-muted="videoMuted"
-      :toggle-mute="toggleMute"
-    ></slot>
-  </div>
-
+  </main>
 </template>
 
 <style scoped>

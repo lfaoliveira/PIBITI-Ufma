@@ -45,9 +45,10 @@ export default {
       
       if (file) {
         this.videoFile = file;
-        this.videoURL = URL.createObjectURL(this.videoFile); // filename = path relativo
-        alert(this.videoURL);
-        this.$router.push(`/analise:${this.videoUrl}`);
+        this.videoURL = URL.createObjectURL(file); // filename = path relativo
+        alert(this.videoURL)
+        this.$router.push({ name: "analiseVideo", query: { urlVideo: this.videoURL } });
+
       }
     },
   },

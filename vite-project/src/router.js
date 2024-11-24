@@ -5,7 +5,12 @@ import Demo from './components/Demo.vue'
 
 const routes = [
   { path: '/', component: Homepage },       // Root path (Home page)
-  { path: '/analise:urlVideo', component: AnaliseVideo, props: true }, // pagina de analise
+  { 
+    path: '/analise', // pagina de analise
+    name: 'analiseVideo', 
+    component: AnaliseVideo,
+    props: (route) => ({ urlVideo: route.query.urlVideo }), 
+  },
   { path: '/demo', component: Demo, props: true }, // pagina de exibição da demonstração
 ];
 
