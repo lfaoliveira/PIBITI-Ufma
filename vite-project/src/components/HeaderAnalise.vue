@@ -5,39 +5,15 @@
   </div>
 </template>
 
-<script>
-import Voltar from "./icons/Voltar.vue"
-import Salvar from "./icons/Salvar.vue";
-export default {
-  name: "headerAnalise",
-  methods: {
-    fnVoltar(){
-      this.$router.push({name: "home"});
-    },
-    
-  },
-  components: {
-    Voltar,
-    Salvar,
-  },
-  created() {},
-  data() {
-    return {};
-  },
-  props: {},
-  
-};
-</script>
-
 <style scoped>
-*{
+* {
   --alt-butao: clamp(40px, 5vmin, 77px);
   --raio-butao: clamp(10px, 40%, 20px);
-  font-family: 'Montserrat', 'Inter';
+  font-family: "Montserrat", "Inter";
   border: 0px;
 }
-input{
-  display:none;
+input {
+  display: none;
 }
 
 .div-header {
@@ -52,7 +28,26 @@ input{
   /* grid-template-rows: 1fr;
   grid-template-columns: 1fr 1fr; */
 }
-
-
-
 </style>
+
+<script>
+import Voltar from "./icons/Voltar.vue";
+import Salvar from "./icons/Salvar.vue";
+export default {
+  name: "headerAnalise",
+  methods: {
+    fnVoltar() {
+      this.$router.push({ name: "home" });
+    },
+  },
+  components: {
+    Voltar,
+    Salvar,
+  },
+  created() {},
+  data() {
+    return {};
+  },
+  props: {},
+};
+</script>

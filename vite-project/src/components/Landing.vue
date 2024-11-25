@@ -5,8 +5,16 @@
     <div class="conteudo-secao">
       <div id="div-video-home">
         <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
+
+        <video
+          alt="Header background"
+          class="video-background"
+          preload="auto"
+          autoplay
+          loop
+          src="../assets/video-oftalmo.mp4"
+        />
         <div class="overlay"></div>
-        <video alt="Header background" class="video-background" preload="auto" autoplay loop  src="../assets/video-oftalmo.mp4"/>
       </div>
       <div class="div-titulo">
         <h1 class="section-title" id="titulo">
@@ -14,71 +22,25 @@
         </h1>
       </div>
       <div class="cntr-cta">
-        <input type="file" id="fileInput" accept="video/*"/>
+        <input type="file" id="fileInput" accept="video/*" />
         <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
       </div>
       <div class="div-mouse-animado">
-        <img src="../assets/mouse-animado.png" alt="Mouse animado" class="mouse-animado"
+        <img
+          src="../assets/mouse-animado.png"
+          alt="Mouse animado"
+          class="mouse-animado"
         />
       </div>
       <div class="div-seta-baixo">
-        <img src="../assets/seta-baixo.png" alt="Decorative element" class="seta-baixo"
-        />
+        <img src="../assets/seta-baixo.png" alt="Decorative element" class="seta-baixo" />
       </div>
     </div>
   </section>
 </template>
 
-
-<script>
-import headerHome  from "./HeaderHomepage.vue";
-import db from '../db';
-
-export default {
-  name:"Landing",
-  components: {
-    headerHome,
-  },
-  setup(){
-    
-  },
-  methods: {
-    async handleFileUpload($evt) {
-      
-      console.log("UPLOAD FEITO");
-      const file = $evt.target.files[0];
-      
-      if (file) {
-        db.open();
-        const videoData = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data: file // The video file as a Blob
-        };
-        let constId = await db.add(videoData);
-        console.log(constId +" " + typeof constId);
-        
-        alert(constId);
-        this.$router.push({ name: "analiseVideo", query: {idVideoAnalise: constId} });
-
-      }
-    },
-  },
-  props: {  },
-  data() {
-    return {
-      _: 0,      
-    };
-  },
-  mounted(){
-    // listener pra quando fileInput recebe mudança
-    document.getElementById('fileInput').onchange = this.handleFileUpload;
-  }
-}
-</script>
 <style scoped>
-*{
+* {
   --height-video: 100%;
 }
 
@@ -93,12 +55,11 @@ export default {
   flex-wrap: wrap;
   margin: 0px;
   max-width: 100%;
-
 }
 
 #div-video-home {
   position: absolute;
-  width: clamp( 92%, 95%, 98%);
+  width: clamp(92%, 95%, 98%);
   display: flex;
   align-self: center;
   height: 100%;
@@ -108,24 +69,22 @@ export default {
   justify-content: start;
 }
 
-.overlay{
+.overlay {
   width: 100%;
   height: 100%;
   position: absolute;
-  z-index: 4;
-  background-color: rgba(68,68,68.1,0.51);
+  z-index: 0;
+  pointer-events: none;
+  background-color: rgba(18, 18, 18.1, 0.41);
 }
-
-
 
 .video-background {
   width: 100%;
   height: var(--height-video);
   object-fit: cover;
   z-index: 0;
-  align-self: center;  
+  align-self: center;
 }
-
 
 /* MUDAR CONTAINER PRA GRID */
 .conteudo-secao {
@@ -146,7 +105,7 @@ export default {
   align-items: center;
   position: relative;
   height: auto;
-  width: clamp(290px,59ch, 100%);
+  width: clamp(290px, 59ch, 100%);
   margin: 0vmin auto;
   margin-top: clamp(10vmin, 13vmin, 17vmin);
   --fonte-titulo: clamp(14px, 5.33vmin, 41px);
@@ -192,7 +151,7 @@ input {
   justify-items: center;
   margin: 10vmin auto 0vmin auto;
   align-self: flex-start;
-  width: clamp(2em, 7vmin,120px);
+  width: clamp(2em, 7vmin, 120px);
   height: auto;
   position: relative;
 }
@@ -218,5 +177,48 @@ input {
   margin: auto;
   width: 100%;
 }
-
 </style>
+
+<script>
+import headerHome from "./HeaderHomepage.vue";
+import db from "../db";
+
+export default {
+  name: "Landing",
+  components: {
+    headerHome,
+  },
+  setup() {},
+  methods: {
+    async handleFileUpload($evt) {
+      console.log("UPLOAD FEITO");
+      const file = $evt.target.files[0];
+
+      if (file) {
+        db.open();
+        const videoData = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          data: file, // The video file as a Blob
+        };
+        let constId = await db.add(videoData);
+        console.log(constId + " " + typeof constId);
+
+        alert(constId);
+        this.$router.push({ name: "analiseVideo", query: { idVideoAnalise: constId } });
+      }
+    },
+  },
+  props: {},
+  data() {
+    return {
+      _: 0,
+    };
+  },
+  mounted() {
+    // listener pra quando fileInput recebe mudança
+    document.getElementById("fileInput").onchange = this.handleFileUpload;
+  },
+};
+</script>

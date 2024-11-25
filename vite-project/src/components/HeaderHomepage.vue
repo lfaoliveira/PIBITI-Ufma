@@ -1,57 +1,16 @@
 <template>
   <div class="div-header">
-    <img :src="this.path_hamburg" id="imagemHamburguer" alt="Imagem Menu">
+    <img :src="this.path_hamburg" id="imagemHamburguer" alt="Imagem Menu" />
     <div class="cntr-demo">
-      <input type="file" id="fileInput" accept="video/*">
-      <label for="fileInput" ref="" class="botao-demo">
-        Demonstração
-      </label>
-    </div>    
+      <input type="file" id="fileInput" accept="video/*" />
+      <label for="fileInput" ref="" class="botao-demo"> Demonstração </label>
+    </div>
   </div>
 </template>
 
-<script>
-import path from "path";
-
-export default {
-  name: "HeaderHomepage",
-  data() {
-    return {
-      path_hamburg: path.join(".", "src", "assets", "menu-sanduiche.png"),
-    };
-  },
-  methods: {
-
-  },
-  computed: {
-  /*  styleImagem() {
-      return {
-        aspectRatio: `${1/1}`,
-        width: `auto`,
-        height: `auto`,
-        left: `${3}vw`,
-        top: `${25}vh`,
-      };
-    }, */ 
-    styleTexto(){
-      return {
-        top: `${25}%`,
-        left: `${10}%`,
-        width: `${50}%`,
-        height: `${50}%`,
-      };
-    },
-  },
-  mounted() {
-    window.addEventListener('resize', this.styleHamburguer);
-    
-  }
-};
-</script>
-
 <style scoped>
-input{
-  display:none;
+input {
+  display: none;
 }
 
 .div-header {
@@ -69,7 +28,7 @@ input{
   grid-template-columns: 1fr 1fr;
 }
 
-.cntr-demo{
+.cntr-demo {
   position: relative;
   text-align: center;
   background-color: #6113c6;
@@ -87,7 +46,7 @@ input{
   padding: 0vmin clamp(0%, 3%, 5%);
 }
 
-.botao-demo{
+.botao-demo {
   border: none;
   color: white;
   position: relative;
@@ -103,7 +62,7 @@ input{
   cursor: pointer;
 }
 
-#imagemHamburguer{
+#imagemHamburguer {
   background-color: #6113c6;
   border-radius: clamp(10px, 3%, 15px);
   width: clamp(5vmin, 60px, 11vmin);
@@ -113,10 +72,41 @@ input{
   justify-self: center;
   margin-left: 0px;
   padding: clamp(10px, 2%, 20px);
-  
 }
-
 </style>
 
+<script>
+import path from "path";
 
-
+export default {
+  name: "HeaderHomepage",
+  data() {
+    return {
+      path_hamburg: path.join(".", "src", "assets", "menu-sanduiche.png"),
+    };
+  },
+  methods: {},
+  computed: {
+    /*  styleImagem() {
+      return {
+        aspectRatio: `${1/1}`,
+        width: `auto`,
+        height: `auto`,
+        left: `${3}vw`,
+        top: `${25}vh`,
+      };
+    }, */
+    styleTexto() {
+      return {
+        top: `${25}%`,
+        left: `${10}%`,
+        width: `${50}%`,
+        height: `${50}%`,
+      };
+    },
+  },
+  mounted() {
+    window.addEventListener("resize", this.styleHamburguer);
+  },
+};
+</script>

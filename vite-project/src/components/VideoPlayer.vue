@@ -3,11 +3,8 @@
 <template>
   <main class="wrapper-player">
     <section class="video-demo">
-      <!-- <div class="video-container">
-        <img class="video-thumbnail" alt="Video thumbnail" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
-        
-      </div> -->
-      <!-- <div class="video-track">
+      <!-- <div class="video-container"> </div> -->
+      <!-- 
     <input
       type="range"
       min="0"
@@ -29,33 +26,17 @@
           ref="player"
         />
         <div class="controles">
-          <span class="time-display">00:00</span>
+          <span class="time-display" @timeupdate="this.onPlayerTimeupdate">{{
+            this.time
+          }}</span>
           <button class="slider"></button>
           <div class="bola-slider"></div>
           <button class="bola-play" @click="setIcone()">
-            <img class="control-icon" :src="this.icone" />
+            <img class="control-icon" :src="this.icone" :style="this.stylePausa" />
           </button>
         </div>
-        <!-- <videocontrols
-          :percentage="0"
-          :icone="this.loadIconePlay()"
-          class="video-controls"
-        >
-        </videocontrols> -->
-        <slot
-          name="controls"
-          :play="play"
-          :pause="pause"
-          :toggle-play="togglePlay"
-          :playing="playing"
-          :percentage-played="percentagePlayed"
-          :seek-to-percentage="seekToPercentage"
-          :duration="duration"
-          :convert-time-to-duration="convertTimeToDuration"
-          :video-muted="videoMuted"
-          :toggle-mute="toggleMute"
-        ></slot>
       </div>
+      <!-- fim controles -->
     </section>
   </main>
 </template>
@@ -69,14 +50,20 @@
   margin: 0;
 }
 
+input[type="file"] {
+  display: none;
+}
+
 .wrapper-player {
   display: flex;
   justify-content: center;
   align-content: center;
+  margin: auto;
+  width: 90%;
 }
 
 .video-demo {
-  width: 75%;
+  width: 100%;
   border-radius: 0;
   display: flex;
   flex-direction: column;
@@ -110,8 +97,10 @@
   aspect-ratio: 0.94;
   object-fit: contain;
   object-position: center;
-  width: 31px;
   border-radius: 0;
+
+  pointer-events: all;
+  cursor: pointer;
 }
 
 .video-analise {
@@ -136,11 +125,6 @@
 }
 
 /* FIM CSS DE IA */
-
-input[type="file"] {
-  display: none;
-}
-
 /* .div-video{
   max-width: 100%;
   max-height: 100%;
@@ -184,13 +168,6 @@ video {
   margin: -1vmin 0 0vmin 0.7vmin;
   justify-content: center;
   border-radius: 100%;
-  cursor: pointer;
-}
-
-.control-icon {
-  padding: 12%;
-  pointer-events: all;
-  width: clamp(1vmin, 22px, 100%);
   cursor: pointer;
 }
 
@@ -280,8 +257,10 @@ export default {
     return {
       icone: " ",
       percentage: 0,
+      tempoAtual: "00:00",
       playing: true,
       duration: 0,
+      time: 0,
       percentagePlayed: 0,
       videoSource: "  ",
       videoMuted: false,
@@ -427,6 +406,20 @@ export default {
       }
     },
   },
-  computed: {},
+  computed: {
+    stylePausa() {
+      if (this.playing) {
+        return {
+          padding: `0%`,
+          width: `clamp(1vmin, 22px + 3px, 100%)`,
+        };
+      } else {
+        return {
+          padding: `12%`,
+          width: `clamp(1vmin, 25px, 100%)`,
+        };
+      }
+    },
+  },
 };
 </script>
