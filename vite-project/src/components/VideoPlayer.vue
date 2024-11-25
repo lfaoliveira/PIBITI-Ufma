@@ -7,6 +7,15 @@
         <img class="video-thumbnail" alt="Video thumbnail" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c55bdb6a7ebf3b86f87fc14c7107afda5ac8eb148fe8c57ff3b1ff1f32422e76?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"/>
         
       </div> -->
+      <!-- <div class="video-track">
+    <input
+      type="range"
+      min="0"
+      max="100"
+      step="1"
+      :value="percentage.toFixed(1)"
+      @input="onInput"
+    /> -->
       <div class="video-container">
         <video
           class="video-analise"
@@ -19,12 +28,20 @@
           :preload="preload"
           ref="player"
         />
-        <videocontrols
+        <div class="controles">
+          <span class="time-display">00:00</span>
+          <button class="slider"></button>
+          <div class="bola-slider"></div>
+          <button class="bola-play" @click="setIcone()">
+            <img class="control-icon" :src="this.icone" />
+          </button>
+        </div>
+        <!-- <videocontrols
           :percentage="0"
           :icone="this.loadIconePlay()"
           class="video-controls"
         >
-        </videocontrols>
+        </videocontrols> -->
         <slot
           name="controls"
           :play="play"
@@ -46,6 +63,10 @@
 <style scoped>
 * {
   max-width: 100%;
+  --tam-slider: clamp(1%, 5px, 10px);
+  z-index: 1;
+  border: none;
+  margin: 0;
 }
 
 .wrapper-player {
@@ -136,12 +157,97 @@ video {
   /* padding: 5px; */
   border: 0.16rem solid rgba(85, 85, 85, 0.426);
 }
+
+.controles {
+  background: linear-gradient(
+    180deg,
+    rgba(95, 95, 95, 0.66) 0%,
+    rgba(33, 33, 33, 0.85) 39%,
+    rgba(17, 0, 0, 1) 97%
+  );
+  height: clamp(2vmin, 101px, 150px);
+  position: relative;
+}
+
+.time-display {
+  font-size: clamp(8px, 12px, 15px);
+  position: relative;
+  top: clamp(10px, 15px, 20px);
+}
+
+.bola-play {
+  --tam-bola: clamp(3%, 38px, 40px);
+  display: flex;
+  width: var(--tam-bola);
+  height: var(--tam-bola);
+  background-color: #fff;
+  margin: -1vmin 0 0vmin 0.7vmin;
+  justify-content: center;
+  border-radius: 100%;
+  cursor: pointer;
+}
+
+.control-icon {
+  padding: 12%;
+  pointer-events: all;
+  width: clamp(1vmin, 22px, 100%);
+  cursor: pointer;
+}
+
+.slider {
+  background-color: rgba(255, 255, 255, 0.72);
+  width: 100%;
+  height: var(--tam-slider);
+}
+
+.bola-slider {
+  --tam-bolinha: clamp(1.6vmin, 12px, 16px);
+  width: var(--tam-bolinha);
+  height: var(--tam-bolinha);
+  background-color: #ccc;
+  position: relative;
+  top: clamp(
+    -11px - var(--tam-slider) / 2,
+    -20px - var(--tam-slider) / 2,
+    -30px - var(--tam-slider) / 2
+  );
+  border-radius: 100%;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  position: relative;
+  top: -1px;
+  overflow: hidden;
+  width: 245px;
+  -webkit-appearance: none;
+  appearance: auto;
+  background-color: #ccc;
+  border-radius: 5px;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  -webkit-appearance: none;
+  color: #333;
+  margin-top: -1px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  width: 8px;
+  -webkit-appearance: none;
+  height: 8px;
+  cursor: ew-resize;
+  background: #333;
+  box-shadow: -245px 0 0 245px #333;
+}
 </style>
 
 <script>
-const VIDEO_RATIO = 0.7;
-
-import videocontrols from "./VideoControls.vue";
 import db from "../db";
 
 // eventos pro player checar durante execução
@@ -157,17 +263,14 @@ const EVENTS = [
   "canplaythrough",
   "statechanged",
 ];
+
 export default {
-  name: "Videoplayer",
-  components: {
-    videocontrols,
-  },
+  name: "Player_de_Video",
+
   props: {
     idVideoAtual: { type: String, required: true, default: "" },
     controls: { type: Boolean, required: false, default: false },
     loop: { type: Boolean, required: false, default: true },
-    width: { type: Number, required: false },
-    height: { type: Number, required: false },
     autoplay: { type: Boolean, required: false, default: true },
     muted: { type: Boolean, required: false, default: true },
     poster: { type: String, required: false },
@@ -175,73 +278,91 @@ export default {
   },
   data() {
     return {
+      icone: " ",
+      percentage: 0,
       playing: true,
       duration: 0,
       percentagePlayed: 0,
       videoSource: "  ",
       videoMuted: false,
-      videoWidth: window.innerWidth * VIDEO_RATIO,
-      videoHeight: window.innerHeight * VIDEO_RATIO,
     };
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
+    this.icone = this.loadIconePlay();
     this.videoSource = await this.pegarVideo();
 
     //this.bindEvents();
     if (this.$refs.player.muted) {
       this.setMuted(true);
     }
-    window.addEventListener("resize", this.resizeVideo);
-    this.bindEvents();
   },
 
   methods: {
+    onInput(e) {
+      console.log("INPUT no slider");
+      this.$emit("seek", e.target.value);
+    },
+
+    onPlayerPlay({ event, player }) {
+      console.log(event.type);
+      player.setPlaying(true);
+    },
+    onPlayerPause({ event, player }) {
+      console.log(event.type);
+      player.setPlaying(false);
+    },
+    onPlayerEnded({ event, player }) {
+      console.log(event.type);
+      player.setPlaying(false);
+    },
+    onPlayerLoadeddata({ event }) {
+      console.log(event.type);
+    },
+    onPlayerWaiting({ event }) {
+      console.log(event.type);
+    },
+    onPlayerPlaying({ event }) {
+      console.log(event.type);
+    },
+    onPlayerTimeupdate({ event }) {
+      this.time = event.target.currentTime;
+      console.log({ event: event.type, time: event.target.currentTime });
+    },
+    onPlayerCanplay({ event }) {
+      console.log(event.type);
+    },
+    onPlayerCanplaythrough({ event }) {
+      console.log(event.type);
+    },
+    playerStateChanged({ event }) {
+      console.log(event.type);
+    },
+
+    onVoltar() {
+      this.$router.push("/");
+    },
     async pegarVideo() {
       try {
         await db.open();
-        console.log(
-          `idVIDEO ATUAL: ${parseInt(this.idVideoAtual)} TIPO: ${typeof parseInt(
-            this.idVideoAtual
-          )}`
-        );
 
         const videoData = await db.get(parseInt(this.idVideoAtual));
-
         const url = URL.createObjectURL(videoData.data);
-        console.log(`URL ATUAL: ${url} TIPO: ${typeof url}`);
         return url;
       } catch (error) {
         console.error("ERRO! " + error);
       }
     },
-
+    setIcone() {
+      this.togglePlay();
+      this.icone = this.loadIconePlay();
+    },
     loadIconePlay() {
       if (this.playing) {
-        return "src/assets/play.svg";
-      } else {
         return "src/assets/pause.svg";
-      }
-    },
-    resizeVideo() {
-      const aspectRatio = 16 / 9; // Assuming a standard aspect ratio of 16:9
-      const maxWidth = window.innerWidth * VIDEO_RATIO; // % of the window width
-      const maxHeight = window.innerHeight * VIDEO_RATIO; // % of the window height
-      if (maxWidth / aspectRatio <= maxHeight) {
-        this.videoWidth = maxWidth;
-        this.videoHeight = maxWidth / aspectRatio;
       } else {
-        this.videoHeight = maxHeight;
-        this.videoWidth = maxHeight * aspectRatio;
+        return "src/assets/play.svg";
       }
-    },
-
-    bindEvents() {
-      console.log("BINDING");
-
-      EVENTS.forEach((event) => {
-        this.bindVideoEvent(event);
-      });
     },
     bindVideoEvent(which) {
       const player = this.$refs.player;
@@ -256,7 +377,22 @@ export default {
         this.$emit(which, { event, player: this });
       });
     },
+    bindEvents() {
+      console.log("BINDING");
 
+      EVENTS.forEach((event) => {
+        this.bindVideoEvent(event);
+      });
+    },
+    setMuted(state) {
+      this.videoMuted = state;
+    },
+    setPlaying(state) {
+      this.playing = state;
+    },
+    seekToPercentage(percentage) {
+      this.$refs.player.currentTime = (percentage / 100) * this.duration;
+    },
     play() {
       this.$refs.player.play();
       this.setPlaying(true);
@@ -275,14 +411,6 @@ export default {
       }
     },
 
-    setPlaying(state) {
-      this.playing = state;
-    },
-
-    seekToPercentage(percentage) {
-      this.$refs.player.currentTime = (percentage / 100) * this.duration;
-    },
-
     convertTimeToDuration(seconds) {
       let decimal = parseInt(Number(seconds / 60) % 60, 10);
       let uni = parseInt(seconds % 60, 10);
@@ -298,14 +426,7 @@ export default {
         this.setMuted(true);
       }
     },
-
-    setMuted(state) {
-      this.videoMuted = state;
-    },
   },
   computed: {},
-  beforeDestroy() {
-    window.removeEventListener("resize", this.resizeVideo);
-  },
 };
 </script>
