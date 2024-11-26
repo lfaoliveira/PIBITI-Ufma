@@ -1,10 +1,15 @@
-/* componente geral de video player */
+/* componente geral de video player TIRADO DO MDN: If you don't specify the controls
+attribute, the video won't include the browser's default controls; you can create your own
+custom controls using JavaScript and the #####HTMLMediaElement###### API. See Creating a
+cross-browser video player for more details. To allow precise control over your video (and
+audio) content, HTMLMediaElements fire many different events. In addition to providing
+controllability, these events let you monitor the progress of both download and playback
+of the media, as well as the playback state and position. */
 
 <template>
   <main class="wrapper-player">
-    <section class="video-demo">
-      <!-- <div class="video-container"> </div> -->
-      <!-- 
+    <!-- <div class="video-container"> </div> -->
+    <!-- 
     <input
       type="range"
       min="0"
@@ -13,31 +18,35 @@
       :value="percentage.toFixed(1)"
       @input="onInput"
     /> -->
-      <div class="video-container">
-        <video
-          class="video-analise"
-          :src="this.videoSource"
-          :muted="muted"
-          :autoplay="autoplay"
-          :controls="controls"
-          :loop="loop"
-          :poster="poster"
-          :preload="preload"
-          ref="player"
-        />
-        <div class="controles">
-          <span class="time-display" @timeupdate="this.onPlayerTimeupdate">{{
-            this.time
-          }}</span>
-          <button class="slider"></button>
-          <div class="bola-slider"></div>
-          <button class="bola-play" @click="setIcone()">
-            <img class="control-icon" :src="this.icone" :style="this.stylePausa" />
-          </button>
-        </div>
+    <!-- <div class="video-container">   -->
+    <video
+      class="video-analise"
+      :src="this.videoSource"
+      :muted="muted"
+      :autoplay="autoplay"
+      :controls="controls"
+      :loop="loop"
+      :poster="poster"
+      :preload="preload"
+      :currentTime="this.currentTime"
+      ref="player"
+    />
+    <div class="controles">
+      <span class="time-display" @timeupdate="this.onPlayerTimeupdate">{{
+        this.time
+      }}</span>
+
+      <div class="linha-do-tempo">
+        <div class="bola-slider"></div>
+        <button class="slider"></button>
       </div>
-      <!-- fim controles -->
-    </section>
+
+      <button class="bola-play" @click="setIcone()">
+        <img class="control-icon" :src="this.icone" :style="this.stylePausa" />
+      </button>
+    </div>
+    <!-- </div>  -->
+    <!-- fim controles -->
   </main>
 </template>
 
@@ -45,6 +54,7 @@
 * {
   max-width: 100%;
   --tam-slider: clamp(1%, 5px, 10px);
+  --alt-video: clamp(2vmin, 500px, 60%);
   z-index: 1;
   border: none;
   margin: 0;
@@ -56,17 +66,19 @@ input[type="file"] {
 
 .wrapper-player {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-content: center;
   margin: auto;
+  aspect-ratio: 16/9;
   width: 90%;
-}
+  height: min-content;
 
-.video-demo {
-  width: 100%;
-  border-radius: 0;
-  display: flex;
-  flex-direction: column;
+  margin-top: 5vmin;
+  border-radius: 31px;
+  position: relative;
+  /* min-height: 474px; */
+
   color: #fff;
   margin-bottom: 2%;
   align-self: center;
@@ -79,8 +91,12 @@ input[type="file"] {
   margin-top: 5vmin;
   border-radius: 31px;
   position: relative;
-  min-height: 474px;
+  /* min-height: 474px; */
   width: 100%;
+
+  color: #fff;
+  margin-bottom: 2%;
+  align-self: center;
 }
 
 .video-thumbnail {
@@ -105,8 +121,8 @@ input[type="file"] {
 
 .video-analise {
   border: none;
-  width: 100%;
-  height: 100%;
+  object-fit: contain;
+  position: relative;
 }
 
 @media (max-width: 991px) {
@@ -129,7 +145,7 @@ input[type="file"] {
   max-width: 100%;
   max-height: 100%;
   position: relative;
-  /*display: inline-block; 
+  /*display: inline-block;
 
 } */
 
@@ -149,14 +165,17 @@ video {
     rgba(33, 33, 33, 0.85) 39%,
     rgba(17, 0, 0, 1) 97%
   );
-  height: clamp(2vmin, 101px, 150px);
+  --alt-controles: clamp(3vmin, 121px, 170px);
+  height: var(--alt-controles);
+  top: calc(var(--alt-controles) * -1);
   position: relative;
 }
 
 .time-display {
   font-size: clamp(8px, 12px, 15px);
   position: relative;
-  top: clamp(10px, 15px, 20px);
+
+  /* top: clamp(10px, 15px, 20px);  */
 }
 
 .bola-play {
@@ -165,29 +184,34 @@ video {
   width: var(--tam-bola);
   height: var(--tam-bola);
   background-color: #fff;
-  margin: -1vmin 0 0vmin 0.7vmin;
+  margin: 2vmin 0 0vmin 0.7vmin;
   justify-content: center;
+  align-items: center;
   border-radius: 100%;
   cursor: pointer;
+}
+
+.linha-do-tempo {
+  display: flex;
+  justify-content: center;
+  height: fit-content;
+  flex-direction: column;
+  margin-top: 1vmin;
 }
 
 .slider {
   background-color: rgba(255, 255, 255, 0.72);
   width: 100%;
-  height: var(--tam-slider);
+  height: clamp(3px, 7px, 10px);
 }
 
 .bola-slider {
-  --tam-bolinha: clamp(1.6vmin, 12px, 16px);
+  --tam-bolinha: clamp(1.7vmin, 22px, 16px);
   width: var(--tam-bolinha);
   height: var(--tam-bolinha);
   background-color: #ccc;
   position: relative;
-  top: clamp(
-    -11px - var(--tam-slider) / 2,
-    -20px - var(--tam-slider) / 2,
-    -30px - var(--tam-slider) / 2
-  );
+  top: calc(var(--tam-slider) / 2);
   border-radius: 100%;
   cursor: pointer;
 }
@@ -261,6 +285,7 @@ export default {
       playing: true,
       duration: 0,
       time: 0,
+      currentTime: 0,
       percentagePlayed: 0,
       videoSource: "  ",
       videoMuted: false,
@@ -305,7 +330,7 @@ export default {
       console.log(event.type);
     },
     onPlayerTimeupdate({ event }) {
-      this.time = event.target.currentTime;
+      this.time = `${event.target.currentTime}`;
       console.log({ event: event.type, time: event.target.currentTime });
     },
     onPlayerCanplay({ event }) {

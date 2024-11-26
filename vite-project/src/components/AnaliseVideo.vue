@@ -21,7 +21,7 @@
       </div>
     </div>
     <VideoPlayer :idVideoAtual="this.idVideoAnalise"></VideoPlayer>
-    <Rodape></Rodape>
+    <Rodape class="rodape"></Rodape>
   </main>
 </template>
 
@@ -252,6 +252,10 @@ button {
 .videoplayer-controls-track {
   line-height: 2;
   margin-right: 1rem;
+}
+
+.rodape {
+  margin-top: -20vmin;
 }
 </style>
 
