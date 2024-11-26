@@ -255,7 +255,7 @@ button {
 }
 
 .rodape {
-  margin-top: -20vmin;
+  margin-top: clamp(20px, 6vmin, 5rem);
 }
 </style>
 

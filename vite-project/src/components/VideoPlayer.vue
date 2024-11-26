@@ -101,7 +101,7 @@ input[type="file"] {
 
 .video-thumbnail {
   position: absolute;
-  inset: 0;
+
   z-index: 0;
   height: 100%;
   width: 100%;
@@ -120,9 +120,11 @@ input[type="file"] {
 }
 
 .video-analise {
+  inset: 0;
   border: none;
+  border: 0.16rem solid rgba(85, 85, 85, 0.426);
   object-fit: contain;
-  position: relative;
+  position: absolute;
 }
 
 @media (max-width: 991px) {
@@ -148,15 +150,15 @@ input[type="file"] {
   /*display: inline-block;
 
 } */
-
+/* 
 video {
   max-width: 100%;
   max-height: 100%;
   display: flex;
   /*display: inline-block; */
-  /* padding: 5px; */
-  border: 0.16rem solid rgba(85, 85, 85, 0.426);
-}
+/* padding: 5px; 
+  
+} */
 
 .controles {
   background: linear-gradient(
@@ -167,7 +169,7 @@ video {
   );
   --alt-controles: clamp(3vmin, 121px, 170px);
   height: var(--alt-controles);
-  top: calc(var(--alt-controles) * -1);
+  top: calc(var(--alt-video) - 20vmin);
   position: relative;
 }
 
@@ -209,11 +211,12 @@ video {
   --tam-bolinha: clamp(1.7vmin, 22px, 16px);
   width: var(--tam-bolinha);
   height: var(--tam-bolinha);
-  background-color: #ccc;
-  position: relative;
-  top: calc(var(--tam-slider) / 2);
+  position: absolute;
   border-radius: 100%;
   cursor: pointer;
+  background-color: #fff;
+
+  z-index: 4;
 }
 
 input[type="range"] {
@@ -267,7 +270,7 @@ const EVENTS = [
 
 export default {
   name: "Player_de_Video",
-
+  // TODO: INSERIR LOGICA DE ADAPTAR TAMANHO DO WRAPPER COM BASE NO ASPECT-RATIO DO VIDEO
   props: {
     idVideoAtual: { type: String, required: true, default: "" },
     controls: { type: Boolean, required: false, default: false },

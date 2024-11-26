@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: "Test",
+  name: "Acao de salvar",
   created() {},
   data() {
     return {};
@@ -14,4 +14,4 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped></style>
