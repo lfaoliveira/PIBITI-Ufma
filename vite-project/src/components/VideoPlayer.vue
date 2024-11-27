@@ -32,9 +32,9 @@ of the media, as well as the playback state and position. */
       ref="player"
     />
     <div ref="controles" class="controles">
-      <span class="time-display" @timeupdate="this.onPlayerTimeupdate">{{
-        this.time
-      }}</span>
+      <span class="time-display" @timeupdate="this.onPlayerTimeupdate"
+        >{{ this.time }} / {{ this.duration }}</span
+      >
 
       <div class="linha-do-tempo">
         <div class="bola-slider"></div>
@@ -54,7 +54,7 @@ of the media, as well as the playback state and position. */
 * {
   max-width: 100%;
   --tam-slider: clamp(1%, 5px, 10px);
-  --alt-video: clamp(2vmin, 500px, 60%);
+  --alt-controles: clamp(50px, 12vmin, 170px);
   z-index: 1;
   border: none;
   margin: 0;
@@ -65,18 +65,17 @@ input[type="file"] {
 }
 
 .wrapper-player {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-content: center;
+  display: grid;
+  box-shadow: 0px 0px 0px 0.16rem rgb(0, 0, 0);
+  grid-template-rows: repeat(auto-fit, 60vmin);
+  grid-template-columns: repeat(auto-fit, minmax(100%, 1fr));
   margin: auto;
   /* aspect-ratio: 16/9; */
-  width: 90%;
+  width: clamp(90vmin, 90%, 100%);
   height: min-content;
+  gap: 0px;
+  margin-top: 5vmin;
 
-  margin-top: 5vmin; /* 
-  border: 0.32rem solid rgba(41, 39, 39, 0.508);
-  border-radius: 36px; */
   position: relative;
   /* min-height: 474px; */
 
@@ -126,10 +125,11 @@ input[type="file"] {
 
   object-fit: contain;
   position: relative;
-  aspect-ratio: clamp(4/3, 16/9, 32/10);
-  width: 100%;
-  --alt-video: clamp(2vmin, 500px, 60%);
-  height: var(--alt-video);
+  width: max-content;
+
+  margin: auto;
+
+  height: calc(var(--alt-controles) + 100%);
 }
 
 @media (max-width: 991px) {
@@ -166,15 +166,18 @@ video {
 } */
 
 .controles {
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(
     180deg,
     rgba(95, 95, 95, 0.66) 0%,
     rgba(33, 33, 33, 0.85) 39%,
     rgba(17, 0, 0, 1) 97%
   );
-  --alt-controles: clamp(80px, var(--alt-video) - 46vmin, 170px);
+
   height: var(--alt-controles);
   position: relative;
+  margin: 0px;
 }
 
 .time-display {
@@ -185,12 +188,13 @@ video {
 }
 
 .bola-play {
-  --tam-bola: clamp(3%, 38px, 40px);
+  --tam-bola: clamp(7vmin, 40px, 50px);
   display: flex;
+  aspect-ratio: 21/15;
   width: var(--tam-bola);
-  height: var(--tam-bola);
+  /* height: var(--tam-bola); */
   background-color: #fff;
-  margin: 2vmin 0 0vmin 0.7vmin;
+  margin: 2vmin 0px 2vmin 0.4vmin;
   justify-content: center;
   align-items: center;
   border-radius: 100%;
@@ -219,7 +223,7 @@ video {
   border-radius: 100%;
   cursor: pointer;
   background-color: #fff;
-
+  left: -0.1vmin;
   z-index: 4;
 }
 
@@ -308,13 +312,13 @@ export default {
     if (this.$refs.player.muted) {
       this.setMuted(true);
     }
-    const video = this.$refs.player;
+    /* const video = this.$refs.player;
     const altVideo = window.getComputedStyle(video).getPropertyValue("height");
     const controles = this.$refs.controles;
     const altControles = window.getComputedStyle(controles).getPropertyValue("height");
 
     let bottom = parseFloat(altControles) / 2;
-    this.$refs.controles.style.bottom = `calc(${bottom}px + 5vmin)`;
+    this.$refs.controles.style.bottom = `calc(${bottom}px + 5vmin)`; */
   },
 
   methods: {
