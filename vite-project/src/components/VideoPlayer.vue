@@ -31,7 +31,7 @@ of the media, as well as the playback state and position. */
       :currentTime="this.currentTime"
       ref="player"
     />
-    <div class="controles">
+    <div ref="controles" class="controles">
       <span class="time-display" @timeupdate="this.onPlayerTimeupdate">{{
         this.time
       }}</span>
@@ -70,12 +70,13 @@ input[type="file"] {
   justify-content: center;
   align-content: center;
   margin: auto;
-  aspect-ratio: 16/9;
+  /* aspect-ratio: 16/9; */
   width: 90%;
   height: min-content;
 
-  margin-top: 5vmin;
-  border-radius: 31px;
+  margin-top: 5vmin; /* 
+  border: 0.32rem solid rgba(41, 39, 39, 0.508);
+  border-radius: 36px; */
   position: relative;
   /* min-height: 474px; */
 
@@ -99,7 +100,7 @@ input[type="file"] {
   align-self: center;
 }
 
-.video-thumbnail {
+/* .video-thumbnail {
   position: absolute;
 
   z-index: 0;
@@ -107,7 +108,7 @@ input[type="file"] {
   width: 100%;
   object-fit: cover;
   object-position: center;
-}
+} */
 
 .control-icon {
   aspect-ratio: 0.94;
@@ -122,9 +123,13 @@ input[type="file"] {
 .video-analise {
   inset: 0;
   border: none;
-  border: 0.16rem solid rgba(85, 85, 85, 0.426);
+
   object-fit: contain;
-  position: absolute;
+  position: relative;
+  aspect-ratio: clamp(4/3, 16/9, 32/10);
+  width: 100%;
+  --alt-video: clamp(2vmin, 500px, 60%);
+  height: var(--alt-video);
 }
 
 @media (max-width: 991px) {
@@ -167,9 +172,8 @@ video {
     rgba(33, 33, 33, 0.85) 39%,
     rgba(17, 0, 0, 1) 97%
   );
-  --alt-controles: clamp(3vmin, 121px, 170px);
+  --alt-controles: clamp(80px, var(--alt-video) - 46vmin, 170px);
   height: var(--alt-controles);
-  top: calc(var(--alt-video) - 20vmin);
   position: relative;
 }
 
@@ -253,6 +257,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 <script>
 import db from "../db";
+import { ref, onMounted, computed } from "vue";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -303,6 +308,13 @@ export default {
     if (this.$refs.player.muted) {
       this.setMuted(true);
     }
+    const video = this.$refs.player;
+    const altVideo = window.getComputedStyle(video).getPropertyValue("height");
+    const controles = this.$refs.controles;
+    const altControles = window.getComputedStyle(controles).getPropertyValue("height");
+
+    let bottom = parseFloat(altControles) / 2;
+    this.$refs.controles.style.bottom = `calc(${bottom}px + 5vmin)`;
   },
 
   methods: {
@@ -436,6 +448,8 @@ export default {
   },
   computed: {
     stylePausa() {
+      /*FUNCAO que estiliza play e pause  */
+      // so funiona porque nao acessa DOM diretamente. ver docs
       if (this.playing) {
         return {
           padding: `0%`,
@@ -447,6 +461,22 @@ export default {
           width: `clamp(1vmin, 25px, 100%)`,
         };
       }
+    },
+    styleControles() {
+      const video = this.$refs.player;
+      if (!video) {
+        return { top: "0px" };
+      }
+
+      const altVideo = window.getComputedStyle(video).getPropertyValue("height");
+      const controles = this.$refs.controles;
+      const altControles = window.getComputedStyle(controles).getPropertyValue("height");
+
+      let top = parseFloat(altVideo) + parseFloat(altControles) / 2;
+      console.log(top);
+      return {
+        top: `${top}px`,
+      };
     },
   },
 };
