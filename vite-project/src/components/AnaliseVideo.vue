@@ -162,6 +162,7 @@
   flex: 0.3;
   display: flex;
   flex-direction: column;
+  justify-self: center;
 }
 
 .diagnostico {

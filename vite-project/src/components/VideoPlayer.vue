@@ -21,6 +21,7 @@ of the media, as well as the playback state and position. */
     <!-- <div class="video-container">   -->
     <video
       class="video-analise"
+      @loadedmetadata="getVideoData"
       :src="this.videoSource"
       :muted="muted"
       :autoplay="autoplay"
@@ -29,16 +30,17 @@ of the media, as well as the playback state and position. */
       :poster="poster"
       :preload="preload"
       :currentTime="this.currentTime"
-      ref="player"
+      ref="videoplayer"
     />
     <div ref="controles" class="controles">
-      <span class="time-display" @timeupdate="this.onPlayerTimeupdate"
-        >{{ this.time }} / {{ this.duration }}</span
+      <span class="time-display">
+        {{ this.formataTempo(this.currentTime) }} / {{ this.duration }}</span
       >
 
       <div class="linha-do-tempo">
-        <div class="bola-slider"></div>
-        <button class="slider"></button>
+        <button class="bola-slider" ref="bolaSlider"></button>
+        <!-- <div class="slider" ref="slider"></div> -->
+        <div class="slider" ref="slider" @click="updateSlider"></div>
       </div>
 
       <button class="bola-play" @click="setIcone()">
@@ -122,14 +124,13 @@ input[type="file"] {
 .video-analise {
   inset: 0;
   border: none;
-
-  object-fit: contain;
   position: relative;
-  width: max-content;
+  object-fit: contain;
+  width: auto;
+  height: calc(var(--alt-controles) + 100%);
+  aspect-ratio: 19/9;
 
   margin: auto;
-
-  height: calc(var(--alt-controles) + 100%);
 }
 
 @media (max-width: 991px) {
@@ -213,6 +214,7 @@ video {
   background-color: rgba(255, 255, 255, 0.72);
   width: 100%;
   height: clamp(3px, 7px, 10px);
+  cursor: pointer;
 }
 
 .bola-slider {
@@ -260,8 +262,9 @@ input[type="range"]::-webkit-slider-thumb {
 </style>
 
 <script>
-import db from "../db";
-import { ref, onMounted, computed } from "vue";
+import db from "../db.js";
+import videojs from "video.js";
+import CustomSlider from "../CustomSlider.js"; // Import the custom slider class
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -284,82 +287,103 @@ export default {
     idVideoAtual: { type: String, required: true, default: "" },
     controls: { type: Boolean, required: false, default: false },
     loop: { type: Boolean, required: false, default: true },
-    autoplay: { type: Boolean, required: false, default: true },
+    autoplay: { type: Boolean, required: false, default: false },
     muted: { type: Boolean, required: false, default: true },
     poster: { type: String, required: false },
     preload: { type: String, required: false, default: "true" },
+  },
+  components: {
+    CustomSlider,
   },
   data() {
     return {
       icone: " ",
       percentage: 0,
       tempoAtual: "00:00",
-      playing: true,
-      duration: 0,
+      playing: false,
+      duration: "00:00",
       time: 0,
       currentTime: 0,
-      percentagePlayed: 0,
+      sliderPercentage: 0,
       videoSource: "  ",
-      videoMuted: false,
+      videoDimensions: { width: 0, height: 0 },
     };
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
     this.icone = this.loadIconePlay();
     this.videoSource = await this.pegarVideo();
-
+    console.log(this.videoSource);
     //this.bindEvents();
-    if (this.$refs.player.muted) {
-      this.setMuted(true);
-    }
-    /* const video = this.$refs.player;
-    const altVideo = window.getComputedStyle(video).getPropertyValue("height");
-    const controles = this.$refs.controles;
-    const altControles = window.getComputedStyle(controles).getPropertyValue("height");
-
-    let bottom = parseFloat(altControles) / 2;
-    this.$refs.controles.style.bottom = `calc(${bottom}px + 5vmin)`; */
+    const tiposSuport = ["mp4", "ogg", "webm", "mkv"];
+    const sources = [];
+    //itera sobre tipos aceitaveis e cria array de fontes
+    tiposSuport.forEach((tipo) => {
+      sources.push({ src: this.videoSource, type: `video/${tipo}` });
+    });
+    this.setupPlayer(sources);
   },
 
   methods: {
-    onInput(e) {
-      console.log("INPUT no slider");
-      this.$emit("seek", e.target.value);
+    setupPlayer(sources) {
+      this.player = videojs(this.$refs.videoplayer, {
+        controls: false,
+        controlBar: {
+          playToggle: false, // Hides the play button
+          volumePanel: false, // Hides the volume control
+          fullscreenToggle: false, // Hides the fullscreen button
+          progressControl: false, // Hides the progress bar
+        },
+        autoplay: false,
+        preload: "auto",
+        sources: sources,
+      });
+      this.duration = this.$refs.videoplayer.duration;
+      this.player.on("timeupdate", this.onPlayerTimeupdate);
+      this.player.ready(() => {
+        this.player.addChild("CustomSeekBar");
+      });
+      const slider = new CustomSlider(this.player, { name: "CustomSlider" });
+      this.$refs.slider.appendChild(slider.el());
+      const video = this.$refs.videoplayer;
+      this.sliderPercentage = (video.currentTime / video.duration) * 100;
     },
 
-    onPlayerPlay({ event, player }) {
-      console.log(event.type);
-      player.setPlaying(true);
+    getVideoData() {
+      const video = this.$refs.videoplayer;
+      this.videoDimensions.width = video.videoWidth;
+      this.videoDimensions.height = video.videoHeight;
+      this.duration = videojs.time.formatTime(video.duration);
+      console.log(
+        `Width: ${this.videoDimensions.width}, Height: ${this.videoDimensions.height}`
+      );
     },
-    onPlayerPause({ event, player }) {
-      console.log(event.type);
-      player.setPlaying(false);
+
+    updateSlider($evt) {
+      // Seek the video based on where the user clicks on the slider
+
+      const sliderContainer = this.$refs.slider;
+      const video = this.$refs.videoplayer;
+
+      // Get bounding box and calculate clicked position
+      const rect = sliderContainer.getBoundingClientRect();
+      const clickPosition = $evt.clientX - rect.left;
+      const percentageClicked = clickPosition / rect.width;
+
+      // Update the video time
+      video.currentTime = percentageClicked * video.duration;
+
+      // Update the slider position visually
+      this.sliderPercentage = percentageClicked * 100;
     },
-    onPlayerEnded({ event, player }) {
-      console.log(event.type);
-      player.setPlaying(false);
-    },
-    onPlayerLoadeddata({ event }) {
-      console.log(event.type);
-    },
-    onPlayerWaiting({ event }) {
-      console.log(event.type);
-    },
-    onPlayerPlaying({ event }) {
-      console.log(event.type);
+    formataTempo(tempoInt) {
+      return videojs.time.formatTime(tempoInt);
     },
     onPlayerTimeupdate({ event }) {
-      this.time = `${event.target.currentTime}`;
-      console.log({ event: event.type, time: event.target.currentTime });
-    },
-    onPlayerCanplay({ event }) {
-      console.log(event.type);
-    },
-    onPlayerCanplaythrough({ event }) {
-      console.log(event.type);
-    },
-    playerStateChanged({ event }) {
-      console.log(event.type);
+      /* this.time = `${event.target.currentTime}`;
+      console.log({ event: event.type, time: event.target.currentTime }); */
+
+      this.currentTime = this.player.currentTime();
     },
 
     onVoltar() {
@@ -388,16 +412,16 @@ export default {
       }
     },
     bindVideoEvent(which) {
-      const player = this.$refs.player;
+      const videoplayer = this.$refs.videoplayer;
 
-      player.addEventListener(which, (event) => {
+      videoplayer.addEventListener(which, (event) => {
         if (which === "loadeddata") {
-          this.duration = player.duration;
+          this.duration = videoplayer.duration;
         }
         if (which === "timeupdate") {
-          this.percentagePlayed = (player.currentTime / player.duration) * 100;
+          this.sliderPercentage = (videoplayer.currentTime / videoplayer.duration) * 100;
         }
-        this.$emit(which, { event, player: this });
+        this.$emit(which, { event, videoplayer: this });
       });
     },
     bindEvents() {
@@ -407,22 +431,20 @@ export default {
         this.bindVideoEvent(event);
       });
     },
-    setMuted(state) {
-      this.videoMuted = state;
-    },
+
     setPlaying(state) {
       this.playing = state;
     },
     seekToPercentage(percentage) {
-      this.$refs.player.currentTime = (percentage / 100) * this.duration;
+      this.$refs.videoplayer.currentTime = (percentage / 100) * this.duration;
     },
     play() {
-      this.$refs.player.play();
+      this.$refs.videoplayer.play();
       this.setPlaying(true);
     },
 
     pause() {
-      this.$refs.player.pause();
+      this.$refs.videoplayer.pause();
       this.setPlaying(false);
     },
 
@@ -439,16 +461,11 @@ export default {
       let uni = parseInt(seconds % 60, 10);
       return [decimal, uni].join(":").replace(/\b(\d)\b/g, "0$1");
     },
-
-    toggleMute() {
-      if (this.videoMuted) {
-        this.$refs.player.muted = false;
-        this.setMuted(false);
-      } else {
-        this.$refs.player.muted = true;
-        this.setMuted(true);
-      }
-    },
+  },
+  beforeDestroy() {
+    if (this.player) {
+      this.player.dispose();
+    }
   },
   computed: {
     stylePausa() {
@@ -465,22 +482,6 @@ export default {
           width: `clamp(1vmin, 25px, 100%)`,
         };
       }
-    },
-    styleControles() {
-      const video = this.$refs.player;
-      if (!video) {
-        return { top: "0px" };
-      }
-
-      const altVideo = window.getComputedStyle(video).getPropertyValue("height");
-      const controles = this.$refs.controles;
-      const altControles = window.getComputedStyle(controles).getPropertyValue("height");
-
-      let top = parseFloat(altVideo) + parseFloat(altControles) / 2;
-      console.log(top);
-      return {
-        top: `${top}px`,
-      };
     },
   },
 };
