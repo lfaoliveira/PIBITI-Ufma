@@ -21,7 +21,7 @@ of the media, as well as the playback state and position. */
     <!-- <div class="video-container">   -->
     <video
       class="video-analise"
-      @loadedmetadata="getVideoData"
+      @loadedmetadata="getLoadedVideo"
       :src="this.videoSource"
       :muted="muted"
       :autoplay="autoplay"
@@ -36,12 +36,11 @@ of the media, as well as the playback state and position. */
       <span class="time-display">
         {{ this.formataTempo(this.currentTime) }} / {{ this.duration }}</span
       >
-
-      <div class="linha-do-tempo">
+      <!-- <div class="linha-do-tempo">
         <button class="bola-slider" ref="bolaSlider"></button>
-        <!-- <div class="slider" ref="slider"></div> -->
         <div class="slider" ref="slider" @click="updateSlider"></div>
-      </div>
+      </div> -->
+      <SliderControl :videoDuration="this.duration" />
 
       <button class="bola-play" @click="setIcone()">
         <img class="control-icon" :src="this.icone" :style="this.stylePausa" />
@@ -223,10 +222,11 @@ video {
   height: var(--tam-bolinha);
   position: absolute;
   border-radius: 100%;
-  cursor: pointer;
+
   background-color: #fff;
   left: -0.1vmin;
   z-index: 4;
+  cursor: pointer;
 }
 
 input[type="range"] {
@@ -264,7 +264,8 @@ input[type="range"]::-webkit-slider-thumb {
 <script>
 import db from "../db.js";
 import videojs from "video.js";
-import CustomSlider from "../CustomSlider.js"; // Import the custom slider class
+
+import SliderControl from "./SliderControl.vue";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -293,7 +294,7 @@ export default {
     preload: { type: String, required: false, default: "true" },
   },
   components: {
-    CustomSlider,
+    SliderControl,
   },
   data() {
     return {
@@ -302,10 +303,9 @@ export default {
       tempoAtual: "00:00",
       playing: false,
       duration: "00:00",
-      time: 0,
       currentTime: 0,
       sliderPercentage: 0,
-      videoSource: "  ",
+      videoSource: " ",
       videoDimensions: { width: 0, height: 0 },
     };
   },
@@ -313,7 +313,7 @@ export default {
     console.log("MONTADO VIDEOPLAYER:");
     this.icone = this.loadIconePlay();
     this.videoSource = await this.pegarVideo();
-    console.log(this.videoSource);
+    //console.log(this.videoSource);
     //this.bindEvents();
     const tiposSuport = ["mp4", "ogg", "webm", "mkv"];
     const sources = [];
@@ -326,6 +326,7 @@ export default {
 
   methods: {
     setupPlayer(sources) {
+      //Funcao que faz setup inicial do videoplayer usando dados do VideoPlayer.vue
       this.player = videojs(this.$refs.videoplayer, {
         controls: false,
         controlBar: {
@@ -338,18 +339,20 @@ export default {
         preload: "auto",
         sources: sources,
       });
+
       this.duration = this.$refs.videoplayer.duration;
-      this.player.on("timeupdate", this.onPlayerTimeupdate);
-      this.player.ready(() => {
-        this.player.addChild("CustomSeekBar");
+      this.player.on("timeupdate", () => {
+        this.currentTime = this.player.currentTime();
+
+        const percent = (this.currentTime / this.duration) * 100;
+        this.$emit("updateprogress", percent);
       });
-      const slider = new CustomSlider(this.player, { name: "CustomSlider" });
-      this.$refs.slider.appendChild(slider.el());
+      console.log("EMITIDO");
       const video = this.$refs.videoplayer;
       this.sliderPercentage = (video.currentTime / video.duration) * 100;
     },
 
-    getVideoData() {
+    getLoadedVideo() {
       const video = this.$refs.videoplayer;
       this.videoDimensions.width = video.videoWidth;
       this.videoDimensions.height = video.videoHeight;
@@ -359,23 +362,6 @@ export default {
       );
     },
 
-    updateSlider($evt) {
-      // Seek the video based on where the user clicks on the slider
-
-      const sliderContainer = this.$refs.slider;
-      const video = this.$refs.videoplayer;
-
-      // Get bounding box and calculate clicked position
-      const rect = sliderContainer.getBoundingClientRect();
-      const clickPosition = $evt.clientX - rect.left;
-      const percentageClicked = clickPosition / rect.width;
-
-      // Update the video time
-      video.currentTime = percentageClicked * video.duration;
-
-      // Update the slider position visually
-      this.sliderPercentage = percentageClicked * 100;
-    },
     formataTempo(tempoInt) {
       return videojs.time.formatTime(tempoInt);
     },
@@ -435,9 +421,7 @@ export default {
     setPlaying(state) {
       this.playing = state;
     },
-    seekToPercentage(percentage) {
-      this.$refs.videoplayer.currentTime = (percentage / 100) * this.duration;
-    },
+
     play() {
       this.$refs.videoplayer.play();
       this.setPlaying(true);
