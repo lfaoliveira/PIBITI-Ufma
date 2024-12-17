@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Homepage from './components/HomePage.vue';
 import AnaliseVideo from './components/AnaliseVideo.vue';
 import Demo from './components/Demo.vue'
+import Salvar from './components/icons/Salvar.vue'
 
 const routes = [
   {name:'home' ,path: '/', component: Homepage },       // Root path (Home page)
@@ -11,7 +12,8 @@ const routes = [
     component: AnaliseVideo,
     props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }), 
   },
-  { path: '/demo', component: Demo, props: true }, // pagina de exibição da demonstração
+  {path: '/salvar', name: 'salvar', component: Salvar},
+  { path: '/demo', component: Demo }, // pagina de exibição da demonstração
 ];
 
 const router = createRouter({

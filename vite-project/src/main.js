@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import { createStore } from 'vuex';
 import router from './router.js'; // Import the router config
 import store from './store/index'; // Import your Vuex store
+import 'video.js/dist/video-js.css';
 
 
 

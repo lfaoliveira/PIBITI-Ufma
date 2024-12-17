@@ -20,80 +20,107 @@ of the media, as well as the playback state and position. */
     /> -->
     <!-- <div class="video-container">   -->
     <video
-      class="video-analise"
+      class="video-js vjs-custom-skin"
+      preload="auto"
       @loadedmetadata="getLoadedVideo"
       :src="this.videoSource"
       :muted="muted"
       :autoplay="autoplay"
       :controls="controls"
       :loop="loop"
-      :poster="poster"
-      :preload="preload"
-      :currentTime="this.currentTime"
       ref="videoplayer"
     />
-    <div ref="controles" class="controles">
+    <!-- <div ref="controles" class="controles">
       <span class="time-display">
         {{ this.formataTempo(this.currentTime) }} / {{ this.duration }}</span
       >
-      <!-- <div class="linha-do-tempo">
+      <div class="linha-do-tempo">
         <button class="bola-slider" ref="bolaSlider"></button>
         <div class="slider" ref="slider" @click="updateSlider"></div>
-      </div> -->
+      </div>
       <SliderControl :videoDuration="this.duration" />
 
       <button class="bola-play" @click="setIcone()">
         <img class="control-icon" :src="this.icone" :style="this.stylePausa" />
       </button>
-    </div>
+    </div> -->
     <!-- </div>  -->
+
     <!-- fim controles -->
   </main>
 </template>
 
-<style scoped>
+<style>
+/* ATENCAo!!!!!!! ESTILO COM SCOPO GLOBAL! */
 * {
   max-width: 100%;
   --tam-slider: clamp(1%, 5px, 10px);
   --alt-controles: clamp(50px, 12vmin, 170px);
-  z-index: 1;
   border: none;
   margin: 0;
 }
+
+/* OBS: UTILIZAR especificidade ao mudar estilo do CSS do video.js */
+
+/*  */
+
+.vjs-custom-skin {
+  /* Custom styles here */
+}
+
+.video-js .vjs-control-bar {
+  /* height: clamp(5em, 100px, 15em); */
+  background: linear-gradient(
+    180deg,
+    rgba(95, 95, 95, 0.66) 0%,
+    rgba(33, 33, 33, 0.85) 39%,
+    rgba(17, 0, 0, 1) 97%
+  );
+}
+.video-js .vjs-play-control {
+  background-color: #fff;
+  color: #6113c6;
+  border-radius: 100%;
+  --tam-bola: clamp(7vmin, 40px, 50px);
+  display: flex;
+  aspect-ratio: 21/15;
+}
+
+.video-js .vjs-mute-control {
+  color: #fff;
+  margin-left: 1vmin;
+}
+
+.video-js[tabindex="-1"] {
+  height: clamp(100%, 100%, 100%);
+  width: clamp(100%, 100%, 100%);
+}
+/* COMEÇAR A MODIFICAR CSS DO VIDEO.JS */
+
+.video-js .vjs-control-bar {
+  display: flex;
+}
+
+/* .vjs-button > .vjs-icon-placeholder::before{
+  font-size: 1.8em;
+} */
 
 input[type="file"] {
   display: none;
 }
 
 .wrapper-player {
-  display: grid;
-  box-shadow: 0px 0px 0px 0.16rem rgb(0, 0, 0);
+  box-shadow: 0px 0px 0px 0.05rem rgb(0, 0, 0);
   grid-template-rows: repeat(auto-fit, 60vmin);
   grid-template-columns: repeat(auto-fit, minmax(100%, 1fr));
   margin: auto;
   /* aspect-ratio: 16/9; */
   width: clamp(90vmin, 90%, 100%);
-  height: min-content;
+  height: clamp(20em, 450px, 91vmin);
   gap: 0px;
   margin-top: 5vmin;
-
   position: relative;
   /* min-height: 474px; */
-
-  color: #fff;
-  margin-bottom: 2%;
-  align-self: center;
-}
-
-.video-container {
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
-  margin-top: 5vmin;
-  border-radius: 31px;
-  position: relative;
-  /* min-height: 474px; */
-  width: 100%;
 
   color: #fff;
   margin-bottom: 2%;
@@ -115,7 +142,6 @@ input[type="file"] {
   object-fit: contain;
   object-position: center;
   border-radius: 0;
-
   pointer-events: all;
   cursor: pointer;
 }
@@ -146,24 +172,6 @@ input[type="file"] {
     white-space: initial;
   }
 }
-
-/* FIM CSS DE IA */
-/* .div-video{
-  max-width: 100%;
-  max-height: 100%;
-  position: relative;
-  /*display: inline-block;
-
-} */
-/* 
-video {
-  max-width: 100%;
-  max-height: 100%;
-  display: flex;
-  /*display: inline-block; */
-/* padding: 5px; 
-  
-} */
 
 .controles {
   display: flex;
@@ -228,44 +236,12 @@ video {
   z-index: 4;
   cursor: pointer;
 }
-
-input[type="range"] {
-  position: relative;
-  top: -1px;
-  overflow: hidden;
-  width: 245px;
-  -webkit-appearance: none;
-  appearance: auto;
-  background-color: #ccc;
-  border-radius: 5px;
-}
-
-input[type="range"]:focus {
-  outline: none;
-}
-
-input[type="range"]::-webkit-slider-runnable-track {
-  height: 8px;
-  -webkit-appearance: none;
-  color: #333;
-  margin-top: -1px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  width: 8px;
-  -webkit-appearance: none;
-  height: 8px;
-  cursor: ew-resize;
-  background: #333;
-  box-shadow: -245px 0 0 245px #333;
-}
 </style>
 
 <script>
 import db from "../db.js";
 import videojs from "video.js";
-
-import SliderControl from "./SliderControl.vue";
+import "video.js/dist/video-js.css";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -286,32 +262,20 @@ export default {
   // TODO: INSERIR LOGICA DE ADAPTAR TAMANHO DO WRAPPER COM BASE NO ASPECT-RATIO DO VIDEO
   props: {
     idVideoAtual: { type: String, required: true, default: "" },
-    controls: { type: Boolean, required: false, default: false },
-    loop: { type: Boolean, required: false, default: true },
-    autoplay: { type: Boolean, required: false, default: false },
-    muted: { type: Boolean, required: false, default: true },
-    poster: { type: String, required: false },
-    preload: { type: String, required: false, default: "true" },
+    controls: { type: Boolean, default: true },
+    loop: { type: Boolean, default: true },
+    autoplay: { type: Boolean, default: false },
+    muted: { type: Boolean, default: true },
+    preload: { type: String, default: "true" },
   },
-  components: {
-    SliderControl,
-  },
+  components: {},
   data() {
     return {
-      icone: " ",
-      percentage: 0,
-      tempoAtual: "00:00",
-      playing: false,
-      duration: "00:00",
-      currentTime: 0,
-      sliderPercentage: 0,
       videoSource: " ",
-      videoDimensions: { width: 0, height: 0 },
     };
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
-    this.icone = this.loadIconePlay();
     this.videoSource = await this.pegarVideo();
     //console.log(this.videoSource);
     //this.bindEvents();
@@ -328,48 +292,8 @@ export default {
     setupPlayer(sources) {
       //Funcao que faz setup inicial do videoplayer usando dados do VideoPlayer.vue
       this.player = videojs(this.$refs.videoplayer, {
-        controls: false,
-        controlBar: {
-          playToggle: false, // Hides the play button
-          volumePanel: false, // Hides the volume control
-          fullscreenToggle: false, // Hides the fullscreen button
-          progressControl: false, // Hides the progress bar
-        },
-        autoplay: false,
-        preload: "auto",
         sources: sources,
       });
-
-      this.duration = this.$refs.videoplayer.duration;
-      this.player.on("timeupdate", () => {
-        this.currentTime = this.player.currentTime();
-
-        const percent = (this.currentTime / this.duration) * 100;
-        this.$emit("updateprogress", percent);
-      });
-      console.log("EMITIDO");
-      const video = this.$refs.videoplayer;
-      this.sliderPercentage = (video.currentTime / video.duration) * 100;
-    },
-
-    getLoadedVideo() {
-      const video = this.$refs.videoplayer;
-      this.videoDimensions.width = video.videoWidth;
-      this.videoDimensions.height = video.videoHeight;
-      this.duration = videojs.time.formatTime(video.duration);
-      console.log(
-        `Width: ${this.videoDimensions.width}, Height: ${this.videoDimensions.height}`
-      );
-    },
-
-    formataTempo(tempoInt) {
-      return videojs.time.formatTime(tempoInt);
-    },
-    onPlayerTimeupdate({ event }) {
-      /* this.time = `${event.target.currentTime}`;
-      console.log({ event: event.type, time: event.target.currentTime }); */
-
-      this.currentTime = this.player.currentTime();
     },
 
     onVoltar() {
@@ -385,65 +309,6 @@ export default {
       } catch (error) {
         console.error("ERRO! " + error);
       }
-    },
-    setIcone() {
-      this.togglePlay();
-      this.icone = this.loadIconePlay();
-    },
-    loadIconePlay() {
-      if (this.playing) {
-        return "src/assets/pause.svg";
-      } else {
-        return "src/assets/play.svg";
-      }
-    },
-    bindVideoEvent(which) {
-      const videoplayer = this.$refs.videoplayer;
-
-      videoplayer.addEventListener(which, (event) => {
-        if (which === "loadeddata") {
-          this.duration = videoplayer.duration;
-        }
-        if (which === "timeupdate") {
-          this.sliderPercentage = (videoplayer.currentTime / videoplayer.duration) * 100;
-        }
-        this.$emit(which, { event, videoplayer: this });
-      });
-    },
-    bindEvents() {
-      console.log("BINDING");
-
-      EVENTS.forEach((event) => {
-        this.bindVideoEvent(event);
-      });
-    },
-
-    setPlaying(state) {
-      this.playing = state;
-    },
-
-    play() {
-      this.$refs.videoplayer.play();
-      this.setPlaying(true);
-    },
-
-    pause() {
-      this.$refs.videoplayer.pause();
-      this.setPlaying(false);
-    },
-
-    togglePlay() {
-      if (this.playing) {
-        this.pause();
-      } else {
-        this.play();
-      }
-    },
-
-    convertTimeToDuration(seconds) {
-      let decimal = parseInt(Number(seconds / 60) % 60, 10);
-      let uni = parseInt(seconds % 60, 10);
-      return [decimal, uni].join(":").replace(/\b(\d)\b/g, "0$1");
     },
   },
   beforeDestroy() {

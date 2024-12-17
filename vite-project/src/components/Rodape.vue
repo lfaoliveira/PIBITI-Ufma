@@ -34,6 +34,8 @@
   justify-content: space-around;
   width: 100%;
   max-width: 600px;
+  position: relative;
+  left: -1vmin;
 }
 
 .footer-link {

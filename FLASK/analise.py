@@ -1,56 +1,73 @@
 from tensorflow.python.framework.ops import disable_eager_execution
+
 disable_eager_execution()
 
 import sys
 import cv2
 import numpy as np
 import os
-from yolo import YOLO
+
+# from yolo import YOLO
 from PIL import Image
 import matplotlib.pyplot as plt
 
+
 class AnaliseParalisia:
     def __init__(self, modelo, path_temp):
-      self.path_temp = path_temp
-      self.modelo = modelo
+        self.path_temp = path_temp
+        self.modelo = modelo
 
     def funcao_metodo(self, videoEntrada, videoSaida, timestamp):
-      #olhoEsquerdo e  olhoDireito são listas de pontos com as posições (x,y) dos respectivos olhos em cada frame
-      #frames é uma lista com os indices dos frames que foram usados
-      olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(videoEntrada, videoSaida)
+        # olhoEsquerdo e  olhoDireito são listas de pontos com as posições (x,y) dos respectivos olhos em cada frame
+        # frames é uma lista com os indices dos frames que foram usados
+        olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(videoEntrada, videoSaida)
 
-      self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
+        self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
 
-      leftEye = np.array(olhoEsquerdo)
-      rightEye = np.array(olhoDireito)
-      xE = leftEye[:,0]-min(leftEye[:,0])
-      xD = rightEye[:,0]-min(rightEye[:,0])
-      xEsquerdo, xDireito = self.getHampel(xE,xD)
-      xEsquerdoFinal, xDireitaFinal = self.removeOutliers(xEsquerdo, xDireito)
+        leftEye = np.array(olhoEsquerdo)
+        rightEye = np.array(olhoDireito)
+        xE = leftEye[:, 0] - min(leftEye[:, 0])
+        xD = rightEye[:, 0] - min(rightEye[:, 0])
+        xEsquerdo, xDireito = self.getHampel(xE, xD)
+        xEsquerdoFinal, xDireitaFinal = self.removeOutliers(xEsquerdo, xDireito)
 
-      path_graf = self.plotHampelFinal(xE, xD, xEsquerdo, xEsquerdoFinal, xDireito, xDireitaFinal, "Remocao de Ruido", timestamp)
+        path_graf = self.plotHampelFinal(
+            xE,
+            xD,
+            xEsquerdo,
+            xEsquerdoFinal,
+            xDireito,
+            xDireitaFinal,
+            "Remocao de Ruido",
+            timestamp,
+        )
 
-      velE, velD = self.calculaVelocidadeEspacoPercorrido(xEsquerdoFinal, xDireitaFinal)
-      velE2, velD2, mE,mD = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal)
-      print(f'Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}')
+        velE, velD = self.calculaVelocidadeEspacoPercorrido(
+            xEsquerdoFinal, xDireitaFinal
+        )
+        velE2, velD2, mE, mD = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal)
+        print(
+            f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
+        )
 
-      perdentualDiferenca = (1-min(velE, velD)/max(velE, velD))
-      threshold = 0.1965 #19.65%
-      olho_doente = ""
+        perdentualDiferenca = 1 - min(velE, velD) / max(velE, velD)
+        threshold = 0.1965  # 19.65%
+        olho_doente = ""
 
-          
-      if velE < velD:
-        print(f'O olho esquerdo se move {perdentualDiferenca*100:.2f}% mais devagar que o olho direito.')
-        olho_doente = "Esquerdo"
-      else:
-        print(f'O olho direito se move {perdentualDiferenca*100:.2f}% mais devagar que o olho esquerdo.')
-        olho_doente = "Direito"
-      
-      if perdentualDiferenca < threshold:
-        olho_doente = None
-      return f"{velE},{velD},{perdentualDiferenca},{olho_doente}", path_graf
-      
+        if velE < velD:
+            print(
+                f"O olho esquerdo se move {perdentualDiferenca*100:.2f}% mais devagar que o olho direito."
+            )
+            olho_doente = "Esquerdo"
+        else:
+            print(
+                f"O olho direito se move {perdentualDiferenca*100:.2f}% mais devagar que o olho esquerdo."
+            )
+            olho_doente = "Direito"
 
+        if perdentualDiferenca < threshold:
+            olho_doente = None
+        return f"{velE},{velD},{perdentualDiferenca},{olho_doente}", path_graf
 
     def detectaOlhos(self, inputVideo, outputVideo):
         vid = cv2.VideoCapture(inputVideo)
@@ -61,13 +78,18 @@ class AnaliseParalisia:
         frame_width = int(vid.get(3))
         frame_height = int(vid.get(4))
 
-        if(frame_width > 416 and frame_height > 416):
+        if frame_width > 416 and frame_height > 416:
             auxV = max(frame_width, frame_height)
             factor = np.trunc(auxV / 416)
             frame_width = int(frame_width / factor)
             frame_height = int(frame_height / factor)
 
-        videoFinal = cv2.VideoWriter(outputVideo, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps / 2, (frame_width, frame_height))
+        videoFinal = cv2.VideoWriter(
+            outputVideo,
+            cv2.VideoWriter_fourcc("M", "J", "P", "G"),
+            fps / 2,
+            (frame_width, frame_height),
+        )
         olhoEsquerdo = []
         olhoDireito = []
         frames = []
@@ -97,10 +119,19 @@ class AnaliseParalisia:
                                     end_point = (a[2], a[3])
                                     center = getCenter(a)
                                     pontosCentro.append(center)
-                                    cv2.rectangle(resized, start_point, end_point, (0, 0, 255), 3)
+                                    cv2.rectangle(
+                                        resized, start_point, end_point, (0, 0, 255), 3
+                                    )
                                     cv2.circle(resized, center, 5, (0, 255, 0), -1)
-                                cv2.putText(resized, text='Olhos ' + str(len(numbers)), org=(3, 15), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                                            fontScale=0.50, color=(255, 0, 0), thickness=2)
+                                cv2.putText(
+                                    resized,
+                                    text="Olhos " + str(len(numbers)),
+                                    org=(3, 15),
+                                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                                    fontScale=0.50,
+                                    color=(255, 0, 0),
+                                    thickness=2,
+                                )
                                 videoFinal.write(resized)
                                 frames.append(x)
 
@@ -115,16 +146,16 @@ class AnaliseParalisia:
         vid.release()
         videoFinal.release()
         return olhoEsquerdo, olhoDireito, frames
+
     def escrever_olhos(self, olhos, frames, videoEntrada):
-      for idx_olho, olho in enumerate(olhos):
-        ordem = "Esquerdo" if idx_olho==0 else "Direito"
-        pupilaOlho = open(videoEntrada.split('.')[0]+ f"{ordem}.txt","w+")
-        for i in range(len(olho)):
-          pupilaOlho.write("\n%d,"%(frames[i]))
-          pupilaOlho.write("%d,"%(olho[i][0]))
-          pupilaOlho.write("%d\n"%(olho[i][1]))
-        pupilaOlho.close()
-        
+        for idx_olho, olho in enumerate(olhos):
+            ordem = "Esquerdo" if idx_olho == 0 else "Direito"
+            pupilaOlho = open(videoEntrada.split(".")[0] + f"{ordem}.txt", "w+")
+            for i in range(len(olho)):
+                pupilaOlho.write("\n%d," % (frames[i]))
+                pupilaOlho.write("%d," % (olho[i][0]))
+                pupilaOlho.write("%d\n" % (olho[i][1]))
+            pupilaOlho.close()
 
     def hampel_filter_forloop(self, input_series, window_size, n_sigmas):
         n = len(input_series)
@@ -132,9 +163,11 @@ class AnaliseParalisia:
         k = 1.4826
         indices = []
         for i in range((window_size), (n - window_size)):
-            x0 = np.median(input_series[(i - window_size):(i + window_size)])
-            S0 = k * np.median(np.abs(input_series[(i - window_size):(i + window_size)] - x0))
-            if (np.abs(input_series[i] - x0) > n_sigmas * S0):
+            x0 = np.median(input_series[(i - window_size) : (i + window_size)])
+            S0 = k * np.median(
+                np.abs(input_series[(i - window_size) : (i + window_size)] - x0)
+            )
+            if np.abs(input_series[i] - x0) > n_sigmas * S0:
                 new_series[i] = x0
                 indices.append(i)
         return new_series, indices
@@ -158,13 +191,13 @@ class AnaliseParalisia:
         for j in range(1, len(xEsquerdo) - 1):
             anterior = abs(xEsquerdo[j] - xEsquerdo[j - 1])
             proximo = abs(xEsquerdo[j] - xEsquerdo[j + 1])
-            if ((anterior > (fator / 7)) and (proximo > (fator / 7))):
+            if (anterior > (fator / 7)) and (proximo > (fator / 7)):
                 xEsquerdoFinal.append(int((xEsquerdo[j + 1] + xEsquerdo[j - 1]) / 2))
             else:
                 xEsquerdoFinal.append(xEsquerdo[j])
             anterior = abs(xDireita[j] - xDireita[j - 1])
             proximo = abs(xDireita[j] - xDireita[j + 1])
-            if ((anterior > (fator / 7)) and (proximo > (fator / 7))):
+            if (anterior > (fator / 7)) and (proximo > (fator / 7)):
                 xDireitaFinal.append(int((xDireita[j + 1] + xDireita[j - 1]) / 2))
             else:
                 xDireitaFinal.append(xDireita[j])
@@ -172,21 +205,31 @@ class AnaliseParalisia:
         xEsquerdoFinal.append(xEsquerdo[len(xEsquerdo) - 1])
         return xEsquerdoFinal, xDireitaFinal
 
-    def plotHampelFinal(self, xEsquerda, xDireita, xEsquerdoHampel, xEsquerdoFinal, xDireitaHampel, xDireitaFinal, titulo, timestamp):
+    def plotHampelFinal(
+        self,
+        xEsquerda,
+        xDireita,
+        xEsquerdoHampel,
+        xEsquerdoFinal,
+        xDireitaHampel,
+        xDireitaFinal,
+        titulo,
+        timestamp,
+    ):
         plt.figure(num=1, figsize=(10, 5))
         plt.title(titulo)
-        #plt.plot(xEsquerda, 'b', label='Esq.')
-        #plt.plot(xEsquerdoHampel, 'salmon', label='Esq. Hampel')
-        plt.plot(xEsquerdoFinal, 'darkred', label='Esq. Final')
-        #plt.plot(xDireita, 'g', label='Dir.')
-        #plt.plot(xDireitaHampel, 'grey', label='Dir. Hampel')
-        plt.plot(xDireitaFinal, 'k', label='Dir. Final')
-        plt.xlabel('Frames')
-        plt.ylabel('Pixels')
+        # plt.plot(xEsquerda, 'b', label='Esq.')
+        # plt.plot(xEsquerdoHampel, 'salmon', label='Esq. Hampel')
+        plt.plot(xEsquerdoFinal, "darkred", label="Esq. Final")
+        # plt.plot(xDireita, 'g', label='Dir.')
+        # plt.plot(xDireitaHampel, 'grey', label='Dir. Hampel')
+        plt.plot(xDireitaFinal, "k", label="Dir. Final")
+        plt.xlabel("Frames")
+        plt.ylabel("Pixels")
         plt.legend()
         path_graf = os.path.join(self.path_temp, f"{timestamp}.jpg")
         plt.savefig(path_graf)
-        #plt.show()
+        # plt.show()
         plt.close()
         return path_graf
 
@@ -220,11 +263,26 @@ class AnaliseParalisia:
     def calculaVelocidade(self, olhoEsquerdo, olhoDireito, frames):
         posicaoOlhoEsquerdo = [x[0] for x in olhoEsquerdo]
         posicaoOlhoDireito = [x[0] for x in olhoDireito]
-        esquerdaHampel, direitaHampel = self.getHampel(posicaoOlhoEsquerdo, posicaoOlhoDireito)
-        olhoEsquerdoFinal, olhoDireitoFinal = self.removeOutliers(esquerdaHampel, direitaHampel)
-        self.plotHampeleFinal(posicaoOlhoEsquerdo, posicaoOlhoDireito, esquerdaHampel, olhoEsquerdoFinal, direitaHampel, olhoDireitoFinal, 'Posição em relacao aos frames')
-        velEsquerda, velDireita = self.calculaVelocidadeEspacoPercorrido(olhoEsquerdoFinal, olhoDireitoFinal)
+        esquerdaHampel, direitaHampel = self.getHampel(
+            posicaoOlhoEsquerdo, posicaoOlhoDireito
+        )
+        olhoEsquerdoFinal, olhoDireitoFinal = self.removeOutliers(
+            esquerdaHampel, direitaHampel
+        )
+        self.plotHampeleFinal(
+            posicaoOlhoEsquerdo,
+            posicaoOlhoDireito,
+            esquerdaHampel,
+            olhoEsquerdoFinal,
+            direitaHampel,
+            olhoDireitoFinal,
+            "Posição em relacao aos frames",
+        )
+        velEsquerda, velDireita = self.calculaVelocidadeEspacoPercorrido(
+            olhoEsquerdoFinal, olhoDireitoFinal
+        )
         return velEsquerda, velDireita
+
 
 def getCenter(bbox):
     """Função auxiliar para calcular o centro da bounding box."""
@@ -232,7 +290,11 @@ def getCenter(bbox):
     centerY = (bbox[3] + bbox[1]) // 2
     return centerX, centerY
 
+
 def selectBoundingBoxes(boxes):
     """Função auxiliar para selecionar as bounding boxes dos olhos."""
     # Exemplo de lógica para retornar as bounding boxes dos olhos
-    return [0, 1], 45  # Mock da seleção das bounding boxes e ângulo (substituir com lógica real)
+    return [
+        0,
+        1,
+    ], 45  # Mock da seleção das bounding boxes e ângulo (substituir com lógica real)

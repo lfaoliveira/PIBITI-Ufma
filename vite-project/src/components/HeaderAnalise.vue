@@ -1,7 +1,7 @@
 <template>
   <div class="div-header">
     <Voltar class="botao-voltar" :onclick="fnVoltar"></Voltar>
-    <Salvar></Salvar>
+    <Salvar @click="salvarRes"></Salvar>
   </div>
 </template>
 
@@ -39,6 +39,9 @@ export default {
     fnVoltar() {
       this.$router.push({ name: "home" });
     },
+    salvarRes() {
+      this.$router.push({ name: "salvar" });
+    },
   },
   components: {
     Voltar,
@@ -46,7 +49,10 @@ export default {
   },
   created() {},
   data() {
-    return {};
+    return {
+      //id para recuperar dados do banco de dados
+      idDados: "",
+    };
   },
   props: {},
 };

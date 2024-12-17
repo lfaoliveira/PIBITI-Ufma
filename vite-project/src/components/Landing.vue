@@ -182,6 +182,7 @@ input {
 <script>
 import headerHome from "./HeaderHomepage.vue";
 import db from "../db";
+import axios from "axios";
 
 export default {
   name: "Landing",
@@ -191,10 +192,34 @@ export default {
   setup() {},
   methods: {
     async handleFileUpload($evt) {
-      console.log("UPLOAD FEITO");
       const file = $evt.target.files[0];
 
       if (file) {
+        // AQUI ENTRA LOGICA DE PROCESSAMENTO DE VIDEO
+        const urlServer = "http://localhost:5000"; // Replace with your server URL
+        const formData = new FormData();
+        formData.append("file", file); // 'file' is the key used for the file on the server
+        axios
+          .post(urlServer, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })
+          .then((response) => console.log(response.data))
+          .catch((error) => console.error(error));
+
+        // URL of the remote server
+
+        try {
+          // Perform the POST request
+          const response = await fetch(urlServer, {
+            method: "POST",
+            body: formData, // Send the file data
+          });
+          console.log("UPLOAD FEITO");
+        } catch (error) {
+          console.error("Error during file upload:", error);
+          alert("An error occurred while uploading the file.");
+        }
+        //
         db.open();
         const videoData = {
           name: file.name,
