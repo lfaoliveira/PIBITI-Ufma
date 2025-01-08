@@ -1,1 +1,1 @@
-pip install tensorflow==2.8.0 os pillow opencv-python numpy
+pip install tensorflow==2.8.0 pillow opencv-python numpy

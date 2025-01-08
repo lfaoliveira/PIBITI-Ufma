@@ -1,8 +1,6 @@
 from tensorflow.python.framework.ops import disable_eager_execution
 
 disable_eager_execution()
-
-import sys
 import cv2
 import numpy as np
 import os
@@ -13,6 +11,11 @@ import matplotlib.pyplot as plt
 
 
 class AnaliseParalisia:
+    """
+    Classe wrapper que contem todas as funcoes necessarias pra produzir resultados relevantes
+    pro diagnostico de paralisia
+    """
+
     def __init__(self, modelo, path_temp):
         self.path_temp = path_temp
         self.modelo = modelo
@@ -50,24 +53,24 @@ class AnaliseParalisia:
             f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
         )
 
-        perdentualDiferenca = 1 - min(velE, velD) / max(velE, velD)
-        threshold = 0.1965  # 19.65%
+        percentDif = 1 - min(velE, velD) / max(velE, velD)
+        threshold = 0.1965  # 19.65%, ver artigo
         olho_doente = ""
 
         if velE < velD:
             print(
-                f"O olho esquerdo se move {perdentualDiferenca*100:.2f}% mais devagar que o olho direito."
+                f"O olho esquerdo se move {percentDif*100:.2f}% mais devagar que o olho direito."
             )
             olho_doente = "Esquerdo"
         else:
             print(
-                f"O olho direito se move {perdentualDiferenca*100:.2f}% mais devagar que o olho esquerdo."
+                f"O olho direito se move {percentDif*100:.2f}% mais devagar que o olho esquerdo."
             )
             olho_doente = "Direito"
 
-        if perdentualDiferenca < threshold:
+        if percentDif < threshold:
             olho_doente = None
-        return f"{velE},{velD},{perdentualDiferenca},{olho_doente}", path_graf
+        return f"{velE},{velD},{percentDif},{olho_doente}", path_graf
 
     def detectaOlhos(self, inputVideo, outputVideo):
         vid = cv2.VideoCapture(inputVideo)

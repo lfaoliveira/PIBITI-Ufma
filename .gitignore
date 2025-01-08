@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+#Python
+__pycache__
+.venv
+#pesos pra execucao da YOLov3
+trained_weights_final.h5
