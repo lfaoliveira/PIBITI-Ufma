@@ -196,7 +196,7 @@ export default {
 
       if (file) {
         // AQUI ENTRA LOGICA DE PROCESSAMENTO DE VIDEO
-        const urlServer = "http://localhost:5000"; // Replace with your server URL
+        const urlServer = "http://localhost:5000/analise"; // Replace with your server URL
         const formData = new FormData();
         formData.append("file", file); // 'file' is the key used for the file on the server
         axios

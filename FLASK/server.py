@@ -1,5 +1,7 @@
 import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask_cors import CORS
+
 import requests
 from werkzeug.utils import secure_filename
 import os
@@ -27,8 +29,13 @@ if not os.path.exists(path_pesos_yolo):
 video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
 
 app = Flask(__name__)
+"""ALERTA!!!!!!!!!! somente usar isso em producao, ja que isso habilita requisicoes de qualquer origem
+Possível risco de segurança!
+"""
+CORS(app)
 
 app.config["UPLOAD_FOLDER"] = "tmp"
+os.makedirs("tmp", exist_ok=True)
 
 kwargs = {
     "model_path": "trained_weights_final.h5",
@@ -56,7 +63,7 @@ def allowed_file(filename: str):
 
 @app.route("/")
 def index():
-    send_assets("/assets/style.css")
+    # send_assets("/assets/style.css")
     return "Hello World"
 
 
@@ -86,17 +93,26 @@ def analisar():
         print("Tipo incorreto de arq!\n\n")
         return SystemError
 
+    nome_local = f"{user}_{str(round(timestamp, 4))}.{ext}"
+    filename_local = secure_filename(f"INPUT_{nome_local}")
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
-    filename_local = secure_filename(f"VIDEO_{user}_{str(round(timestamp, 4))}.{ext}")
     path_processamento_arq = os.path.join(app.config["UPLOAD_FOLDER"], filename_local)
     save = True
     if save:
         arq.save(path_processamento_arq)
 
-    arq_stream = arq.stream
+    # se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
+    # arq_stream = arq.stream
+    path_out = os.path.join(app.config["UPLOAD_FOLDER"], f"OUT_{nome_local}")
+    str_res, path_graf = analisador.funcao_metodo(
+        path_processamento_arq, path_out, timestamp
+    )
 
-    # servidor DEVE retorna string contando os resultados e grafico como respsotas HTTP
-    return "File processed sucessfully!!"
+    videoOut = open(path_out, "r")
+    grafico = open(path_graf, "r")
+    result = {"string": str_res, "grafico": grafico, "video": videoOut}
+    # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
+    return jsonify(result)
 
 
 @app.route("/demo", methods=["POST"])

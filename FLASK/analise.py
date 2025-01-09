@@ -72,8 +72,8 @@ class AnaliseParalisia:
             olho_doente = None
         return f"{velE},{velD},{percentDif},{olho_doente}", path_graf
 
-    def detectaOlhos(self, inputVideo, outputVideo):
-        vid = cv2.VideoCapture(inputVideo)
+    def detectaOlhos(self, path_inputVideo, path_outputVideo):
+        vid = cv2.VideoCapture(path_inputVideo)
         length = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
         if not vid.isOpened():
             raise IOError("Nao foi possivel abrir o video indicado.")
@@ -88,7 +88,7 @@ class AnaliseParalisia:
             frame_height = int(frame_height / factor)
 
         videoFinal = cv2.VideoWriter(
-            outputVideo,
+            path_outputVideo,
             cv2.VideoWriter_fourcc("M", "J", "P", "G"),
             fps / 2,
             (frame_width, frame_height),
@@ -230,7 +230,7 @@ class AnaliseParalisia:
         plt.xlabel("Frames")
         plt.ylabel("Pixels")
         plt.legend()
-        path_graf = os.path.join(self.path_temp, f"{timestamp}.jpg")
+        path_graf = os.path.join(self.path_temp, f"GRAF_{timestamp}.jpg")
         plt.savefig(path_graf)
         # plt.show()
         plt.close()
