@@ -1,7 +1,6 @@
 import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
-
 import requests
 from werkzeug.utils import secure_filename
 import os
@@ -9,52 +8,32 @@ import sys
 from yolo import YOLO
 from analise import AnaliseParalisia
 import time
-import glob
-import zipfile
-import h5py
 
 
-def uniao_pesos(extract_dir, nome_base, testar=True):
-    """
-    Une partes dos pesos em 1 unico arquivo zip e depois concatena e extrai em um arquivo .h5
-    `extract_dir`: diretorio onde pesos vao ser extraidos. Cria se nao houver
-    `nome_base`: nome no estilo 'myfile.zip.'
-    `testar`: bool, se deve testar integridade do arquivo ou nao
+def download_peso(PATH_FLASK):
+    from google.oauth2 import service_account
+    from googleapiclient.discovery import build
+    from googleapiclient.http import MediaIoBaseDownload
+    import io
 
-    Retorna `output_file`, path dos pesos finais
-    """
+    SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+    PATH_CRED = os.path.join(PATH_FLASK, "credentials.json")
+    credentials = service_account.Credentials.from_service_account_file(
+        PATH_CRED, scopes=SCOPES
+    )
 
-    zip_prefix = f"trained_weights_final.zip."
-    parts = glob.glob(zip_prefix + "*")
-    n = len(parts)
+    service = build("drive", "v3", credentials=credentials)
+    file_id = "10hdULWG2n7F8jjUbebcB2lMeiUUnh6rq"
+    file_name = "trained_weights_final.h5"
 
-    # Directory to extract files
-    os.makedirs(extract_dir, exist_ok=True)
-    path_zip_completo = os.path.join(extract_dir, nome_base)
+    request = service.files().get_media(fileId=file_id)
+    fh = io.FileIO(file_name, "wb")
+    downloader = MediaIoBaseDownload(fh, request, chunksize=1024 * 1024)
 
-    # Concatena partes em um unico arquivo
-    with open(path_zip_completo, "wb") as outfile:
-        for i in range(1, n + 1):
-            filename = f"{zip_prefix}{str(i).zfill(3)}"
-            # essa parte le parte do zip e escreve no zip total
-            with open(filename, "rb") as infile:
-                outfile.write(infile.read())
-
-    # Extract
-    with zipfile.ZipFile(path_zip_completo, "r") as zip_ref:
-        zip_ref.extractall(extract_dir)
-
-    if testar:
-
-        try:
-            with h5py.File(output_file, "r") as h5file:
-                print("File reconstructed successfully and is readable.")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-    output_file = path_zip_completo.replace("zip", "h5")
-    return output_file
-    # print(output_file, "\n\n")
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+        print(f"Download {int(status.progress() * 100)}%.")
 
 
 # quando partir pra deploy, rodar servidor usando bash pra garantir cwd correto
