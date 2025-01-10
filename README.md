@@ -1,5 +1,22 @@
-# Vue 3 + Vite
+# Description:
+Web App designed to diagnose Sith Nerve Palsy, implementing the same model as in XXXXXXXXXXXXXXXXXXXXXXXXXXXX.
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+# Requirements: 
+Python >=3.10
+Docker XXXXXXXX
+Kubernetes XXXXXXX
+
+
+
+# Installation:
+1. First clone the repository in the desired directory:
+`git clone https://github.com/lfaoliveira/PIBITI-Ufma`
+
+2. Run the front-end Vue app:
+`cd vite-project
+npm run dev
+`
+3. Run the FLASK back-end:
+`python -m server.py`
+4. Upload a video in the "Analyze" button or test the demo video.
