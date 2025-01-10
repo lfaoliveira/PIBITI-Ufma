@@ -17,7 +17,7 @@ def download_peso(PATH_FLASK):
     import io
 
     SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
-    PATH_CRED = os.path.join(PATH_FLASK, "credentials.json")
+    PATH_CRED = os.path.join(PATH_FLASK, "permalink-modelo.json")
     credentials = service_account.Credentials.from_service_account_file(
         PATH_CRED, scopes=SCOPES
     )
@@ -38,7 +38,7 @@ def download_peso(PATH_FLASK):
 
 # quando partir pra deploy, rodar servidor usando bash pra garantir cwd correto
 # TODO: ou seja, trocar esse path absoluto
-PATH_PIBITI = os.path.join("C:\\", "Users", "Eu", "Desktop", "PIBITI")
+PATH_PIBITI = os.path.join("C:\\", "Users", "User", "Desktop", "PIBITI")
 
 # path para arquivos temporarios
 PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
@@ -48,7 +48,7 @@ if not os.getcwd() == PATH_FLASK:
 
 path_pesos_yolo = os.path.join(PATH_FLASK, "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
-    uniao_pesos(os.getcwd(), "trained_weights_final.zip")
+    download_peso(PATH_FLASK)
 
 video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
 
