@@ -2,12 +2,24 @@ import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
 import requests
+from tensorflow.python.framework.ops import disable_eager_execution
+import threading
+import logging
+
+disable_eager_execution()
+
 from werkzeug.utils import secure_filename
 import os
 import sys
 from yolo import YOLO
 from analise import AnaliseParalisia
 import time
+
+"""import tensorflow as tf
+from keras.models import load_model
+
+global graph
+graph = tf.get_default_graph()"""
 
 
 def download_peso(PATH_FLASK):
@@ -34,6 +46,10 @@ def download_peso(PATH_FLASK):
     while not done:
         status, done = downloader.next_chunk()
         print(f"Download {int(status.progress() * 100)}%.")
+
+
+def count_active_threads():
+    return len(threading.enumerate())
 
 
 # quando partir pra deploy, rodar servidor usando bash pra garantir cwd correto
@@ -91,6 +107,17 @@ def index():
     return "Hello World"
 
 
+@app.before_request
+def before_request():
+    logging.info(f"Before request: {count_active_threads()} active threads.")
+
+
+@app.after_request
+def after_request(response):
+    logging.info(f"After request: {count_active_threads()} active threads.")
+    return response
+
+
 # Rota que recupera arquivos da pasta "assets"
 @app.route("/assets/<path:path>")
 def send_assets(path):
@@ -130,6 +157,7 @@ def analisar():
     # se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
     """arq_stream = arq.stream"""
     path_out = os.path.join(app.config["UPLOAD_FOLDER"], f"OUT_{nome_local}")
+
     str_res, path_graf = analisador.funcao_metodo(
         path_processamento_arq, path_out, timestamp
     )

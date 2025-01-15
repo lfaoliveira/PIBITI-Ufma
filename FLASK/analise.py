@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 import os
 
-
 # from yolo import YOLO
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -34,6 +33,7 @@ class AnaliseParalisia:
         xD = rightEye[:, 0] - min(rightEye[:, 0])
         xEsquerdo, xDireito = self.getHampel(xE, xD)
         xEsquerdoFinal, xDireitaFinal = self.removeOutliers(xEsquerdo, xDireito)
+        print("\n\nXESQUERDO: ", xEsquerdoFinal, "\n\n")
 
         path_graf = self.plotHampelFinal(
             xE,
@@ -49,7 +49,10 @@ class AnaliseParalisia:
         velE, velD = self.calculaVelocidadeEspacoPercorrido(
             xEsquerdoFinal, xDireitaFinal
         )
-        velE2, velD2, mE, mD = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal)
+        (
+            velE2,
+            velD2,
+        ) = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal, frames, timestamp)
         print(
             f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
         )
@@ -77,6 +80,7 @@ class AnaliseParalisia:
         vid = cv2.VideoCapture(path_inputVideo)
         length = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
         if not vid.isOpened():
+            print("FRAME COUNT: ", length)
             raise IOError("Nao foi possivel abrir o video indicado.")
         fps = vid.get(cv2.CAP_PROP_FPS)
         frame_width = int(vid.get(3))
@@ -185,6 +189,7 @@ class AnaliseParalisia:
         return resultEsquerdo, resultDireito
 
     def removeOutliers(self, xEsquerdo, xDireita):
+
         fator = max(xEsquerdo) - min(xEsquerdo)
         fatorD = max(xDireita) - min(xDireita)
         xDireitaFinal = []
@@ -207,6 +212,7 @@ class AnaliseParalisia:
                 xDireitaFinal.append(xDireita[j])
         xDireitaFinal.append(xDireita[len(xDireita) - 1])
         xEsquerdoFinal.append(xEsquerdo[len(xEsquerdo) - 1])
+
         return xEsquerdoFinal, xDireitaFinal
 
     def plotHampelFinal(
@@ -264,16 +270,16 @@ class AnaliseParalisia:
             velD = somaDireita / length
         return velE, velD
 
-    def calculaVelocidade(self, olhoEsquerdo, olhoDireito, frames):
-        posicaoOlhoEsquerdo = [x[0] for x in olhoEsquerdo]
-        posicaoOlhoDireito = [x[0] for x in olhoDireito]
+    def calculaVelocidade(self, olhoEsquerdo, olhoDireito, frames, timestamp):
+        posicaoOlhoEsquerdo = [x for x in olhoEsquerdo]
+        posicaoOlhoDireito = [x for x in olhoDireito]
         esquerdaHampel, direitaHampel = self.getHampel(
             posicaoOlhoEsquerdo, posicaoOlhoDireito
         )
         olhoEsquerdoFinal, olhoDireitoFinal = self.removeOutliers(
             esquerdaHampel, direitaHampel
         )
-        self.plotHampeleFinal(
+        self.plotHampelFinal(
             posicaoOlhoEsquerdo,
             posicaoOlhoDireito,
             esquerdaHampel,
@@ -281,6 +287,7 @@ class AnaliseParalisia:
             direitaHampel,
             olhoDireitoFinal,
             "Posição em relacao aos frames",
+            timestamp,
         )
         velEsquerda, velDireita = self.calculaVelocidadeEspacoPercorrido(
             olhoEsquerdoFinal, olhoDireitoFinal
