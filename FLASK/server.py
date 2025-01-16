@@ -15,6 +15,9 @@ from yolo import YOLO
 from analise import AnaliseParalisia
 import time
 
+import tkinter as tk
+from tkinter import messagebox
+
 """import tensorflow as tf
 from keras.models import load_model
 
@@ -52,22 +55,6 @@ def count_active_threads():
     return len(threading.enumerate())
 
 
-# quando partir pra deploy, rodar servidor usando bash pra garantir cwd correto
-# TODO: ou seja, trocar esse path absoluto
-PATH_PIBITI = os.path.join("C:\\", "Users", "User", "Desktop", "PIBITI")
-
-# path para arquivos temporarios
-PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
-
-if not os.getcwd() == PATH_FLASK:
-    os.chdir(PATH_FLASK)
-
-path_pesos_yolo = os.path.join(PATH_FLASK, "trained_weights_final.h5")
-if not os.path.exists(path_pesos_yolo):
-    download_peso(PATH_FLASK)
-
-video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
-
 app = Flask(__name__)
 """ALERTA!!!!!!!!!! somente usar isso em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
@@ -75,6 +62,28 @@ Possível risco de segurança!
 CORS(app)
 
 app.config["UPLOAD_FOLDER"] = "tmp"
+
+
+# quando partir pra deploy, rodar servidor usando bash pra garantir cwd correto
+# PATH_PIBITI = os.path.join("C:\\", "Users", "User", "Desktop", "PIBITI")
+PATH_PIBITI = os.getcwd()
+
+# path para arquivos temporarios
+PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
+
+if not os.getcwd() == PATH_FLASK:
+    os.chdir(PATH_FLASK)
+
+if "WKDIR" not in app.config.keys():
+    app.config["WKDIR"] = PATH_FLASK
+
+path_pesos_yolo = os.path.join(PATH_FLASK, "trained_weights_final.h5")
+if not os.path.exists(path_pesos_yolo):
+    download_peso(PATH_FLASK)
+
+video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
+
+
 os.makedirs("tmp", exist_ok=True)
 
 kwargs = {
@@ -92,6 +101,11 @@ modelo = YOLO(**kwargs)
 analisador = AnaliseParalisia(modelo, app.config["UPLOAD_FOLDER"])
 
 ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4"]
+
+root = tk.Tk()
+root.withdraw()  # Hide the main window
+
+messagebox.showinfo("THREADS: ", f"{count_active_threads()}")
 
 
 def allowed_file(filename: str):
@@ -181,4 +195,4 @@ def demo_func():
 if __name__ == "__main__":
     # para poder adicionar um sheduler de tasks de background,
     # adicionar use_reloader=False
-    app.run(debug=True)
+    app.run(debug=True, threaded=False)
