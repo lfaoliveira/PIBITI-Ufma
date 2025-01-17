@@ -77,12 +77,11 @@ if not os.getcwd() == PATH_FLASK:
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
 
-path_pesos_yolo = os.path.join(PATH_FLASK, "trained_weights_final.h5")
+path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
-    download_peso(PATH_FLASK)
+    download_peso(app.config["WKDIR"])
 
 video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
-
 
 os.makedirs("tmp", exist_ok=True)
 
