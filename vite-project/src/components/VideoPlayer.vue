@@ -279,7 +279,7 @@ export default {
     this.videoSource = await this.pegarVideo();
     //console.log(this.videoSource);
     //this.bindEvents();
-    const tiposSuport = ["mp4", "ogg", "webm", "mkv"];
+    const tiposSuport = ["mp4", "ogg", "webm", "mkv", "avi"];
     const sources = [];
     //itera sobre tipos aceitaveis e cria array de fontes
     tiposSuport.forEach((tipo) => {

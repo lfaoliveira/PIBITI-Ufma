@@ -1,4 +1,6 @@
 """
+CODIGO DE PLACEHOLDER PRA RODAR MODELO YOLOv8 implementado por Saulo
+
 %pip install hyperopt torch 
 %pip install -U ultralytics==8.1.17
 %pip install Pillow

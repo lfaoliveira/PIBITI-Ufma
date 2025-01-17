@@ -1,9 +1,7 @@
-from tkinter import messagebox
-import tkinter as tk
 import time
 from analise import AnaliseParalisia
 from yolo import YOLO
-import sys
+import base64
 import os
 from werkzeug.utils import secure_filename
 import numpy as np
@@ -11,6 +9,7 @@ from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
 import requests
 from tensorflow.python.framework.ops import disable_eager_execution
+import tensorflow as tf
 import threading
 import logging
 
@@ -75,6 +74,17 @@ def get_modelo():
     }
     modelo = YOLO(**kwargs)
     return modelo
+
+@tf.function
+def predict(analisador:AnaliseParalisia, path_processamento_arq, path_out, timestamp):
+    modelo = analisador.modelo
+    with modelo.sess.graph.as_default():
+        str_res, path_graf = analisador.funcao_metodo(
+            path_processamento_arq, path_out, timestamp
+        )
+        return str_res, path_graf
+
+
 # ------------- VARIAVEIS GLOBAIS--------------#
 
 
@@ -113,7 +123,6 @@ modelo = get_modelo()
 # OBS: MODELO DEVE TER FUNCAO detect_image implementada
 analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
-
 @app.route("/")
 def index():
     # send_assets("/assets/style.css")
@@ -139,16 +148,15 @@ def send_assets(path):
 
 
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
-# TODO: utilizar kubernetes pra criar 1 container por requisicao
+# TODO: utilizar kubernetes pra criar 1 container por requisicao (provavelmente desnecessario ja que Flask cria 1 thread por req.)
 @app.route("/analise", methods=["POST"])
 def analisar():
     """
     Pega video de input, executa método e retorna resultado como requisicao HTTP
     """
+    timestamp = time.time()
     print(f"\nTHREADS: {count_active_threads()}\n\n")
     # timestamp do momento em que o servidor foi chamado
-
-    timestamp = time.time()
     """ resultado, path_graf = analisador.funcao_metodo(
         videoInput, f"{timestamp}.mp4", timestamp
     ) """
@@ -173,13 +181,23 @@ def analisar():
     """arq_stream = arq.stream"""
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
 
-    str_res, path_graf = analisador.funcao_metodo(
-        path_processamento_arq, path_out, timestamp
+    res_tensor, graf_tensor = predict(
+        analisador, path_processamento_arq, path_out, timestamp
     )
+    with tf.compat.v1.Session() as sess:
+        # Run the session to get the tensor's value
+        res_np = sess.run(res_tensor)
+        graf_np = sess.run(graf_tensor)
+    # Decode bytes to string since predict returns all output as tensor
+    str_res, path_graf = res_np.decode('utf-8'), graf_np.decode('utf-8')
 
-    videoOut = open(path_out, "r")
-    grafico = open(path_graf, "r")
-    result = {"string": str_res, "grafico": grafico, "video": videoOut}
+    with open(path_out, "rb") as file:
+        video_base64 = base64.b64encode(file.read()).decode('utf-8')
+
+    with open(path_graf, "rb") as file:
+        grafico_base64 = base64.b64encode(file.read()).decode('utf-8')
+
+    result = {"string": str_res, "grafico": grafico_base64, "video": video_base64}
     # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
     return jsonify(result)
 
