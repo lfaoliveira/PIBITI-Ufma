@@ -1,3 +1,11 @@
+from tkinter import messagebox
+import tkinter as tk
+import time
+from analise import AnaliseParalisia
+from yolo import YOLO
+import sys
+import os
+from werkzeug.utils import secure_filename
 import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
@@ -6,17 +14,8 @@ from tensorflow.python.framework.ops import disable_eager_execution
 import threading
 import logging
 
-disable_eager_execution()
+# disable_eager_execution()
 
-from werkzeug.utils import secure_filename
-import os
-import sys
-from yolo import YOLO
-from analise import AnaliseParalisia
-import time
-
-import tkinter as tk
-from tkinter import messagebox
 
 """import tensorflow as tf
 from keras.models import load_model
@@ -55,63 +54,64 @@ def count_active_threads():
     return len(threading.enumerate())
 
 
+def allowed_file(filename: str):
+    ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm",
+                          "mkv", "ogv", "ogg", "mp4", "avi"]
+    for ext in ALLOWED_EXTENSIONS:
+        if filename.endswith(ext):
+            return ext
+    return None
+
+
+def get_modelo():
+    kwargs = {
+        "model_path": "trained_weights_final.h5",
+        "anchors_path": "yolo_anchors.txt",
+        "classes_path": "classes.txt",
+        "score": 0.3,
+        "iou": 0.45,
+        "model_image_size": (416, 416),
+        "gpu_num": 1,
+    }
+    modelo = YOLO(**kwargs)
+    return modelo
+# ------------- VARIAVEIS GLOBAIS--------------#
+
+
 app = Flask(__name__)
 """ALERTA!!!!!!!!!! somente usar isso em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
 CORS(app)
 
-app.config["UPLOAD_FOLDER"] = "tmp"
-
-
-# quando partir pra deploy, rodar servidor usando bash pra garantir cwd correto
-# PATH_PIBITI = os.path.join("C:\\", "Users", "User", "Desktop", "PIBITI")
-PATH_PIBITI = os.getcwd()
-
+print("APP INICIADO")
 # path para arquivos temporarios
-PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
+app.config["TEMP_FOLDER"] = "tmp"
+os.makedirs("tmp", exist_ok=True)
 
-if not os.getcwd() == PATH_FLASK:
-    os.chdir(PATH_FLASK)
+PATH_PIBITI = os.getcwd()
+PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
 
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
+if "PIBITI" == os.path.basename(PATH_PIBITI):
+    os.chdir(app.config["WKDIR"])
+
+
+app.config["WKDIR"] = os.getcwd()
+print(f"\nHOME: { os.getcwd()}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
     download_peso(app.config["WKDIR"])
 
-video_demo = os.path.join(os.getcwd(), "demoInput.mp4")
+video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
-os.makedirs("tmp", exist_ok=True)
+# --------------------- MODELO --------------------------#
 
-kwargs = {
-    "model_path": "trained_weights_final.h5",
-    "anchors_path": "yolo_anchors.txt",
-    "classes_path": "classes.txt",
-    "score": 0.3,
-    "iou": 0.45,
-    "model_image_size": (416, 416),
-    "gpu_num": 1,
-}
-
+modelo = get_modelo()
 # OBS: MODELO DEVE TER FUNCAO detect_image implementada
-modelo = YOLO(**kwargs)
-analisador = AnaliseParalisia(modelo, app.config["UPLOAD_FOLDER"])
-
-ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4"]
-
-root = tk.Tk()
-root.withdraw()  # Hide the main window
-
-messagebox.showinfo("THREADS: ", f"{count_active_threads()}")
-
-
-def allowed_file(filename: str):
-    for ext in ALLOWED_EXTENSIONS:
-        if filename.endswith(ext):
-            return ext
-    return None
+analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 
 @app.route("/")
@@ -145,6 +145,7 @@ def analisar():
     """
     Pega video de input, executa método e retorna resultado como requisicao HTTP
     """
+    print(f"\nTHREADS: {count_active_threads()}\n\n")
     # timestamp do momento em que o servidor foi chamado
 
     timestamp = time.time()
@@ -162,14 +163,15 @@ def analisar():
     nome_local = f"{user}_{str(round(timestamp, 4))}.{ext}"
     filename_local = secure_filename(f"INPUT_{nome_local}")
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
-    path_processamento_arq = os.path.join(app.config["UPLOAD_FOLDER"], filename_local)
+    path_processamento_arq = os.path.join(
+        app.config["TEMP_FOLDER"], filename_local)
     save = True
     if save:
         arq.save(path_processamento_arq)
 
     # se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
     """arq_stream = arq.stream"""
-    path_out = os.path.join(app.config["UPLOAD_FOLDER"], f"OUT_{nome_local}")
+    path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
 
     str_res, path_graf = analisador.funcao_metodo(
         path_processamento_arq, path_out, timestamp
