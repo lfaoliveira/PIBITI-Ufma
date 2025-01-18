@@ -183,6 +183,7 @@ input {
 import headerHome from "./HeaderHomepage.vue";
 import db from "../db";
 import axios from "axios";
+import mime from "mime-types";
 
 export default {
   name: "Landing",
@@ -208,17 +209,33 @@ export default {
             console.log(result);
             const resultJSON = result.data;
             const strResult = resultJSON.string;
-
             const grafico_base64 = resultJSON.grafico;
-            const grafico_url = this.base64ToURL(grafico_base64);
-
             const video_base64 = resultJSON.video;
-            const video_output_url = this.base64ToURL(video_base64);
+            const extension = resultJSON.extVideo;
+
+            const mimeVar = mime.lookup(extension);
+
+            await db.open();
+            const videoData = {
+              string: strResult,
+              video: video_base64,
+              grafico: grafico_base64,
+              mimeVideo: mimeVar,
+            };
+            let constId = await db.add(videoData);
+            console.log(constId + " " + typeof constId);
+
+            alert(constId);
+            console.log("VIDEO PROCESSADO");
+            this.$router.push({
+              name: "analiseVideo",
+              query: { idVideoAnalise: constId },
+            });
           } catch (error) {
             console.error(error + "An error occurred while uploading the file.");
           }
         })();
-        console.log("VIDEO PROCESSADO");
+
         /* axios
           .post(urlServer, formData, {
             headers: { "Content-Type": "multipart/form-data" },
@@ -229,40 +246,7 @@ export default {
           ); */
 
         //
-        db.open();
-        const videoData = {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          data: file, // The video file as a Blob
-        };
-        let constId = await db.add(videoData);
-        console.log(constId + " " + typeof constId);
-
-        alert(constId);
-        this.$router.push({ name: "analiseVideo", query: { idVideoAnalise: constId } });
       }
-    },
-
-    base64ToURL(base64String, mimeType) {
-      // Decode the Base64 string
-      alert("BASE64" + base64String);
-      const binaryString = atob(base64String);
-      const length = binaryString.length;
-      const uint8Array = new Uint8Array(length);
-
-      // Convert binary string to Uint8Array
-
-      for (let i = 0; i < length; i++) {
-        uint8Array[i] = binaryString.charCodeAt(i);
-      }
-
-      // Create a Blob from the Uint8Array
-      const blob = new Blob([uint8Array], { type: mimeType });
-
-      // Create a URL to Blob
-      const url = URL.createObjectURL(blob);
-      return url;
     },
   },
   props: {},

@@ -7,20 +7,11 @@ from werkzeug.utils import secure_filename
 import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory
 from flask_cors import CORS
-import requests
 from tensorflow.python.framework.ops import disable_eager_execution
 import tensorflow as tf
 import threading
 import logging
-
-# disable_eager_execution()
-
-
-"""import tensorflow as tf
-from keras.models import load_model
-
-global graph
-graph = tf.get_default_graph()"""
+import ffmpeg
 
 
 def download_peso(PATH_FLASK):
@@ -61,6 +52,17 @@ def allowed_file(filename: str):
             return ext
     return None
 
+def converter_arq(input: str, output: str):
+    """
+    Converte video de input em .mp4 
+    """
+    stream = ffmpeg.input(input)
+    stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
+
+    # Execute the conversion
+    ffmpeg.run(stream)
+
+    return
 
 def get_modelo():
     kwargs = {
@@ -161,26 +163,39 @@ def analisar():
         videoInput, f"{timestamp}.mp4", timestamp
     ) """
     arq = request.files["file"]
+
+
     # user = request.args.get("user")
-    user = "EU"
+    user = "TESTE"
     ext = allowed_file(str(arq.filename))
     if ext is None:
         print("Tipo incorreto de arq!\n\n")
         return SystemError
 
+    
+
     nome_local = f"{user}_{str(round(timestamp, 4))}.{ext}"
     filename_local = secure_filename(f"INPUT_{nome_local}")
+
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
     path_processamento_arq = os.path.join(
         app.config["TEMP_FOLDER"], filename_local)
-    save = True
-    if save:
-        arq.save(path_processamento_arq)
+    arq.save(path_processamento_arq)
 
-    # se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
-    """arq_stream = arq.stream"""
+    """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
+    arq_stream = arq.stream"""
+
+    EXT_OUT = "mp4"
+    nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
+    path_convert = os.path.join(app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
+
+    converter_arq(path_processamento_arq, path_convert)
+    path_processamento_arq = path_convert
+    
+    nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
-
+    
+    # executando predicao
     res_tensor, graf_tensor = predict(
         analisador, path_processamento_arq, path_out, timestamp
     )
@@ -197,7 +212,7 @@ def analisar():
     with open(path_graf, "rb") as file:
         grafico_base64 = base64.b64encode(file.read()).decode('utf-8')
 
-    result = {"string": str_res, "grafico": grafico_base64, "video": video_base64}
+    result = {"string": str_res, "grafico": grafico_base64, "video": video_base64, "extVideo": EXT_OUT }
     # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
     return jsonify(result)
 

@@ -242,6 +242,7 @@ input[type="file"] {
 import db from "../db.js";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
+import mime from "mime-types";
 
 // eventos pro player checar durante execução
 const EVENTS = [
@@ -276,15 +277,24 @@ export default {
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
-    this.videoSource = await this.pegarVideo();
-    //console.log(this.videoSource);
-    //this.bindEvents();
-    const tiposSuport = ["mp4", "ogg", "webm", "mkv", "avi"];
-    const sources = [];
+    const res = await this.pegarVideo();
+    const videoSource = res.pop();
+    const mimeVideo = res.pop();
+    alert(`MIME: ${mimeVideo}`);
+    this.graficoURL = res.pop();
+    this.strResult = res.pop();
+
+    /* const tiposSuport = ["mp4", "ogg", "webm", "mkv", "avi"];
+    
     //itera sobre tipos aceitaveis e cria array de fontes
     tiposSuport.forEach((tipo) => {
-      sources.push({ src: this.videoSource, type: `video/${tipo}` });
-    });
+      console.log(tipo);
+      const mimeAtual = mime.lookup(tipo);
+      sources.push({ src: videoSource, type: `${mimeAtual}` });
+    }); */
+    const sources = [];
+    sources.push({ src: videoSource, type: `${mimeVideo}` });
+
     this.setupPlayer(sources);
   },
 
@@ -303,12 +313,36 @@ export default {
       try {
         await db.open();
 
-        const videoData = await db.get(parseInt(this.idVideoAtual));
-        const url = URL.createObjectURL(videoData.data);
-        return url;
+        const resultData = await db.get(parseInt(this.idVideoAtual));
+        const mime = resultData.mimeVideo;
+
+        const videoURL = this.base64ToURL(resultData.video, mime);
+        const graficoURL = this.base64ToURL(resultData.grafico, "image/jpg");
+        const strResult = resultData.string;
+
+        return [strResult, graficoURL, mime, videoURL];
       } catch (error) {
         console.error("ERRO! " + error);
       }
+    },
+    base64ToURL(base64String, mimeType) {
+      // Decode the Base64 string
+      const binaryString = atob(base64String);
+      const length = binaryString.length;
+      const uint8Array = new Uint8Array(length);
+
+      // Convert binary string to Uint8Array
+
+      for (let i = 0; i < length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create a Blob from the Uint8Array
+      const blob = new Blob([uint8Array], { type: mimeType });
+
+      // Create a URL to Blob
+      const url = URL.createObjectURL(blob);
+      return url;
     },
   },
   beforeDestroy() {
