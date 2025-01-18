@@ -199,26 +199,35 @@ export default {
         const urlServer = "http://localhost:5000/analise"; // Replace with your server URL
         const formData = new FormData();
         formData.append("file", file); // 'file' is the key used for the file on the server
-        axios
+
+        (async () => {
+          try {
+            const result = await axios.post(urlServer, formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            });
+            console.log(result);
+            const resultJSON = result.data;
+            const strResult = resultJSON.string;
+
+            const grafico_base64 = resultJSON.grafico;
+            const grafico_url = this.base64ToURL(grafico_base64);
+
+            const video_base64 = resultJSON.video;
+            const video_output_url = this.base64ToURL(video_base64);
+          } catch (error) {
+            console.error(error + "An error occurred while uploading the file.");
+          }
+        })();
+        console.log("VIDEO PROCESSADO");
+        /* axios
           .post(urlServer, formData, {
             headers: { "Content-Type": "multipart/form-data" },
           })
-          .then((response) => console.log(response.data))
-          .catch((error) => console.error(error));
+          .then((response) => console.log("UPLOAD FEITO" + response.data))
+          .catch((error) =>
+            console.error("An error occurred while uploading the file." + error)
+          ); */
 
-        // URL of the remote server
-
-        try {
-          // Perform the POST request
-          const response = await fetch(urlServer, {
-            method: "POST",
-            body: formData, // Send the file data
-          });
-          console.log("UPLOAD FEITO");
-        } catch (error) {
-          console.error("Error during file upload:", error);
-          alert("An error occurred while uploading the file.");
-        }
         //
         db.open();
         const videoData = {
@@ -234,12 +243,31 @@ export default {
         this.$router.push({ name: "analiseVideo", query: { idVideoAnalise: constId } });
       }
     },
+
+    base64ToURL(base64String, mimeType) {
+      // Decode the Base64 string
+      alert("BASE64" + base64String);
+      const binaryString = atob(base64String);
+      const length = binaryString.length;
+      const uint8Array = new Uint8Array(length);
+
+      // Convert binary string to Uint8Array
+
+      for (let i = 0; i < length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+      }
+
+      // Create a Blob from the Uint8Array
+      const blob = new Blob([uint8Array], { type: mimeType });
+
+      // Create a URL to Blob
+      const url = URL.createObjectURL(blob);
+      return url;
+    },
   },
   props: {},
   data() {
-    return {
-      _: 0,
-    };
+    return {};
   },
   mounted() {
     // listener pra quando fileInput recebe mudança
