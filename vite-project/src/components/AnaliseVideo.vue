@@ -9,7 +9,7 @@
     <div class="analysis-grid">
       <div class="diagnosis-card">
         <h2 class="diagnostico texto-diag">
-          Diagnóstico: Paralisia no Olho {X}/ Olhos Saudáveis
+          Diagnóstico: Paralisia no Olho X/ Olhos Saudáveis
         </h2>
         <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
         <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>

@@ -52,17 +52,22 @@ def allowed_file(filename: str):
             return ext
     return None
 
+
 def converter_arq(input: str, output: str):
     """
     Converte video de input em .mp4 
     """
-    stream = ffmpeg.input(input)
-    stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
+    try:
 
-    # Execute the conversion
-    ffmpeg.run(stream)
+        stream = ffmpeg.input(input)
+        stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
 
-    return
+        # Execute the conversion
+        ffmpeg.run(stream)
+    except:
+        a = 1/0
+    return output
+
 
 def get_modelo():
     kwargs = {
@@ -77,8 +82,9 @@ def get_modelo():
     modelo = YOLO(**kwargs)
     return modelo
 
+
 @tf.function
-def predict(analisador:AnaliseParalisia, path_processamento_arq, path_out, timestamp):
+def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
     modelo = analisador.modelo
     with modelo.sess.graph.as_default():
         str_res, path_graf = analisador.funcao_metodo(
@@ -125,6 +131,7 @@ modelo = get_modelo()
 # OBS: MODELO DEVE TER FUNCAO detect_image implementada
 analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
+
 @app.route("/")
 def index():
     # send_assets("/assets/style.css")
@@ -164,15 +171,12 @@ def analisar():
     ) """
     arq = request.files["file"]
 
-
     # user = request.args.get("user")
     user = "TESTE"
     ext = allowed_file(str(arq.filename))
     if ext is None:
         print("Tipo incorreto de arq!\n\n")
         return SystemError
-
-    
 
     nome_local = f"{user}_{str(round(timestamp, 4))}.{ext}"
     filename_local = secure_filename(f"INPUT_{nome_local}")
@@ -187,14 +191,15 @@ def analisar():
 
     EXT_OUT = "mp4"
     nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
-    path_convert = os.path.join(app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
+    path_convert = os.path.join(
+        app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
 
-    converter_arq(path_processamento_arq, path_convert)
-    path_processamento_arq = path_convert
-    
+    path_processamento_arq = converter_arq(
+        path_processamento_arq, path_convert)
+
     nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
-    
+
     # executando predicao
     res_tensor, graf_tensor = predict(
         analisador, path_processamento_arq, path_out, timestamp
@@ -211,9 +216,11 @@ def analisar():
 
     with open(path_graf, "rb") as file:
         grafico_base64 = base64.b64encode(file.read()).decode('utf-8')
-
-    result = {"string": str_res, "grafico": grafico_base64, "video": video_base64, "extVideo": EXT_OUT }
+    os.remove(path_convert)
+    result = {"string": str_res, "grafico": grafico_base64,
+              "video": video_base64, "extVideo": EXT_OUT}
     # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
+    print("RESULTADO: " + video_base64[:100])
     return jsonify(result)
 
 

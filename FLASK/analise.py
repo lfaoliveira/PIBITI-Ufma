@@ -25,7 +25,7 @@ class AnaliseParalisia:
         # frames é uma lista com os indices dos frames que foram usados
         olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(videoEntrada, videoSaida)
 
-        self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
+        # self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
 
         leftEye = np.array(olhoEsquerdo)
         rightEye = np.array(olhoDireito)

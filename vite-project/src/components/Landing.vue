@@ -206,11 +206,12 @@ export default {
             const result = await axios.post(urlServer, formData, {
               headers: { "Content-Type": "multipart/form-data" },
             });
-            console.log(result);
+            console.log(`RESULTADO`, result);
             const resultJSON = result.data;
             const strResult = resultJSON.string;
             const grafico_base64 = resultJSON.grafico;
             const video_base64 = resultJSON.video;
+            console.log("VIDEO RECEBIDO: ", typeof video_base64);
             const extension = resultJSON.extVideo;
 
             const mimeVar = mime.lookup(extension);
@@ -222,6 +223,7 @@ export default {
               grafico: grafico_base64,
               mimeVideo: mimeVar,
             };
+            console.log(videoData);
             let constId = await db.add(videoData);
             console.log(constId + " " + typeof constId);
 
@@ -235,17 +237,6 @@ export default {
             console.error(error + "An error occurred while uploading the file.");
           }
         })();
-
-        /* axios
-          .post(urlServer, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          })
-          .then((response) => console.log("UPLOAD FEITO" + response.data))
-          .catch((error) =>
-            console.error("An error occurred while uploading the file." + error)
-          ); */
-
-        //
       }
     },
   },

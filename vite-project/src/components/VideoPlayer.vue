@@ -1,57 +1,25 @@
-/* componente geral de video player TIRADO DO MDN: If you don't specify the controls
-attribute, the video won't include the browser's default controls; you can create your own
-custom controls using JavaScript and the #####HTMLMediaElement###### API. See Creating a
-cross-browser video player for more details. To allow precise control over your video (and
-audio) content, HTMLMediaElements fire many different events. In addition to providing
-controllability, these events let you monitor the progress of both download and playback
-of the media, as well as the playback state and position. */
-
 <template>
   <main class="wrapper-player">
-    <!-- <div class="video-container"> </div> -->
-    <!-- 
-    <input
-      type="range"
-      min="0"
-      max="100"
-      step="1"
-      :value="percentage.toFixed(1)"
-      @input="onInput"
-    /> -->
-    <!-- <div class="video-container">   -->
-    <video
+    <!-- @loadedmetadata="getLoadedVideo" -->
+    <!-- <video
       class="video-js vjs-custom-skin"
       preload="auto"
-      @loadedmetadata="getLoadedVideo"
-      :src="this.videoSource"
+      :src="videoSource"
       :muted="muted"
       :autoplay="autoplay"
       :controls="controls"
       :loop="loop"
       ref="videoplayer"
-    />
-    <!-- <div ref="controles" class="controles">
-      <span class="time-display">
-        {{ this.formataTempo(this.currentTime) }} / {{ this.duration }}</span
-      >
-      <div class="linha-do-tempo">
-        <button class="bola-slider" ref="bolaSlider"></button>
-        <div class="slider" ref="slider" @click="updateSlider"></div>
-      </div>
-      <SliderControl :videoDuration="this.duration" />
-
-      <button class="bola-play" @click="setIcone()">
-        <img class="control-icon" :src="this.icone" :style="this.stylePausa" />
-      </button>
-    </div> -->
-    <!-- </div>  -->
-
-    <!-- fim controles -->
+    /> -->
+    <video ref="videoTeste" width="600" controls>
+      <source :src="videoSource" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <img ref="imgGraf" />
   </main>
 </template>
 
 <style>
-/* ATENCAo!!!!!!! ESTILO COM SCOPO GLOBAL! */
 * {
   max-width: 100%;
   --tam-slider: clamp(1%, 5px, 10px);
@@ -242,8 +210,7 @@ input[type="file"] {
 import db from "../db.js";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
-import mime from "mime-types";
-
+import { Buffer } from "node:buffer";
 // eventos pro player checar durante execução
 const EVENTS = [
   "play",
@@ -267,34 +234,34 @@ export default {
     loop: { type: Boolean, default: true },
     autoplay: { type: Boolean, default: false },
     muted: { type: Boolean, default: true },
-    preload: { type: String, default: "true" },
+    preload: { type: String, default: "false" },
   },
   components: {},
   data() {
     return {
-      videoSource: " ",
+      videoSource: "",
     };
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
     const res = await this.pegarVideo();
-    const videoSource = res.pop();
-    const mimeVideo = res.pop();
-    alert(`MIME: ${mimeVideo}`);
-    this.graficoURL = res.pop();
-    this.strResult = res.pop();
+    this.videoSource = res.videoURL;
+
+    const mimeVideo = res.mime;
+    this.graficoURL = res.graficoURL;
+    this.$refs.imgGraf.src = this.graficoURL;
+    this.strResult = res.strResult;
 
     /* const tiposSuport = ["mp4", "ogg", "webm", "mkv", "avi"];
     
-    //itera sobre tipos aceitaveis e cria array de fontes
+    // itera sobre tipos aceitaveis e cria array de fontes
     tiposSuport.forEach((tipo) => {
       console.log(tipo);
       const mimeAtual = mime.lookup(tipo);
       sources.push({ src: videoSource, type: `${mimeAtual}` });
     }); */
-    const sources = [];
-    sources.push({ src: videoSource, type: `${mimeVideo}` });
 
+    const sources = [{ src: this.videoSource, type: `${mimeVideo}` }];
     this.setupPlayer(sources);
   },
 
@@ -317,32 +284,26 @@ export default {
         const mime = resultData.mimeVideo;
 
         const videoURL = this.base64ToURL(resultData.video, mime);
+        console.log(`VIDEO URL: ${videoURL}`);
         const graficoURL = this.base64ToURL(resultData.grafico, "image/jpg");
         const strResult = resultData.string;
 
-        return [strResult, graficoURL, mime, videoURL];
+        return { strResult, graficoURL, mime, videoURL };
       } catch (error) {
         console.error("ERRO! " + error);
       }
     },
     base64ToURL(base64String, mimeType) {
       // Decode the Base64 string
-      const binaryString = atob(base64String);
-      const length = binaryString.length;
-      const uint8Array = new Uint8Array(length);
-
-      // Convert binary string to Uint8Array
-
-      for (let i = 0; i < length; i++) {
-        uint8Array[i] = binaryString.charCodeAt(i);
+      try {
+        const buffer = Buffer.from(base64String, "base64"); // Remove metadata part
+        //const url = URL.createObjectURL(blob);
+        const url = `data:${mimeType};base64,${buffer.toString("base64")}`;
+        return url;
+      } catch (error) {
+        console.error("Error decoding Base64 string:", error);
+        return null;
       }
-
-      // Create a Blob from the Uint8Array
-      const blob = new Blob([uint8Array], { type: mimeType });
-
-      // Create a URL to Blob
-      const url = URL.createObjectURL(blob);
-      return url;
     },
   },
   beforeDestroy() {
