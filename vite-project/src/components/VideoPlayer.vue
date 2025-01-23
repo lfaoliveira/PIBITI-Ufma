@@ -1,7 +1,7 @@
 <template>
   <main class="wrapper-player">
     <!-- @loadedmetadata="getLoadedVideo" -->
-    <!-- <video
+    <video
       class="video-js vjs-custom-skin"
       preload="auto"
       :src="videoSource"
@@ -10,11 +10,7 @@
       :controls="controls"
       :loop="loop"
       ref="videoplayer"
-    /> -->
-    <video ref="videoTeste" width="600" controls>
-      <source :src="videoSource" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
+    />
     <img ref="imgGraf" />
   </main>
 </template>
@@ -30,12 +26,12 @@
 
 /* OBS: UTILIZAR especificidade ao mudar estilo do CSS do video.js */
 
-/*  */
+/*  
 
 .vjs-custom-skin {
-  /* Custom styles here */
+  /* Custom styles here 
 }
-
+*/
 .video-js .vjs-control-bar {
   /* height: clamp(5em, 100px, 15em); */
   background: linear-gradient(
@@ -211,6 +207,8 @@ import db from "../db.js";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
 import { Buffer } from "node:buffer";
+import axios from "axios";
+
 // eventos pro player checar durante execução
 const EVENTS = [
   "play",
@@ -245,9 +243,18 @@ export default {
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
     const res = await this.pegarVideo();
-    this.videoSource = res.videoURL;
+    this.videoSource = await (async () => {
+      const url = "http://127.0.0.1:5000/get-file/OUT_TESTE_1737665279.5359.mp4";
+      const resJSON = await axios.get(url);
+      console.log("RES: ", resJSON.data);
+      return resJSON.data.file_url;
+    })();
+
+    console.log("VIDEO URL DO FLASK: ", this.videoSource);
+    videojs.log.level("debug");
 
     const mimeVideo = res.mime;
+    console.log(mimeVideo);
     this.graficoURL = res.graficoURL;
     this.$refs.imgGraf.src = this.graficoURL;
     this.strResult = res.strResult;
@@ -262,7 +269,14 @@ export default {
     }); */
 
     const sources = [{ src: this.videoSource, type: `${mimeVideo}` }];
-    this.setupPlayer(sources);
+    this.player = videojs(this.$refs.videoplayer, {
+      controls: true,
+      autoplay: false,
+      loop: true,
+      preload: "auto",
+      sources: [{ src: this.videoSource, type: "video/mp4" }],
+    });
+    //this.setupPlayer(sources);
   },
 
   methods: {
@@ -283,7 +297,7 @@ export default {
         const resultData = await db.get(parseInt(this.idVideoAtual));
         const mime = resultData.mimeVideo;
 
-        const videoURL = this.base64ToURL(resultData.video, mime);
+        const videoURL = this.base64ToURL(resultData.video, mime, "video.mp4");
         console.log(`VIDEO URL: ${videoURL}`);
         const graficoURL = this.base64ToURL(resultData.grafico, "image/jpg");
         const strResult = resultData.string;
@@ -296,12 +310,38 @@ export default {
     base64ToURL(base64String, mimeType) {
       // Decode the Base64 string
       try {
-        const buffer = Buffer.from(base64String, "base64"); // Remove metadata part
-        //const url = URL.createObjectURL(blob);
-        const url = `data:${mimeType};base64,${buffer.toString("base64")}`;
+        const binaryString = Buffer.from(base64String, "base64").toString("binary");
+        console.log("base64 STRING: ", base64String);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: String(mimeType) }); // Adjust the MIME type as needed
+
+        // Generate a URL for the Blob and set it as the video source
+        const url = URL.createObjectURL(blob);
         return url;
       } catch (error) {
         console.error("Error decoding Base64 string:", error);
+        return null;
+      }
+    },
+
+    base64ToFile(base64String, mimeType, fileName) {
+      // Convert Base64 string to File object
+      try {
+        const byteCharacters = atob(base64String); // Decode Base64 string
+        const byteNumbers = new Uint8Array(byteCharacters.length);
+
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        const blob = new Blob([byteNumbers], { type: mimeType });
+        return new File([blob], fileName, { type: mimeType }); // Create and return File object
+      } catch (error) {
+        console.error("Error converting Base64 string to File:", error);
         return null;
       }
     },

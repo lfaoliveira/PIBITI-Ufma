@@ -5,7 +5,8 @@ import base64
 import os
 from werkzeug.utils import secure_filename
 import numpy as np
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, url_for, abort
+
 from flask_cors import CORS
 from tensorflow.python.framework.ops import disable_eager_execution
 import tensorflow as tf
@@ -134,48 +135,56 @@ analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 @app.route("/")
 def index():
-    # send_assets("/assets/style.css")
     return "Hello World"
 
 
-@app.before_request
-def before_request():
-    logging.info(f"Before request: {count_active_threads()} active threads.")
+@app.route('/get-file/<filename>', methods=['GET'])
+def get_file(filename):
+    """
+    Serves files from the /tmp directory.
+    """
+    print("filename: ", filename)
+    try:
+        file_path = os.path.join(app.config["TEMP_FOLDER"], filename)
+        if not os.path.isfile(file_path):
+            return jsonify({"error": "File not found"}), 404
+
+        # Generate the URL for the file
+        file_url = url_for('serve_file', filename=filename, _external=True)
+
+        return jsonify({"file_url": file_url})
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 
-@app.after_request
-def after_request(response):
-    logging.info(f"After request: {count_active_threads()} active threads.")
-    return response
-
-
-# Rota que recupera arquivos da pasta "assets"
-@app.route("/assets/<path:path>")
-def send_assets(path):
-    print("ARQUIVO!" + str(path))
-    return send_from_directory("assets", path)
-
+@app.route('/serve-file/<filename>', methods=['GET'])
+def serve_file(filename):
+    """
+    Serves the file when the generated URL is accessed.
+    """
+    try:
+        return send_from_directory(app.config["TEMP_FOLDER"], filename, as_attachment=True)
+    except FileNotFoundError:
+        return jsonify({"error": "File not found"}), 404
 
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
-# TODO: utilizar kubernetes pra criar 1 container por requisicao (provavelmente desnecessario ja que Flask cria 1 thread por req.)
+
+
 @app.route("/analise", methods=["POST"])
 def analisar():
     """
-    Pega video de input, executa método e retorna resultado como requisicao HTTP
+    Takes video  input, executa the model e and returns result as JSON
     """
     timestamp = time.time()
     print(f"\nTHREADS: {count_active_threads()}\n\n")
-    # timestamp do momento em que o servidor foi chamado
-    """ resultado, path_graf = analisador.funcao_metodo(
-        videoInput, f"{timestamp}.mp4", timestamp
-    ) """
+
     arq = request.files["file"]
 
     # user = request.args.get("user")
     user = "TESTE"
     ext = allowed_file(str(arq.filename))
     if ext is None:
-        print("Tipo incorreto de arq!\n\n")
+        print("Incorrect file type!\n\n")
         return SystemError
 
     nome_local = f"{user}_{str(round(timestamp, 4))}.{ext}"
@@ -198,11 +207,12 @@ def analisar():
         path_processamento_arq, path_convert)
 
     nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
-    path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
+    path_out_pre = os.path.join(
+        app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
 
     # executando predicao
     res_tensor, graf_tensor = predict(
-        analisador, path_processamento_arq, path_out, timestamp
+        analisador, path_processamento_arq, path_out_pre, timestamp
     )
     with tf.compat.v1.Session() as sess:
         # Run the session to get the tensor's value
@@ -211,16 +221,22 @@ def analisar():
     # Decode bytes to string since predict returns all output as tensor
     str_res, path_graf = res_np.decode('utf-8'), graf_np.decode('utf-8')
 
+    path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
+
+    path_out = converter_arq(
+        path_out_pre, path_out)
+    os.remove(path_out_pre)
+    os.remove(path_processamento_arq)
     with open(path_out, "rb") as file:
         video_base64 = base64.b64encode(file.read()).decode('utf-8')
 
     with open(path_graf, "rb") as file:
         grafico_base64 = base64.b64encode(file.read()).decode('utf-8')
-    os.remove(path_convert)
     result = {"string": str_res, "grafico": grafico_base64,
               "video": video_base64, "extVideo": EXT_OUT}
     # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
     print("RESULTADO: " + video_base64[:100])
+
     return jsonify(result)
 
 

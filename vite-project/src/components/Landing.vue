@@ -210,8 +210,8 @@ export default {
             const resultJSON = result.data;
             const strResult = resultJSON.string;
             const grafico_base64 = resultJSON.grafico;
-            const video_base64 = resultJSON.video;
-            console.log("VIDEO RECEBIDO: ", typeof video_base64);
+            let video_base64 = resultJSON.video;
+            console.log("VIDEO RECEBIDO: ", video_base64, typeof video_base64);
             const extension = resultJSON.extVideo;
 
             const mimeVar = mime.lookup(extension);
