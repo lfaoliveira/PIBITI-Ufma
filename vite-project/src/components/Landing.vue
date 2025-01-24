@@ -209,22 +209,22 @@ export default {
             console.log(`RESULTADO`, result);
             const resultJSON = result.data;
             const strResult = resultJSON.string;
-            const grafico_base64 = resultJSON.grafico;
-            let video_base64 = resultJSON.video;
-            console.log("VIDEO RECEBIDO: ", video_base64, typeof video_base64);
+            const graficoURL = resultJSON.grafico;
+            const videoURL = resultJSON.video;
+            console.log("VIDEO RECEBIDO: ", videoURL, typeof videoURL);
             const extension = resultJSON.extVideo;
 
-            const mimeVar = mime.lookup(extension);
+            const mimeConst = mime.lookup(extension);
 
             await db.open();
-            const videoData = {
+            const processData = {
               string: strResult,
-              video: video_base64,
-              grafico: grafico_base64,
-              mimeVideo: mimeVar,
+              video: videoURL,
+              grafico: graficoURL,
+              mimeVideo: mimeConst,
             };
-            console.log(videoData);
-            let constId = await db.add(videoData);
+            console.log(processData);
+            let constId = await db.add(processData);
             console.log(constId + " " + typeof constId);
 
             alert(constId);

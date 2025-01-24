@@ -25,71 +25,6 @@
   </main>
 </template>
 
-<!-- PARTE ORIGINAL -->
-
-<!-- #PARTE DE UPLOAD DE VIDEO  
-  <h1 @click="sendData"> Bem-Vindo!</h1>
-
-  label para estilizar butao upload 
-  <div class="wrapper">
-    <label for="fileInput" ref="" class="custom-file-upload" :style="estiloUpload">
-      Upload
-    </label>
-    <input type="file" id="fileInput" accept="video/*" @change="handleFileUpload" 
-    @focus="addFocusClass" @blur="removeFocusClass">
-  </div>    
-  
-  <seta class="setaClasse" @click="onVoltar"></seta>
-  <div  class="edicaoVideo">
-    <videoplayer
-      class="videoplayer"
-      :muted="false"
-      :autoplay="true"
-      :controls="false"
-      :loop="false"
-      @play="onPlayerPlay"
-      @pause="onPlayerPause"
-      @ended="onPlayerEnded"
-      @loadeddata="onPlayerLoadeddata"
-      @waiting="onPlayerWaiting"
-      @playing="onPlayerPlaying"
-      @timeupdate="onPlayerTimeupdate"
-      @canplay="onPlayerCanplay"
-      @canplaythrough="onPlayerCanplaythrough"
-      @statechanged="playerStateChanged"
-    >
-      <template
-        v-slot:controls="{
-          togglePlay,
-          playing,
-          percentagePlayed,
-          seekToPercentage,
-          duration,
-          convertTimeToDuration,
-          videoMuted,
-          toggleMute,
-        }"
-      >
-        <div class="videoplayer-controls">
-          <button @click="togglePlay()" :style="controlStyle" class="videoplayer-controls-toggleplay">
-            {{ playing ? "pause" : "play" }}
-          </button>
-          <div class="videoplayer-controls-time">
-            {{ convertTimeToDuration(time) }} /
-            {{ convertTimeToDuration(duration) }}
-          </div>
-          <videotrack
-            :percentage="percentagePlayed"
-            @seek="seekToPercentage"
-            class="videoplayer-controls-track"
-          ></videotrack>
-          <button @click="toggleMute()" class="videoplayer-controls-togglemute">
-            {{ videoMuted ? "unmute" : "mute" }}
-          </button>
-        </div>
-      </template>
-    </videoplayer>
-  </div> -->
 <style scoped>
 * {
   max-width: 100vmax;
@@ -302,6 +237,9 @@ export default {
       const label = document.querySelector(".custom-file-upload");
       label.classList.remove("focus");
     },
+
+    // pegar resultados da análise
+    async getAnalysisResults() {},
   },
   computed: {
     controlStyle() {

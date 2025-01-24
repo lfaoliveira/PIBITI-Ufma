@@ -146,13 +146,13 @@ def get_file(filename):
     print("filename: ", filename)
     try:
         file_path = os.path.join(app.config["TEMP_FOLDER"], filename)
-        if not os.path.isfile(file_path):
+        if not os.path.exists(file_path):
             return jsonify({"error": "File not found"}), 404
 
         # Generate the URL for the file
         file_url = url_for('serve_file', filename=filename, _external=True)
 
-        return jsonify({"file_url": file_url})
+        return jsonify({"file_url": file_url}), 200
     except Exception as e:
         return f"Error: {str(e)}", 500
 
@@ -163,6 +163,7 @@ def serve_file(filename):
     Serves the file when the generated URL is accessed.
     """
     try:
+
         return send_from_directory(app.config["TEMP_FOLDER"], filename, as_attachment=True)
     except FileNotFoundError:
         return jsonify({"error": "File not found"}), 404
@@ -176,7 +177,6 @@ def analisar():
     Takes video  input, executa the model e and returns result as JSON
     """
     timestamp = time.time()
-    print(f"\nTHREADS: {count_active_threads()}\n\n")
 
     arq = request.files["file"]
 
@@ -225,17 +225,24 @@ def analisar():
 
     path_out = converter_arq(
         path_out_pre, path_out)
+
     os.remove(path_out_pre)
-    os.remove(path_processamento_arq)
-    with open(path_out, "rb") as file:
+    os.remove(path_convert)
+    """ with open(path_out, "rb") as file:
         video_base64 = base64.b64encode(file.read()).decode('utf-8')
 
     with open(path_graf, "rb") as file:
-        grafico_base64 = base64.b64encode(file.read()).decode('utf-8')
-    result = {"string": str_res, "grafico": grafico_base64,
-              "video": video_base64, "extVideo": EXT_OUT}
+        grafico_base64 = base64.b64encode(file.read()).decode('utf-8') """
+
+    resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
+    path_graf = resposta_json["file_url"]
+
+    resposta_json = get_file(os.path.basename(path_out))[0].get_json()
+    path_out = resposta_json["file_url"]
+
+    result = {"string": str_res, "grafico": path_graf,
+              "video": path_out, "extVideo": EXT_OUT}
     # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
-    print("RESULTADO: " + video_base64[:100])
 
     return jsonify(result)
 

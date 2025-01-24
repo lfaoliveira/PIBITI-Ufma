@@ -243,15 +243,7 @@ export default {
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
     const res = await this.pegarVideo();
-    this.videoSource = await (async () => {
-      const url = "http://127.0.0.1:5000/get-file/OUT_TESTE_1737665279.5359.mp4";
-      const resJSON = await axios.get(url);
-      console.log("RES: ", resJSON.data);
-      return resJSON.data.file_url;
-    })();
-
-    console.log("VIDEO URL DO FLASK: ", this.videoSource);
-    videojs.log.level("debug");
+    this.videoSource = res.videoURL;
 
     const mimeVideo = res.mime;
     console.log(mimeVideo);
@@ -269,14 +261,7 @@ export default {
     }); */
 
     const sources = [{ src: this.videoSource, type: `${mimeVideo}` }];
-    this.player = videojs(this.$refs.videoplayer, {
-      controls: true,
-      autoplay: false,
-      loop: true,
-      preload: "auto",
-      sources: [{ src: this.videoSource, type: "video/mp4" }],
-    });
-    //this.setupPlayer(sources);
+    this.setupPlayer(sources);
   },
 
   methods: {
@@ -293,56 +278,16 @@ export default {
     async pegarVideo() {
       try {
         await db.open();
-
         const resultData = await db.get(parseInt(this.idVideoAtual));
         const mime = resultData.mimeVideo;
-
-        const videoURL = this.base64ToURL(resultData.video, mime, "video.mp4");
+        const videoURL = resultData.video;
         console.log(`VIDEO URL: ${videoURL}`);
-        const graficoURL = this.base64ToURL(resultData.grafico, "image/jpg");
+        const graficoURL = resultData.grafico;
         const strResult = resultData.string;
 
         return { strResult, graficoURL, mime, videoURL };
       } catch (error) {
         console.error("ERRO! " + error);
-      }
-    },
-    base64ToURL(base64String, mimeType) {
-      // Decode the Base64 string
-      try {
-        const binaryString = Buffer.from(base64String, "base64").toString("binary");
-        console.log("base64 STRING: ", base64String);
-        const len = binaryString.length;
-        const bytes = new Uint8Array(len);
-        for (let i = 0; i < len; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        const blob = new Blob([bytes], { type: String(mimeType) }); // Adjust the MIME type as needed
-
-        // Generate a URL for the Blob and set it as the video source
-        const url = URL.createObjectURL(blob);
-        return url;
-      } catch (error) {
-        console.error("Error decoding Base64 string:", error);
-        return null;
-      }
-    },
-
-    base64ToFile(base64String, mimeType, fileName) {
-      // Convert Base64 string to File object
-      try {
-        const byteCharacters = atob(base64String); // Decode Base64 string
-        const byteNumbers = new Uint8Array(byteCharacters.length);
-
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-
-        const blob = new Blob([byteNumbers], { type: mimeType });
-        return new File([blob], fileName, { type: mimeType }); // Create and return File object
-      } catch (error) {
-        console.error("Error converting Base64 string to File:", error);
-        return null;
       }
     },
   },
