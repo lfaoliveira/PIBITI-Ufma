@@ -17,10 +17,10 @@
       </div>
       <div class="div-grafico">
         <!-- Placeholder for your graph (image or canvas) -->
-        <img class="grafico" alt="Analysis graph" src="../assets/grafico.png" />
+        <img ref="imgGraf" class="grafico" alt="Analysis graph" />
       </div>
     </div>
-    <VideoPlayer :idVideoAtual="this.idVideoAnalise"></VideoPlayer>
+    <VideoPlayer :videoSource="this.videoSource"></VideoPlayer>
     <Rodape class="rodape"></Rodape>
   </main>
 </template>
@@ -196,18 +196,17 @@ button {
 </style>
 
 <script>
-/* SCRIPT
-
-
-
-
-*/
 
 import seta from "./icons/Voltar.vue";
 import { mapGetters } from "vuex";
 import Rodape from "./Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue";
 import VideoPlayer from "./VideoPlayer.vue";
+import { Buffer } from "node:buffer";
+import axios from "axios";
+import db from "../db.js";
+
+
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
   name: "Analise de Video",
@@ -220,7 +219,11 @@ export default {
   created() {},
   data() {
     return {
-      time: 0,
+        videoSource: "",
+        graficoURL: "",
+        strResult: "",
+        mimeVideo: "",
+
     };
   },
   props: {
@@ -239,7 +242,20 @@ export default {
     },
 
     // pegar resultados da análise
-    async getAnalysisResults() {},
+    async getAnalysisResults(){
+      try {
+        await db.open();
+        const resultData = await db.get(parseInt(this.idVideoAnalise));
+        const mime = resultData.mimeVideo;
+        const videoURL = resultData.video;
+        const graficoURL = resultData.grafico;
+        const strResult = resultData.string;
+
+        return { strResult, graficoURL, mime, videoURL };
+      } catch (error) {
+        console.error("ERRO! " + error);
+      }
+    },
   },
   computed: {
     controlStyle() {
@@ -271,10 +287,19 @@ export default {
       return this.getSharedData;
     },
   },
-  mounted() {
+  async mounted() {
     console.log("MONTADO ANALISE:");
-    // this.idVideoAnalise = this.$route.query.idVideoAnalise;
-    // id sendo passado pra baixo corretamente
+    const res = await this.getAnalysisResults();
+    this.videoSource = res.videoURL;
+    this.mimeVideo = res.mime;
+    console.log(mimeVideo);
+    this.graficoURL = res.graficoURL;
+    this.$refs.imgGraf.src = this.graficoURL;
+    this.strResult = res.strResult;
+    alert(res.strResult);
+    
+
+    
   },
 };
 </script>

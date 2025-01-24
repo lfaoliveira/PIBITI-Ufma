@@ -58,15 +58,12 @@ def converter_arq(input: str, output: str):
     """
     Converte video de input em .mp4 
     """
-    try:
-
-        stream = ffmpeg.input(input)
-        stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
-
-        # Execute the conversion
-        ffmpeg.run(stream)
-    except:
-        a = 1/0
+    print(f"Converting {input} to {output}")
+    stream = ffmpeg.input(input)
+    stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
+    print(stream, "\n\n")
+    # Execute the conversion
+    ffmpeg.run(stream)
     return output
 
 
@@ -105,7 +102,7 @@ CORS(app)
 
 print("APP INICIADO")
 # path para arquivos temporarios
-app.config["TEMP_FOLDER"] = "tmp"
+
 os.makedirs("tmp", exist_ok=True)
 
 PATH_PIBITI = os.getcwd()
@@ -118,11 +115,13 @@ if "PIBITI" == os.path.basename(PATH_PIBITI):
 
 
 app.config["WKDIR"] = os.getcwd()
-print(f"\nHOME: { os.getcwd()}\n\n")
+print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
     download_peso(app.config["WKDIR"])
+
+app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
 
 video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
@@ -163,7 +162,6 @@ def serve_file(filename):
     Serves the file when the generated URL is accessed.
     """
     try:
-
         return send_from_directory(app.config["TEMP_FOLDER"], filename, as_attachment=True)
     except FileNotFoundError:
         return jsonify({"error": "File not found"}), 404

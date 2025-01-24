@@ -203,31 +203,15 @@ input[type="file"] {
 </style>
 
 <script>
-import db from "../db.js";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
-import { Buffer } from "node:buffer";
-import axios from "axios";
 
-// eventos pro player checar durante execução
-const EVENTS = [
-  "play",
-  "pause",
-  "ended",
-  "loadeddata",
-  "waiting",
-  "playing",
-  "timeupdate",
-  "canplay",
-  "canplaythrough",
-  "statechanged",
-];
 
 export default {
   name: "Player_de_Video",
   // TODO: INSERIR LOGICA DE ADAPTAR TAMANHO DO WRAPPER COM BASE NO ASPECT-RATIO DO VIDEO
   props: {
-    idVideoAtual: { type: String, required: true, default: "" },
+    videoSource: { type: String, required: true, default: "" },
     controls: { type: Boolean, default: true },
     loop: { type: Boolean, default: true },
     autoplay: { type: Boolean, default: false },
@@ -237,19 +221,11 @@ export default {
   components: {},
   data() {
     return {
-      videoSource: "",
     };
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
-    const res = await this.pegarVideo();
-    this.videoSource = res.videoURL;
-
-    const mimeVideo = res.mime;
-    console.log(mimeVideo);
-    this.graficoURL = res.graficoURL;
-    this.$refs.imgGraf.src = this.graficoURL;
-    this.strResult = res.strResult;
+    
 
     /* const tiposSuport = ["mp4", "ogg", "webm", "mkv", "avi"];
     
@@ -275,21 +251,7 @@ export default {
     onVoltar() {
       this.$router.push("/");
     },
-    async pegarVideo() {
-      try {
-        await db.open();
-        const resultData = await db.get(parseInt(this.idVideoAtual));
-        const mime = resultData.mimeVideo;
-        const videoURL = resultData.video;
-        console.log(`VIDEO URL: ${videoURL}`);
-        const graficoURL = resultData.grafico;
-        const strResult = resultData.string;
-
-        return { strResult, graficoURL, mime, videoURL };
-      } catch (error) {
-        console.error("ERRO! " + error);
-      }
-    },
+    
   },
   beforeDestroy() {
     if (this.player) {
