@@ -1,0 +1,25 @@
+# Python3.9: alpine
+FROM sha256:f8b3360c67251d9ff5cefaf6fd2d0afaa3f968d141a4a85607556fccda982028
+
+#INSTALLING FFmpeg
+# Set environment variables to avoid user prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install FFmpeg
+# the ffmpeg python livrary does not depend on the specifics of the ffmpeg version
+RUN apk update && \
+    apk add --no-cache ffmpeg=6.1.2-r1 && \
+    rm -rf /var/cache/apk/*
+
+# Set the working directory in the container
+WORKDIR /
+
+COPY requirements.txt /requirements.txt
+
+# pip
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+EXPOSE 5000
+
+CMD ["python","-m", "server.py"]
