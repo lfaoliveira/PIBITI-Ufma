@@ -2,8 +2,9 @@
   <div class="div-header">
     <img :src="this.path_hamburg" id="imagemHamburguer" alt="Imagem Menu" />
     <div class="cntr-demo">
-      <input type="file" id="fileInput" accept="video/*" />
-      <label for="fileInput" ref="" class="botao-demo"> Demonstração </label>
+      <button @click="this.clickDemo" id="fileInput" class="botao-demo">
+        Demonstração
+      </button>
     </div>
   </div>
 </template>
@@ -34,7 +35,7 @@ input {
   background-color: #6113c6;
   display: flex;
   width: auto;
-  height: auto;
+  height: 75%;
   align-items: center;
   justify-content: center;
   border-radius: 0.75rem;
@@ -49,9 +50,12 @@ input {
 .botao-demo {
   border: none;
   color: white;
+  background-color: #6113c6;
+  font-family: MontSerrat, Medium;
   position: relative;
   white-space: nowrap;
   font-size: clamp(1.5vmin, 5vmin, 22px);
+  font-weight: 500;
   letter-spacing: 0;
   align-items: center;
   display: flex;
@@ -59,6 +63,7 @@ input {
   text-align: center;
   width: 100%;
   height: 100%;
+
   cursor: pointer;
 }
 
@@ -85,7 +90,14 @@ export default {
       path_hamburg: path.join(".", "src", "assets", "menu-sanduiche.png"),
     };
   },
-  methods: {},
+  methods: {
+    clickDemo() {
+      this.$router.push({
+        name: "analiseVideo",
+        query: { idVideoAnalise: -1 },
+      });
+    },
+  },
   computed: {
     /*  styleImagem() {
       return {

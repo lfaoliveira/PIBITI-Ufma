@@ -196,7 +196,6 @@ button {
 </style>
 
 <script>
-
 import seta from "./icons/Voltar.vue";
 import { mapGetters } from "vuex";
 import Rodape from "./Rodape.vue";
@@ -206,6 +205,9 @@ import { Buffer } from "node:buffer";
 import axios from "axios";
 import db from "../db.js";
 
+const VIDEO_DEMO_URL = "";
+const GRAF_DEMO_url = "";
+const STR_RESULT_DEMO = "";
 
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
@@ -219,11 +221,10 @@ export default {
   created() {},
   data() {
     return {
-        videoSource: "",
-        graficoURL: "",
-        strResult: "",
-        mimeVideo: "",
-
+      videoSource: "",
+      graficoURL: "",
+      strResult: "",
+      mimeVideo: "",
     };
   },
   props: {
@@ -242,8 +243,15 @@ export default {
     },
 
     // pegar resultados da análise
-    async getAnalysisResults(){
+    async getAnalysisResults() {
       try {
+        if (parseInt(this.idVideoAnalise) === -1) {
+          const mime = "video/mp4";
+          const videoURL = VIDEO_DEMO_URL;
+          const graficoURL = GRAF_DEMO_url;
+          const strResult = STR_RESULT_DEMO;
+          return { strResult, graficoURL, mime, videoURL };
+        }
         await db.open();
         const resultData = await db.get(parseInt(this.idVideoAnalise));
         const mime = resultData.mimeVideo;
@@ -297,9 +305,6 @@ export default {
     this.$refs.imgGraf.src = this.graficoURL;
     this.strResult = res.strResult;
     alert(res.strResult);
-    
-
-    
   },
 };
 </script>
