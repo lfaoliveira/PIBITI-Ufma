@@ -21,7 +21,7 @@ import HeaderAnal from "./HeaderAnalise.vue";
 import Rodape from "./Rodape.vue";
 
 //estimativa em milisegundos
-let estimativaTotal = 15 * 1000;
+let estimativaTotal = 20 * 1000;
 
 export default {
   name: "Test",
@@ -46,7 +46,7 @@ export default {
   },
   mounted() {
     document.addEventListener("update", this.moverBarra);
-    //document.addEventListener("completeProcessing", () => {this.$router.push({ name: "analise" })});
+
     let startTime = Date.now();
     let interval = setInterval(() => {
       document.dispatchEvent(new Event("update"));
@@ -56,8 +56,7 @@ export default {
       if (elapsedTime >= estimativaTotal) {
         clearInterval(interval);
       }
-    }, 10);
-    document.dispatchEvent(new Event("completeProcessing"));
+    }, 5);
   },
 };
 </script>
@@ -74,6 +73,7 @@ export default {
 }
 
 .overlay {
+  transition-duration: 4ms;
   background-color: black;
   width: auto;
   height: 100%;
@@ -90,16 +90,19 @@ export default {
 
 .progresso-barra {
   background-color: #f0f0f0;
-  height: clamp(20px, 5vmin, 40px);
+  height: clamp(10px, 2vmin, 20px);
   width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
   margin: 10px 0;
 }
 
 .barra-menor {
-  background-color: #68ff04;
+  margin: 0px;
+  padding: 0px;
+  background-color: #792359;
   height: 100%;
   width: 2%;
+  border-radius: 12px;
 }
 
 .progresso-texto {

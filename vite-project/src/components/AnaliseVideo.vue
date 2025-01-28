@@ -245,6 +245,7 @@ export default {
     // pegar resultados da análise
     async getAnalysisResults() {
       try {
+        alert(this.idVideoAnalise);
         if (parseInt(this.idVideoAnalise) === -1) {
           const mime = "video/mp4";
           const videoURL = VIDEO_DEMO_URL;

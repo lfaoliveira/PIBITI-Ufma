@@ -2,9 +2,8 @@
   <div class="div-header">
     <img :src="this.path_hamburg" id="imagemHamburguer" alt="Imagem Menu" />
     <div class="cntr-demo">
-      <button @click="this.clickDemo" id="fileInput" class="botao-demo">
-        Demonstração
-      </button>
+      <!--  -->
+      <button @click="this.clickDemo" id="demo" class="botao-demo">Demonstração</button>
     </div>
   </div>
 </template>

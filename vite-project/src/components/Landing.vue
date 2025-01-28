@@ -201,42 +201,40 @@ export default {
         const formData = new FormData();
         formData.append("file", file); // 'file' is the key used for the file on the server
 
-        (async () => {
-          try {
-            const result = await axios.post(urlServer, formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
-            console.log(`RESULTADO`, result);
-            const resultJSON = result.data;
-            const strResult = resultJSON.string;
-            const graficoURL = resultJSON.grafico;
-            const videoURL = resultJSON.video;
-            console.log("VIDEO RECEBIDO: ", videoURL, typeof videoURL);
-            const extension = resultJSON.extVideo;
+        try {
+          this.$router.push({ name: "loading" });
 
-            const mimeConst = mime.lookup(extension);
+          const result = await axios.post(urlServer, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          console.log(`RESULTADO`, result);
+          const resultJSON = result.data;
+          const strResult = resultJSON.string;
+          const graficoURL = resultJSON.grafico;
+          const videoURL = resultJSON.video;
+          console.log("VIDEO RECEBIDO: ", videoURL, typeof videoURL);
+          const extension = resultJSON.extVideo;
 
-            await db.open();
-            const processData = {
-              string: strResult,
-              video: videoURL,
-              grafico: graficoURL,
-              mimeVideo: mimeConst,
-            };
-            console.log(processData);
-            let constId = await db.add(processData);
-            console.log(constId + " " + typeof constId);
+          const mimeConst = mime.lookup(extension);
 
-            alert(constId);
-            console.log("VIDEO PROCESSADO");
-            this.$router.push({
-              name: "analiseVideo",
-              query: { idVideoAnalise: constId },
-            });
-          } catch (error) {
-            console.error(error + "An error occurred while uploading the file.");
-          }
-        })();
+          await db.open();
+          const processData = {
+            string: strResult,
+            video: videoURL,
+            grafico: graficoURL,
+            mimeVideo: mimeConst,
+          };
+          let constId = await db.add(processData);
+
+          alert(constId);
+          console.log("VIDEO PROCESSADO");
+          this.$router.push({
+            name: "analiseVideo",
+            query: { idVideoAnalise: constId },
+          });
+        } catch (error) {
+          console.error(error + "An error occurred while uploading the file.");
+        }
       }
     },
   },
