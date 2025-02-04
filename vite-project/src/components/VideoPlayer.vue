@@ -4,7 +4,7 @@
     <video
       class="video-js vjs-custom-skin"
       preload="auto"
-      :src="videoSource"
+      :src="this.videoSource"
       :muted="muted"
       :autoplay="autoplay"
       :controls="controls"
@@ -26,12 +26,10 @@
 
 /* OBS: UTILIZAR especificidade ao mudar estilo do CSS do video.js */
 
-/*  
-
 .vjs-custom-skin {
-  /* Custom styles here 
+  /* Custom styles here  */
 }
-*/
+
 .video-js .vjs-control-bar {
   /* height: clamp(5em, 100px, 15em); */
   background: linear-gradient(
@@ -205,13 +203,14 @@ input[type="file"] {
 <script>
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
-
+import { onMounted, nextTick } from "vue";
 
 export default {
   name: "Player_de_Video",
   // TODO: INSERIR LOGICA DE ADAPTAR TAMANHO DO WRAPPER COM BASE NO ASPECT-RATIO DO VIDEO
   props: {
     videoSource: { type: String, required: true, default: "" },
+    mimeVideo: { type: String, required: true, default: "" },
     controls: { type: Boolean, default: true },
     loop: { type: Boolean, default: true },
     autoplay: { type: Boolean, default: false },
@@ -220,24 +219,17 @@ export default {
   },
   components: {},
   data() {
-    return {
-    };
+    return {};
   },
   async mounted() {
     console.log("MONTADO VIDEOPLAYER:");
-    
-
-    /* const tiposSuport = ["mp4", "ogg", "webm", "mkv", "avi"];
-    
-    // itera sobre tipos aceitaveis e cria array de fontes
-    tiposSuport.forEach((tipo) => {
-      console.log(tipo);
-      const mimeAtual = mime.lookup(tipo);
-      sources.push({ src: videoSource, type: `${mimeAtual}` });
-    }); */
-
-    const sources = [{ src: this.videoSource, type: `${mimeVideo}` }];
-    this.setupPlayer(sources);
+    console.log("MIME: VIDEOPLAYER: ", this.mimeVideo);
+    try {
+      const sources = [{ src: this.videoSource, type: `${this.mimeVideo}` }];
+      this.setupPlayer(sources);
+    } catch (error) {
+      console.log(error);
+    }
   },
 
   methods: {
@@ -251,7 +243,6 @@ export default {
     onVoltar() {
       this.$router.push("/");
     },
-    
   },
   beforeDestroy() {
     if (this.player) {

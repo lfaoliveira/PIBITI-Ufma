@@ -41,22 +41,23 @@ export default {
   methods: {
     moverBarra() {
       const barraAtual = document.querySelector(".barra-menor");
-      barraAtual.style.width = `${this.percent}%`;
+      if (barraAtual) barraAtual.style.width = `${this.percent}%`;
     },
   },
-  mounted() {
+  async mounted() {
+    await this.$nextTick();
     document.addEventListener("update", this.moverBarra);
 
     let startTime = Date.now();
     let interval = setInterval(() => {
       document.dispatchEvent(new Event("update"));
       let elapsedTime = Date.now() - startTime;
-      this.percent = Math.min((elapsedTime / estimativaTotal) * 100, 100).toFixed(2);
+      this.percent = Math.min((elapsedTime / estimativaTotal) * 100, 99.9).toFixed(2);
 
       if (elapsedTime >= estimativaTotal) {
         clearInterval(interval);
       }
-    }, 5);
+    }, 15);
   },
 };
 </script>

@@ -226,7 +226,7 @@ export default {
           };
           let constId = await db.add(processData);
 
-          alert(constId);
+          // alert(constId);
           console.log("VIDEO PROCESSADO");
           this.$router.push({
             name: "analiseVideo",

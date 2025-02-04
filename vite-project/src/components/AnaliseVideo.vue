@@ -20,7 +20,11 @@
         <img ref="imgGraf" class="grafico" alt="Analysis graph" />
       </div>
     </div>
-    <VideoPlayer :videoSource="this.videoSource"></VideoPlayer>
+    <VideoPlayer
+      v-if="resPronto"
+      :videoSource="this.videoSource"
+      :mimeVideo="this.mimeVideo"
+    ></VideoPlayer>
     <Rodape class="rodape"></Rodape>
   </main>
 </template>
@@ -225,6 +229,7 @@ export default {
       graficoURL: "",
       strResult: "",
       mimeVideo: "",
+      resPronto: false,
     };
   },
   props: {
@@ -246,6 +251,7 @@ export default {
     async getAnalysisResults() {
       try {
         alert(this.idVideoAnalise);
+        // caso seja video de demonstracao
         if (parseInt(this.idVideoAnalise) === -1) {
           const mime = "video/mp4";
           const videoURL = VIDEO_DEMO_URL;
@@ -299,13 +305,13 @@ export default {
   async mounted() {
     console.log("MONTADO ANALISE:");
     const res = await this.getAnalysisResults();
+    this.resPronto = true;
     this.videoSource = res.videoURL;
     this.mimeVideo = res.mime;
-    console.log(mimeVideo);
+    console.log("MIME: ANALI", this.mimeVideo);
     this.graficoURL = res.graficoURL;
     this.$refs.imgGraf.src = this.graficoURL;
     this.strResult = res.strResult;
-    alert(res.strResult);
   },
 };
 </script>
