@@ -13,8 +13,10 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode
-!.vscode/extensions.json
+# .vscode
+.vscode/
+
+# .vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -26,6 +28,7 @@ dist-ssr
 #Python
 __pycache__
 .venv
+.conda
 #pesos pra execucao da YOLov3
 FLASK/trained_weights_final.zip.*
 trained_weights_final.*
