@@ -8,6 +8,7 @@ import cv2
 import os
 
 """ SCRIPT QUE DEVE SER USADO PARA TESTAR EQUIVALÊNCIA ENTRE API E ARTIGO DE POLYANA"""
+slicer = pd.IndexSlice
 
 
 def video2image(lista_videos):
@@ -27,21 +28,14 @@ def video2image(lista_videos):
         return
 
 
-def ler_anot(path_csv):
-    """
-    Lê csv de anotação de posicao dos olhos e dataframe
-    """
-    return pd.read_csv(path_csv, index_col=0, delimiter=",")
-
-
-def pega_id(x): return os.path.basename(x).split(".")[0]
-
-
 def df_videos(PATH_SAUD, PATH_PAC, PATH_CSV):
     """
     Funcao que deve botar info dos pacientes em df 
     """
 
+    """
+    LISTAS
+    """
     lista_saudavel = os.listdir(PATH_SAUD)
     lista_pac = os.listdir(PATH_PAC)
     # adiciona todos os pacientes a uma so lista
@@ -52,7 +46,9 @@ def df_videos(PATH_SAUD, PATH_PAC, PATH_CSV):
     for elem in packed:
         elem.sort(lambda x: os.path.basename(x))
     assert len(lista_pessoas) == len(lista_csv)
-    # pega todas as pessoas e cria tuplas para o df
+    """
+    LOGICA QUE PEGA TUPLAS DE ID E FRAME E BOTA COMO INDICE DO DF
+    """
     tuplas = []
     for path_pessoa, path_csv in zip(lista_pessoas, lista_csv):
         id = path_pessoa.split(".")[0]
@@ -63,9 +59,10 @@ def df_videos(PATH_SAUD, PATH_PAC, PATH_CSV):
     indices = pd.MultiIndex.from_tuples(tuplas)
     df_labels = pd.DataFrame(
         {"X_ESQ", "Y_ESQ", "X_DIR", "Y_DIR"}, index=indices)
+    return df_labels, indices
 
 
-# MODE LOCAL == running outside of Google Colab
+# MODE LOCAL == running outside of Google Colab"
 MODO = "LOCAL"
 if os.path.exists("/content"):
     MODO = "COLAB"
@@ -88,16 +85,8 @@ if any(not os.path.exists(elem) for elem in [PATH_PACIENTES, PATH_SAUDAVEIS,  PA
     raise SystemError
 
 #### LOOP PRINCIPAL ####
-
-
-lista_paths = os.listdir(PATH_DADOS)
-# transforma todos os videos em pastas de imagens
-video2image(lista_paths)
-lista_pac = list(map(pega_id, lista_paths))
-for path in lista_paths:
-    print(path)
-
-
-index_pac = pd.MultiIndex.from_tuples()
-
-df_res = pd.DataFrame()
+df_labels, multi_index = df_videos(PATH_SAUDAVEIS, PATH_PACIENTES, PATH_CSV)
+df_res = pd.DataFrame({"X_ESQ", "Y_ESQ", "X_DIR", "Y_DIR",
+                      "DIF_VEL", "DIAG", "TEMP_PROC"}, index=multi_index)
+# TODO: criar loop  pra fazer teste da API com a lista de videos que ja existe
+# TODO: criar nova rota no Flask pra lidar com teste da API (precisa de mais dados)
