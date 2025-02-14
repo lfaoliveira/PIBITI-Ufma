@@ -99,7 +99,7 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
         df_labels.loc[id, ("ARRAY_VEL", "DIF", "OLHO_DOENTE")] = [
             [velE, velD], percentDif, olho_doente]
 
-    return df_labels, indices
+    return df_labels, indices, lista_pessoas
 
 
 def calculaVelocidadeEspacoPercorrido(xEsquerdo: list, xDireito: list) -> tuple[float, float]:
@@ -131,29 +131,49 @@ def calculaVelocidadeEspacoPercorrido(xEsquerdo: list, xDireito: list) -> tuple[
     return velE, velD
 
 
-def testar_api(lista_saudaveis, lista_pacientes, df_labels, df_res):
-    lista_resp = []
-    for pac in lista_saudaveis:
+def testar_api(lista_pessoas, df_labels, df_exp):
+    # TODO: analisar resultados comparando com df_labels
+    for pac in lista_pessoas:
         # Open the video file in binary read mode
         with open(pac, 'rb') as video_file:
-
-            ext = os.path.splitext(pac)[1]
+            id, ext = os.path.splitext(pac)
             mimetype = mimetypes.types_map[ext]
             # Create a dictionary for the files parameter
             files = {'file': (f'video.{ext}', video_file, mimetype)}
             # Send the POST request with the video file
             response = requests.post(URL_SERVER, files=files)
-            parse_response(response)
-            lista_resp.append(response.json())
+            velE, velD, difPercent, olho_doente = parse_response(response)
+            df_exp.loc[id, ["ARRAY_VEL", "DIF", "OLHO_DOENTE"]] = [
+                [velE, velD], difPercent, olho_doente]
             print(response.json())
-            break
+    processar_dfs(df_exp, df_labels)
+
+
+def processar_dfs(df_exp: pd.DataFrame, df_label: pd.DataFrame):
+    print("Processando df...")
+    colunas_exp = list(df_exp.columns)
+    colunas_exp.remove("OLHO_DOENTE")
+    colunas_exp.append("DIAG")
+    df_res = pd.DataFrame(index=df_exp.index, columns=colunas_exp)
+
+    for id in df_exp.index:
+        serie_res = df_res.loc[id]
+        serie_exp = df_exp.loc[id]
+        serie_label = df_label.loc[id]
+
+        serie_res["ARRAY_VEL", "DIF"] = serie_exp["ARRAY_VEL",
+                                                  "DIF"].subtract(serie_label["ARRAY_VEL", "DIF"])
+        cond = serie_exp["OLHO_DOENTE"] == serie_label["OLHO_DOENTE"]
+        serie_res["DIAG"] = True if cond else False
+    print(df_res.top)
+    df_res.to_csv("df_res.csv", sep=",")
 
 
 def parse_response(resposta: requests.Response):
     dict_resp = resposta.json()
     str_res = dict_resp["string"]
     velE, velD, difPercent, olho_doente = str_res.split(",")
-    return [velE, velD, difPercent, olho_doente]
+    return velE, velD, difPercent, olho_doente
 
 
 # MODE LOCAL == running outside of Google Colab"
@@ -179,11 +199,14 @@ if any(not os.path.exists(elem) for elem in [PATH_PACIENTES, PATH_SAUDAVEIS,  PA
     raise SystemError("dados para teste nao existem")
 
 #### LOOP PRINCIPAL ####
-df_labels, index = df_videos(PATH_SAUDAVEIS, PATH_PACIENTES, PATH_CSV)
-df_res = pd.DataFrame(columns=df_labels.columns, index=index)
+df_labels, index, lista_pessoas = df_videos(
+    PATH_SAUDAVEIS, PATH_PACIENTES, PATH_CSV)
+# df do experimento
+df_exp = pd.DataFrame(columns=df_labels.columns, index=index)
 
 # TODO: criar loop pra fazer teste da API com a lista de videos que ja existe
 lista_saudavel = pegar_lista_paths(PATH_SAUDAVEIS)
 lista_pac = pegar_lista_paths(PATH_PACIENTES)
-testar_api(lista_saudavel, lista_pac, df_labels, df_res)
+print("COMECANDO TESTE")
+testar_api(lista_pessoas, df_labels, df_exp)
 # TODO: criar nova rota no Flask pra lidar com teste da API (precisa de mais dados)
