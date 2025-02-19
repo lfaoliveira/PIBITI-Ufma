@@ -78,7 +78,7 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
                              "ARRAY_VEL", "DIF", "OLHO_DOENTE"])
     # povoa df que contem as labels
     for path_pessoa, path_csv in zip(lista_pessoas, lista_csv):
-        id = os.path.splitext(path_pessoa)[0]
+        id = os.path.splitext(os.path.basename(path_pessoa))[0]
         df_csv = pd.read_csv(path_csv, index_col=0,
                              names=colunas, delimiter=",")
         pos_esq = df_csv.loc[:, "X_ESQ"].to_list()
@@ -153,10 +153,10 @@ def testar_api(lista_pessoas, df_labels, df_exp):
         cont += 1
         nome = os.path.basename(url_video)
         response = requests.get(url_video)
-        if response.status_code == 200:
+        """ if response.status_code == 200:
             with open(f'{nome}.mp4', 'wb') as file:
-                file.write(response.content)
-        if cont >= 3:
+                file.write(response.content) """
+        if cont >= 300:
             break
 
     processar_dfs(df_exp, df_labels)
@@ -218,6 +218,7 @@ if any(not os.path.exists(elem) for elem in [PATH_PACIENTES, PATH_SAUDAVEIS,  PA
 df_labels, index, lista_pessoas = df_videos(
     PATH_SAUDAVEIS, PATH_PACIENTES, PATH_CSV)
 # df do experimento
+df_labels.to_csv("df_labels.csv")
 df_exp = pd.DataFrame(columns=df_labels.columns, index=index)
 
 print("COMECANDO TESTE")
