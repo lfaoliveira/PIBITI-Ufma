@@ -4,6 +4,8 @@ import os
 import shutil
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
 import cv2
 import os
 import mimetypes
@@ -76,6 +78,7 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
 
     df_labels = pd.DataFrame(index=indices, columns=[
                              "ARRAY_VEL", "DIF", "OLHO_DOENTE"])
+
     # povoa df que contem as labels
     for path_pessoa, path_csv in zip(lista_pessoas, lista_csv):
         id = os.path.splitext(os.path.basename(path_pessoa))[0]
@@ -83,7 +86,10 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
                              names=colunas, delimiter=",")
         pos_esq = df_csv.loc[:, "X_ESQ"].to_list()
         pos_dir = df_csv.loc[:, "X_DIR"].to_list()
-        velE, velD = calculaVelocidadeEspacoPercorrido(pos_esq, pos_dir)
+        xEsquerdo, xDireito = getHampel(pos_esq, pos_dir)
+        xEsquerdoFinal, xDireitaFinal = removeOutliers(xEsquerdo, xDireito)
+        velE, velD = calculaVelocidadeEspacoPercorrido(
+            xEsquerdoFinal, xDireitaFinal)
 
         percentDif = 1 - min(velE, velD) / max(velE, velD)
         threshold = 0.1965  # 19.65%, ver artigo
@@ -94,7 +100,7 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
         else:
             olho_doente = "Direito"
         if percentDif < threshold:
-            olho_doente = None
+            olho_doente = "None"
 
         df_labels.loc[id, ("ARRAY_VEL", "DIF", "OLHO_DOENTE")] = [
             [velE, velD], percentDif, olho_doente]
@@ -131,6 +137,119 @@ def calculaVelocidadeEspacoPercorrido(xEsquerdo: list, xDireito: list) -> tuple[
     return velE, velD
 
 
+def hampel_filter_forloop(input_series, window_size, n_sigmas):
+    n = len(input_series)
+    new_series = input_series.copy()
+    k = 1.4826
+    indices = []
+    for i in range((window_size), (n - window_size)):
+        x0 = np.median(input_series[(i - window_size): (i + window_size)])
+        S0 = k * np.median(
+            np.abs(input_series[(i - window_size): (i + window_size)] - x0)
+        )
+        if np.abs(input_series[i] - x0) > n_sigmas * S0:
+            new_series[i] = x0
+            indices.append(i)
+    return new_series, indices
+
+
+def getHampel(x1, x2):
+    lent = min(len(x1), len(x2))
+    x1 = x1[:lent]
+    x2 = x2[:lent]
+    resultEsquerdo, _ = hampel_filter_forloop(x1, 5, 2)
+    resultDireito, _ = hampel_filter_forloop(x2, 5, 2)
+    return resultEsquerdo, resultDireito
+
+
+def removeOutliers(xEsquerdo, xDireita):
+
+    fator = max(xEsquerdo) - min(xEsquerdo)
+    fatorD = max(xDireita) - min(xDireita)
+    xDireitaFinal = []
+    xEsquerdoFinal = []
+    xEsquerdoFinal.append(xEsquerdo[0])
+    xDireitaFinal.append(xDireita[0])
+
+    for j in range(1, len(xEsquerdo) - 1):
+        anterior = abs(xEsquerdo[j] - xEsquerdo[j - 1])
+        proximo = abs(xEsquerdo[j] - xEsquerdo[j + 1])
+        if (anterior > (fator / 7)) and (proximo > (fator / 7)):
+            xEsquerdoFinal.append(
+                int((xEsquerdo[j + 1] + xEsquerdo[j - 1]) / 2))
+        else:
+            xEsquerdoFinal.append(xEsquerdo[j])
+        anterior = abs(xDireita[j] - xDireita[j - 1])
+        proximo = abs(xDireita[j] - xDireita[j + 1])
+        if (anterior > (fator / 7)) and (proximo > (fator / 7)):
+            xDireitaFinal.append(
+                int((xDireita[j + 1] + xDireita[j - 1]) / 2))
+        else:
+            xDireitaFinal.append(xDireita[j])
+    xDireitaFinal.append(xDireita[len(xDireita) - 1])
+    xEsquerdoFinal.append(xEsquerdo[len(xEsquerdo) - 1])
+
+    return xEsquerdoFinal, xDireitaFinal
+
+
+""" 
+Nao uso essa funcao pq ja faz Hampel e outliers nas posicoes
+
+def calculaVelocidade(self, olhoEsquerdo, olhoDireito, frames, timestamp):
+    posicaoOlhoEsquerdo = [x for x in olhoEsquerdo]
+    posicaoOlhoDireito = [x for x in olhoDireito]
+    esquerdaHampel, direitaHampel = self.getHampel(
+        posicaoOlhoEsquerdo, posicaoOlhoDireito
+    )
+    olhoEsquerdoFinal, olhoDireitoFinal = self.removeOutliers(
+        esquerdaHampel, direitaHampel
+    )
+    self.plotHampelFinal(
+        posicaoOlhoEsquerdo,
+        posicaoOlhoDireito,
+        esquerdaHampel,
+        olhoEsquerdoFinal,
+        direitaHampel,
+        olhoDireitoFinal,
+        "Posição em relacao aos frames",
+        timestamp,
+    )
+    velEsquerda, velDireita = self.calculaVelocidadeEspacoPercorrido(
+        olhoEsquerdoFinal, olhoDireitoFinal
+    )
+    return velEsquerda, velDireita
+
+"""
+
+
+def getCenter(bbox):
+    """Função auxiliar para calcular o centro da bounding box."""
+    centerX = (bbox[2] + bbox[0]) // 2
+    centerY = (bbox[3] + bbox[1]) // 2
+    return centerX, centerY
+
+
+def selectBoundingBoxes(boxes):
+    """Função auxiliar para selecionar as bounding boxes dos olhos."""
+    # Exemplo de lógica para retornar as bounding boxes dos olhos
+    return [
+        0,
+        1,
+    ], 45  # Mock da seleção das bounding boxes e ângulo (substituir com lógica real)
+
+# --------------------------------------------#
+# --------------------------------------------#
+# --------------------------------------------#
+# --------------------------------------------#
+# ---------------#-#-#-#-#-#-#----------------#
+# --------------#----O--O----#----------------#
+# -------------#    --     #-----------------#
+# --------------#-#-#-#-#-#------------------#
+# --------------------------------------------#
+# --------------------------------------------#
+# --------------------------------------------#
+
+
 def testar_api(lista_pessoas, df_labels, df_exp):
     # testa 3 pacientes na API
     cont = 0
@@ -156,8 +275,6 @@ def testar_api(lista_pessoas, df_labels, df_exp):
         """ if response.status_code == 200:
             with open(f'{nome}.mp4', 'wb') as file:
                 file.write(response.content) """
-        if cont >= 300:
-            break
 
     processar_dfs(df_exp, df_labels)
 
