@@ -3,6 +3,7 @@ import Homepage from './components/HomePage.vue';
 import AnaliseVideo from './components/AnaliseVideo.vue';
 import Salvar from './components/icons/Salvar.vue'
 import Loading from "./components/Loading.vue";
+import CadastroVue from './components/Cadastro.vue';
 
 const routes = [
     { name: 'home', path: '/', component: Homepage }, // Root path (Home page)
@@ -19,6 +20,9 @@ const routes = [
     }, // pagina de exibição da demonstração
     {
         name: 'loading', path: '/loading', component: Loading,
+    },
+    {
+        name: 'cad', path: '/cad', component: CadastroVue,
     },
 ];
 

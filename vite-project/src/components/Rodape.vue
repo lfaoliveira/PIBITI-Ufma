@@ -50,7 +50,13 @@ export default {
   data() {
     return {};
   },
-  props: {},
+  mounted() {
+    const logo = document.querySelector(".footer-logo");
+    logo.style.marginBottom = this.margemImagem;
+  },
+  props: {
+    margemImagem: { type: String, default: "20px" },
+  },
   methods: {},
 };
 </script>

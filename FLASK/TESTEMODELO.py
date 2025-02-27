@@ -77,7 +77,7 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
         indices.append(id)
 
     df_labels = pd.DataFrame(index=indices, columns=[
-                             "ARRAY_VEL", "DIF", "OLHO_DOENTE"])
+                             "ARRAY_VEL", "DIF", "DOENTE"])
 
     # povoa df que contem as labels
     for path_pessoa, path_csv in zip(lista_pessoas, lista_csv):
@@ -92,18 +92,17 @@ def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
             xEsquerdoFinal, xDireitaFinal)
 
         percentDif = 1 - min(velE, velD) / max(velE, velD)
-        threshold = 0.1965  # 19.65%, ver artigo
-        olho_doente = ""
+        # threshold = 0.1965  # 19.65%, ver artigo
 
-        if velE < velD:
-            olho_doente = "Esquerdo"
+        if path_pessoa in lista_saudavel:
+            doente = False
+        elif (path_pessoa in lista_pac):
+            doente = True
         else:
-            olho_doente = "Direito"
-        if percentDif < threshold:
-            olho_doente = "None"
+            a = 1/0
 
-        df_labels.loc[id, ("ARRAY_VEL", "DIF", "OLHO_DOENTE")] = [
-            [velE, velD], percentDif, olho_doente]
+        df_labels.loc[id, ("ARRAY_VEL", "DIF", "DOENTE")] = [
+            [velE, velD], percentDif, doente]
 
     return df_labels, indices, lista_pessoas
 
@@ -266,7 +265,7 @@ def testar_api(lista_pessoas, df_labels, df_exp):
             response = requests.post(URL_SERVER, files=files)
             [velE, velD, difPercent,
                 olho_doente], url_video = parse_response(response)
-            df_exp.loc[id, ["ARRAY_VEL", "DIF", "OLHO_DOENTE"]] = [
+            df_exp.loc[id, ["ARRAY_VEL", "DIF", "DOENTE"]] = [
                 [velE, velD], difPercent, olho_doente]
             print(response.json())
         cont += 1
@@ -282,10 +281,10 @@ def testar_api(lista_pessoas, df_labels, df_exp):
 def processar_dfs(df_exp: pd.DataFrame, df_label: pd.DataFrame):
     print("Processando df...")
     colunas_exp = list(df_exp.columns)
-    colunas_exp.remove("OLHO_DOENTE")
-    colunas_exp.append("DIAG")
+    colunas_exp.remove("DOENTE")
+    colunas_exp.append("DOENTE")
     # erro entre velocidade e medição real / diganostico correto  ou nao
-    df_res = pd.DataFrame(index=df_exp.index, columns=["ERRO_VEL", "DIAG"])
+    df_res = pd.DataFrame(index=df_exp.index, columns=["ERRO_VEL", "DOENTE"])
 
     for id in df_exp.index:
         serie_res = df_res.loc[id]
@@ -295,8 +294,8 @@ def processar_dfs(df_exp: pd.DataFrame, df_label: pd.DataFrame):
         array_exp = np.array(serie_exp.loc["ARRAY_VEL"], dtype=np.float32)
         array_true = np.array(serie_label.loc["ARRAY_VEL"])
         serie_res.loc["ERRO_VEL"] = np.abs(array_exp - array_true).tolist()
-        cond = serie_exp["OLHO_DOENTE"] == serie_label["OLHO_DOENTE"]
-        serie_res["DIAG"] = True if cond else False
+        cond = serie_exp["DOENTE"] == serie_label["DOENTE"]
+        serie_res["DOENTE"] = True if cond else False
     print(df_res.head)
     df_res.to_csv("df_res.csv", sep=",")
 
