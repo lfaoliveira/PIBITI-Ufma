@@ -119,6 +119,7 @@
     input[type="checkbox"] {
       width: 18px;
       height: 18px;
+      accent-color: #2c2c2c;
     }
 
     label {
@@ -138,7 +139,7 @@
     transition: background-color 0.3s;
 
     &:hover {
-      background-color: #0056b3;
+      background-color: #23064a;
     }
   }
 
