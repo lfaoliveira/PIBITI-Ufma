@@ -60,24 +60,25 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  /* grid-template-rows: 1fr;
-  grid-template-columns: 1fr 1fr; */
 }
 
 .content-area {
-  flex: 1;
+  width: 75%;
+  margin: 2vmin auto 0vmin auto;
+  background-color: #ebd3ff;
+  align-self: center;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .registration-box {
+  margin-top: 2vmin;
   background: white;
   padding: 40px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 480px;
+  width: 50%;
 
   h1 {
     text-align: center;
@@ -152,6 +153,7 @@
 <script>
 import Voltar from "./icons/Voltar.vue";
 import Rodape from "./Rodape.vue";
+
 export default {
   components: {
     Voltar,
