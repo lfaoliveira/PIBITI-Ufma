@@ -5,34 +5,38 @@
     </header>
     <main class="content-area">
       <div class="registration-box">
-        <h1>Cadastre-se</h1>
+        <h1 class="titulo-cad">Cadastre-se</h1>
 
-        <form class="registration-form">
+        <form class="registration-form" @submit.prevent="cadastro">
           <div class="form-group">
             <label>Email</label>
-            <input type="email" placeholder="exemplo@email.com" />
+            <input type="text" v-model="this.email" placeholder="exemplo@email.com" />
           </div>
+          <ErroCadastro ref="erro1"></ErroCadastro>
 
           <div class="form-group">
             <label>CPF</label>
-            <input type="text" placeholder="Digite seu CPF" />
+            <input type="text" v-model="this.cpf" placeholder="Digite seu CPF" />
           </div>
+          <ErroCadastro ref="erro2"></ErroCadastro>
 
           <div class="form-group">
             <label>CRM (opcional)</label>
-            <input type="text" placeholder="Apenas oftalmologistas" />
+            <input type="text" v-model="this.crm" placeholder="Apenas oftalmologistas" />
           </div>
+          <ErroCadastro ref="erro3"></ErroCadastro>
 
           <div class="terms">
-            <input type="checkbox" id="terms" />
+            <input type="checkbox" v-model="this.checks" id="terms" />
             <label for="terms">Concordo com os Termos e Condições</label>
           </div>
+          <ErroCadastro ref="erro4"></ErroCadastro>
 
           <button type="submit" class="register-button">Registrar</button>
         </form>
       </div>
     </main>
-    <Rodape class="rodape" margem-imagem="clamp(2px, 1vmin, 10px)"></Rodape>
+    <Rodape class="rodape" margem-imagem="clamp(2px, 2vmin, 10px)"></Rodape>
   </section>
 </template>
 
@@ -45,7 +49,7 @@
 }
 
 .main-section {
-  height: 99vh;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   background-color: #f5f5f5;
@@ -63,9 +67,7 @@
 }
 
 .content-area {
-  width: 75%;
-  margin: 2vmin auto 0vmin auto;
-  background-color: #ebd3ff;
+  width: 50%;
   align-self: center;
   display: flex;
   justify-content: center;
@@ -73,21 +75,26 @@
 }
 
 .registration-box {
-  margin-top: 2vmin;
+  padding: 4%;
+  width: clamp(200px, 75%, 95%);
+  margin: 2vmin;
   background: white;
-  padding: 40px;
+  display: flex;
+  flex-direction: column;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 50%;
+}
 
-  h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-  }
+.titulo-cad {
+  font-size: clamp(25px, 5vmin, 48px);
+  font-weight: 800;
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 .registration-form {
+  margin: 2vmin;
   .form-group {
     margin-bottom: 20px;
 
@@ -143,34 +150,71 @@
       background-color: #23064a;
     }
   }
+}
 
-  .rodape {
-    gap: -1px;
-  }
+.rodape {
+  align-self: center;
+  margin-top: 2vmin;
 }
 </style>
 
 <script>
 import Voltar from "./icons/Voltar.vue";
 import Rodape from "./Rodape.vue";
+import ErroCadastro from "./erros/ErroCadastro.vue";
+import { ref } from "vue";
 
 export default {
   components: {
     Voltar,
     Rodape,
+    ErroCadastro,
   },
   name: "cadatroComp",
   created() {},
   data() {
-    return {};
+    return {
+      email: "",
+      cpf: "",
+      crm: "",
+      checks: false,
+    };
   },
+  mounted() {},
   props: {},
   methods: {
     fnVoltar() {
       this.$router.push({ name: "home" });
     },
+    cadastro($evt) {
+      const handleTipoErro = (string, referencia, tipo) => {
+        if (string.length === 0) {
+          referencia.errado = true;
+          referencia.tipo = tipo;
+        } else {
+          referencia.tipo = null;
+          referencia.errado = false;
+        }
+      };
+      console.log($evt);
+      handleTipoErro(this.email, this.$refs.errado1, "Email");
+
+      handleTipoErro(this.cpf, this.$refs.errado2, "CPF");
+
+      handleTipoErro(this.crm, this.$refs.errado3, "CRM");
+
+      if (!this.checks) {
+        this.$refs.erro4.errado = true;
+        this.$refs.erro4.tipo = "checks";
+      } else {
+        this.$refs.erro4.tipo = null;
+        this.$refs.erro4.errado = false;
+      }
+
+      console.log("EMAIL: ", this.email);
+      console.log("CPF: ", this.cpf);
+      console.log("CRM: ", this.crm);
+    },
   },
 };
 </script>
-
-<style lang="scss" scoped></style>
