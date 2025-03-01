@@ -3,6 +3,7 @@ import requests
 import os
 import shutil
 import pandas as pd
+
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -33,78 +34,6 @@ URL_SERVER = "http://127.0.0.1:5000/analise"
         vid.release()
         return
  """
-
-
-def pegar_lista_paths(PATH: str):
-    lista = []
-    for root, dirs, lista_arq in os.walk(PATH):
-        lista = [os.path.join(root, elem) for elem in lista_arq]
-    return lista
-
-
-def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
-    """
-    Funcao que deve botar info dos pacientes em df
-    """
-
-    '''
-    LISTAS
-    '''
-    lista_saudavel = pegar_lista_paths(PATH_SAUD)
-    lista_pac = pegar_lista_paths(PATH_PAC)
-
-    # adiciona todos os pacientes a uma so lista
-    lista_pessoas = [elem for elem in lista_saudavel]
-    lista_pessoas.extend(lista_pac)
-
-    lista_csv = []
-    for root, dirs, lista_arq in os.walk(PATH_CSV):
-        for elem in lista_arq:
-            if "LEIA" not in elem:
-                lista_csv.append(os.path.join(root, elem))
-
-    packed = [lista_saudavel, lista_pac, lista_csv, lista_pessoas]
-    # ordena listas com base no arquivo
-    for i, elem in enumerate(packed):
-        elem.sort(key=lambda x: os.path.basename(x))
-
-    assert len(lista_pessoas) == len(lista_csv)
-
-    indices = []
-    colunas = ["FRAME", "X_ESQ", "Y_ESQ", "X_DIR", "Y_DIR"]
-    for path_pessoa in lista_pessoas:
-        id = os.path.splitext(os.path.basename(path_pessoa))[0]
-        indices.append(id)
-
-    df_labels = pd.DataFrame(index=indices, columns=[
-                             "ARRAY_VEL", "DIF", "DOENTE"])
-
-    # povoa df que contem as labels
-    for path_pessoa, path_csv in zip(lista_pessoas, lista_csv):
-        id = os.path.splitext(os.path.basename(path_pessoa))[0]
-        df_csv = pd.read_csv(path_csv, index_col=0,
-                             names=colunas, delimiter=",")
-        pos_esq = df_csv.loc[:, "X_ESQ"].to_list()
-        pos_dir = df_csv.loc[:, "X_DIR"].to_list()
-        xEsquerdo, xDireito = getHampel(pos_esq, pos_dir)
-        xEsquerdoFinal, xDireitaFinal = removeOutliers(xEsquerdo, xDireito)
-        velE, velD = calculaVelocidadeEspacoPercorrido(
-            xEsquerdoFinal, xDireitaFinal)
-
-        percentDif = 1 - min(velE, velD) / max(velE, velD)
-        # threshold = 0.1965  # 19.65%, ver artigo
-
-        if path_pessoa in lista_saudavel:
-            doente = False
-        elif (path_pessoa in lista_pac):
-            doente = True
-        else:
-            a = 1/0
-
-        df_labels.loc[id, ("ARRAY_VEL", "DIF", "DOENTE")] = [
-            [velE, velD], percentDif, doente]
-
-    return df_labels, indices, lista_pessoas
 
 
 def calculaVelocidadeEspacoPercorrido(xEsquerdo: list, xDireito: list) -> tuple[float, float]:
@@ -249,9 +178,76 @@ def selectBoundingBoxes(boxes):
 # --------------------------------------------#
 
 
-def testar_api(lista_pessoas, df_labels, df_exp):
+def pegar_lista_paths(PATH: str):
+    lista = []
+    for root, dirs, lista_arq in os.walk(PATH):
+        lista = [os.path.join(root, elem) for elem in lista_arq]
+    return lista
+
+
+def df_videos(PATH_SAUD: str, PATH_PAC: str, PATH_CSV: str):
+    """
+    Funcao que deve botar info dos pacientes em df
+    """
+
+    '''LISTAS'''
+    lista_saudavel = pegar_lista_paths(PATH_SAUD)
+    lista_pac = pegar_lista_paths(PATH_PAC)
+
+    # adiciona todos os pacientes a uma so lista
+    lista_pessoas = [elem for elem in lista_saudavel]
+    lista_pessoas.extend(lista_pac)
+
+    lista_csv = []
+    for root, dirs, lista_arq in os.walk(PATH_CSV):
+        for elem in lista_arq:
+            if "LEIA" not in elem:
+                lista_csv.append(os.path.join(root, elem))
+
+    packed = [lista_saudavel, lista_pac, lista_csv, lista_pessoas]
+    # ordena listas com base no nome de  arquivo
+    for i, elem in enumerate(packed):
+        elem.sort(key=lambda x: os.path.basename(x))
+
+    assert len(lista_pessoas) == len(lista_csv)
+
+    indices = []
+    colunas = ["FRAME", "X_ESQ", "Y_ESQ", "X_DIR", "Y_DIR"]
+    for path_pessoa in lista_pessoas:
+        id = os.path.splitext(os.path.basename(path_pessoa))[0]
+        indices.append(id)
+
+    df_labels = pd.DataFrame(index=indices, columns=[
+                             "ARRAY_VEL", "DIF", "DOENTE"])
+
+    # povoa df que contem as labels
+    for path_pessoa, path_csv in zip(lista_pessoas, lista_csv):
+        id = os.path.splitext(os.path.basename(path_pessoa))[0]
+        df_csv = pd.read_csv(path_csv, index_col=0,
+                             names=colunas, delimiter=",")
+        pos_esq = df_csv.loc[:, "X_ESQ"].to_list()
+        pos_dir = df_csv.loc[:, "X_DIR"].to_list()
+        xEsquerdo, xDireito = getHampel(pos_esq, pos_dir)
+        xEsquerdoFinal, xDireitaFinal = removeOutliers(xEsquerdo, xDireito)
+        velE, velD = calculaVelocidadeEspacoPercorrido(
+            xEsquerdoFinal, xDireitaFinal)
+
+        percentDif = 1 - min(velE, velD) / max(velE, velD)
+        # threshold = 0.1965  # 19.65%, ver artigo
+        doente = "doente"
+        if path_pessoa in lista_saudavel:
+            doente = "saudavel"
+
+        df_labels.loc[id, ("ARRAY_VEL", "DIF", "DOENTE")] = [
+            [velE, velD], percentDif, doente]
+
+    return df_labels, indices, lista_pessoas
+
+
+def testar_api(lista_pessoas, df_labels: pd.DataFrame, df_exp: pd.DataFrame):
     # testa 3 pacientes na API
-    cont = 0
+    cont = 1
+
     url_video = ""
     for pac in lista_pessoas:
         # Open the video file in binary read mode
@@ -263,49 +259,116 @@ def testar_api(lista_pessoas, df_labels, df_exp):
             files = {'file': (f'video.{ext}', video_file, mimetype)}
             # Send the POST request with the video file
             response = requests.post(URL_SERVER, files=files)
-            [velE, velD, difPercent,
-                olho_doente], url_video = parse_response(response)
-            df_exp.loc[id, ["ARRAY_VEL", "DIF", "DOENTE"]] = [
-                [velE, velD], difPercent, olho_doente]
-            print(response.json())
+            doente_label = str(df_labels.at[id, "DOENTE"])
+            print(f"DOENTE LABEL {id}:", doente_label)
+            array_resp, url_video = parse_response(
+                response)
+
+            # guarda informacoes no df de experimentos
+            df_exp.loc[id, ["VEL_ESQ", "VEL_DIR",
+                            "DIF", "DOENTE"]] = array_resp
+            # print(response.json())
         cont += 1
-        nome = os.path.basename(url_video)
-        response = requests.get(url_video)
-        """ if response.status_code == 200:
+
+        """         nome = os.path.basename(url_video)
+        response = requests.get(url_video) 
+        if response.status_code == 200:
             with open(f'{nome}.mp4', 'wb') as file:
                 file.write(response.content) """
-
+    print(df_exp)
+    df_exp.to_csv("df_exp.csv", sep=";", decimal=",")
     processar_dfs(df_exp, df_labels)
 
 
 def processar_dfs(df_exp: pd.DataFrame, df_label: pd.DataFrame):
+    def classifc_resp(label, pred):
+        if label == "saudavel" and pred == "saudavel":
+            return "TP"
+        elif label == "saudavel" and pred == "doente":
+            return "FP"
+        elif label == "doente" and pred == "saudavel":
+            return "FN"
+        elif label == "doente" and pred == "doente":
+            return "TN"
+        else:
+            print(label, pred)
+            raise Exception("Deu merda aqui")
     print("Processando df...")
-    colunas_exp = list(df_exp.columns)
-    colunas_exp.remove("DOENTE")
-    colunas_exp.append("DOENTE")
-    # erro entre velocidade e medição real / diganostico correto  ou nao
-    df_res = pd.DataFrame(index=df_exp.index, columns=["ERRO_VEL", "DOENTE"])
+
+    # erro entre velocidade e medição real / diganostico correto ou nao
+    df_res = pd.DataFrame(index=df_exp.index, columns=[
+                          "ERRO_VEL_ESQ", "ERRO_VEL_DIR", "DOENTE"])
 
     for id in df_exp.index:
         serie_res = df_res.loc[id]
         serie_exp = df_exp.loc[id]
         serie_label = df_label.loc[id]
 
-        array_exp = np.array(serie_exp.loc["ARRAY_VEL"], dtype=np.float32)
-        array_true = np.array(serie_label.loc["ARRAY_VEL"])
-        serie_res.loc["ERRO_VEL"] = np.abs(array_exp - array_true).tolist()
-        cond = serie_exp["DOENTE"] == serie_label["DOENTE"]
-        serie_res["DOENTE"] = True if cond else False
+        for i, lado in enumerate(["ESQ", "DIR"]):
+            vel_exp = np.array(
+                serie_exp.loc[f"VEL_{lado}"], dtype=np.float64).item()
+
+            vel_true = np.array(
+                serie_label.loc[f"ARRAY_VEL"], dtype=np.float64)[i]
+
+            serie_res.loc[f"ERRO_VEL_{lado}"] = np.abs(
+                np.subtract(vel_exp, vel_true))
+
+        classif = classifc_resp(
+            serie_label.at["DOENTE"], serie_exp.at["DOENTE"])
+        serie_res["DOENTE"] = classif
+
     print(df_res.head)
-    df_res.to_csv("df_res.csv", sep=",")
+    sens, spec, acc = calculate_metrics(df_res)
+
+    medias_erro_vel = [df_res.loc[:, "ERRO_VEL_ESQ"].median(),
+                       df_res.loc[:, "ERRO_VEL_DIR"].median()]
+    dp_erro_vel = [df_res.loc[:, "ERRO_VEL_ESQ"].std(),
+                   df_res.loc[:, "ERRO_VEL_DIR"].std()]
+    with open("out.txt", "w") as f:
+        lista_str = []
+        lista_str.append(f"SENS: {sens} SPEC: {spec} ACURACIA: {acc}\n")
+        lista_str.append(f"ERRO MEDIO DE VELOCIDADE:\n")
+        lista_str.append(
+            f"ERRO VELOCIDADE ESQUERDA: {medias_erro_vel[0]}+-{dp_erro_vel[0]}\n")
+        lista_str.append(
+            f"ERRO VELOCIDADE ESQUERDA: {medias_erro_vel[1]}+-{dp_erro_vel[1]}\n")
+        f.writelines(lista_str)
+    df_res.to_csv("df_res.csv", sep=";", decimal=",",
+                  compression=None, float_format='%.5f')
 
 
 def parse_response(resposta: requests.Response):
+
     dict_resp = resposta.json()
     str_res = dict_resp["string"]
     url_video = dict_resp["video"]
+    # TODO: VERIFICAR PORQUE MATRIZ DE CONFUSAO ESTA SENDO CALCULADA ERRADO
     velE, velD, difPercent, olho_doente = str_res.split(",")
-    return [velE, velD, difPercent, olho_doente], url_video
+    if olho_doente.lower() == "esquerdo" or olho_doente.lower() == "direito":
+        doente = "doente"
+    else:
+        print("ELSE olho_doente: ", olho_doente)
+        doente = "saudavel"
+    print("DOENTE PRED:", doente)
+    return [velE, velD, difPercent, doente], url_video
+
+
+def calculate_metrics(df_res):
+    """Calculate sensitivity, specificity, and accuracy from results dataframe"""
+
+    # Count true/false positives/negatives
+    tp = len(df_res[df_res["DOENTE"] == "TP"])
+    tn = len(df_res[df_res["DOENTE"] == "TN"])
+    fp = len(df_res[df_res["DOENTE"] == "FP"])
+    fn = len(df_res[df_res["DOENTE"] == "FN"])
+
+    # Calculate metrics
+    sensitivity = round(tp / (tp + fn), 3) if (tp + fn) > 0 else 0
+    specificity = round(tn / (tn + fp), 3) if (tn + fp) > 0 else 0
+    accuracy = round((tp + tn) / (tp + tn + fp + fn), 3)
+
+    return sensitivity, specificity, accuracy
 
 
 # MODE LOCAL == running outside of Google Colab"
@@ -335,8 +398,9 @@ df_labels, index, lista_pessoas = df_videos(
     PATH_SAUDAVEIS, PATH_PACIENTES, PATH_CSV)
 # df do experimento
 df_labels.to_csv("df_labels.csv")
-df_exp = pd.DataFrame(columns=df_labels.columns, index=index)
+coluna_exp = ["VEL_ESQ", "VEL_DIR", "DIF", "DOENTE"]
+
+df_exp = pd.DataFrame(columns=coluna_exp, index=index)
 
 print("COMECANDO TESTE")
 testar_api(lista_pessoas, df_labels, df_exp)
-# TODO: criar nova rota no Flask pra lidar com teste da API (precisa de mais dados)
