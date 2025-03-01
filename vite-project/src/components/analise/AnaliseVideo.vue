@@ -8,12 +8,12 @@
 
     <div class="analysis-grid">
       <div class="diagnosis-card">
-        <h2 class="diagnostico texto-diag">
-          Diagnóstico: Paralisia no Olho X/ Olhos Saudáveis
-        </h2>
-        <p class="dif-velocidade texto-diag">Diferença de Velocidade: XX.dd %</p>
-        <p class="velocidade-dir texto-diag">Olho Direito: XX.dd mm/s</p>
-        <p class="velocidade-esq texto-diag">Olho Esquerdo: XX.dd mm/s</p>
+        <h2 class="diagnostico texto-diag">Diagnóstico: {{ this.olho_doente }}</h2>
+        <p class="dif-velocidade texto-diag">
+          Diferença de Velocidade: {{ this.percentDif }} %
+        </p>
+        <p class="velocidade-dir texto-diag">Olho Direito: {{ this.velD }} mm/s</p>
+        <p class="velocidade-esq texto-diag">Olho Esquerdo: {{ this.velE }} mm/s</p>
       </div>
       <div class="div-grafico">
         <!-- Placeholder for your graph (image or canvas) -->
@@ -200,16 +200,16 @@ button {
 </style>
 
 <script>
-import seta from "./icons/Voltar.vue";
+import seta from "../icons/Voltar.vue";
 import { mapGetters } from "vuex";
 import Rodape from "../Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue";
 import VideoPlayer from "./VideoPlayer.vue";
-import db from "src\db.js";
+import db from "../../db.js";
 
-const VIDEO_DEMO_URL = "";
-const GRAF_DEMO_url = "";
-const STR_RESULT_DEMO = "";
+const VIDEO_DEMO_URL = new URL("../../assets/video-demo.mp4", import.meta.url).href;
+const GRAF_DEMO_url = new URL("../../assets/grafico-demo.png", import.meta.url).href;
+const STR_RESULT_DEMO = "Demo text";
 
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
@@ -225,9 +225,12 @@ export default {
     return {
       videoSource: "",
       graficoURL: "",
-      strResult: "",
       mimeVideo: "",
       resPronto: false,
+      olho_doente: "",
+      percentDif: "",
+      velD: "",
+      velE: "",
     };
   },
   props: {
@@ -269,6 +272,20 @@ export default {
         console.error("ERRO! " + error);
       }
     },
+    parseResult(string) {
+      const split = String(string).split(",");
+      this.velE = parseFloat(split[0]).toFixed(2);
+      this.velD = parseFloat(split[1]).toFixed(2);
+      this.percentDif = parseFloat(split[2]).toFixed(2);
+      const diag = split[3];
+      let texto = "";
+      if (diag === "None") {
+        texto = "Olhos Saudáveis";
+      } else {
+        texto = "Olho " + diag + " Possivelmente Doente";
+      }
+      this.olho_doente = texto;
+    },
   },
   computed: {
     controlStyle() {
@@ -309,7 +326,8 @@ export default {
     console.log("MIME: ANALI", this.mimeVideo);
     this.graficoURL = res.graficoURL;
     this.$refs.imgGraf.src = this.graficoURL;
-    this.strResult = res.strResult;
+    const strResult = res.strResult;
+    this.parseResult(strResult);
   },
 };
 </script>

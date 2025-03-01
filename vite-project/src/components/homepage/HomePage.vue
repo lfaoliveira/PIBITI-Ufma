@@ -4,13 +4,13 @@
 
   <section class="features secao">
     <div class="sobre-titulo">
-      <img class="img-medicos" src="../assets/medicos.png" />
+      <img class="img-medicos" src="../../assets/medicos.png" />
       <div class="estrelas">
-        <img class="estrela-img" src="../assets/estrela.png" />
-        <img class="estrela-img" src="../assets/estrela.png" />
-        <img class="estrela-img" src="../assets/estrela.png" />
-        <img class="estrela-img" src="../assets/estrela.png" />
-        <img class="estrela-img" src="../assets/estrela.png" />
+        <img class="estrela-img" src="../../assets/estrela.png" />
+        <img class="estrela-img" src="../../assets/estrela.png" />
+        <img class="estrela-img" src="../../assets/estrela.png" />
+        <img class="estrela-img" src="../../assets/estrela.png" />
+        <img class="estrela-img" src="../../assets/estrela.png" />
       </div>
     </div>
     <h2 class="section-title" id="titulo-conv">
@@ -18,26 +18,30 @@
     </h2>
     <div class="feature-list">
       <div class="feature-item">
-        <img src="../assets/aprovado.png" alt="Análise de vídeos" class="feature-icon" />
+        <img
+          src="../../assets/aprovado.png"
+          alt="Análise de vídeos"
+          class="feature-icon"
+        />
         <p class="feature-description">
           Analise vídeos de paralisia do sexto nervo óptico
         </p>
       </div>
       <div class="feature-item">
         <img
-          src="../assets/aprovado.png"
+          src="../../assets/aprovado.png"
           alt="Gráficos resultantes"
           class="feature-icon"
         />
         <p class="feature-description">Observe os gráficos resultantes</p>
       </div>
       <div class="feature-item">
-        <img src="../assets/aprovado.png" alt="Salvar gráficos" class="feature-icon" />
+        <img src="../../assets/aprovado.png" alt="Salvar gráficos" class="feature-icon" />
         <p class="feature-description">Salve os gráficos a qualquer momento!</p>
       </div>
       <div class="feature-item">
         <img
-          src="../assets/aprovado.png"
+          src="../../assets/aprovado.png"
           alt="Análise em velocidades diferentes"
           class="feature-icon"
         />
@@ -47,14 +51,19 @@
   </section>
   <div id="divisor" class="secao">
     <img
-      src="../assets/logo_VIP_Lab.png"
+      src="../../assets/logo_VIP_Lab.png"
       alt="Logo VIpLab"
       class="img-logos"
       id="logo-vip"
     />
-    <img src="../assets/logo ufma.png" alt="Logo UFMA" class="img-logos" id="logo-ufma" />
     <img
-      src="../assets/LogoNCAFundBranco2000_2021.png"
+      src="../../assets/logo ufma.png"
+      alt="Logo UFMA"
+      class="img-logos"
+      id="logo-ufma"
+    />
+    <img
+      src="../../assets/LogoNCAFundBranco2000_2021.png"
       alt="Logo VIpLab"
       class="img-logos"
       :id="this.idNCA"
@@ -86,7 +95,7 @@
       <img
         alt="Ilustração do sexto nervo óptico"
         class="optic-nerve-image"
-        src="../assets/sexto-nervo.png"
+        src="../../assets/sexto-nervo.png"
       />
     </div>
   </section>
@@ -186,7 +195,11 @@
         bibendum leo. Fusce efficitur nibh a pretium feugiat. In at facilisis ante. Nullam
         id velit sed dolor mattis fringilla. Aliquam id interdum lorem
       </p>
-      <img alt="Imagem Time do VipLab" class="team-image" src="../assets/foto time.png" />
+      <img
+        alt="Imagem Time do VipLab"
+        class="team-image"
+        src="../../assets/foto time.png"
+      />
     </div>
   </section>
 

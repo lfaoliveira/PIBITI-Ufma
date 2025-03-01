@@ -31,8 +31,8 @@ input {
 </style>
 
 <script>
-import Voltar from "./icons/Voltar.vue";
-import Salvar from "./icons/Salvar.vue";
+import Voltar from "../icons/Voltar.vue";
+import Salvar from "../icons/Salvar.vue";
 export default {
   name: "headerAnalise",
   methods: {

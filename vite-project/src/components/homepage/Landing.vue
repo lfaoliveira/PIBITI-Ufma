@@ -12,7 +12,7 @@
           preload="auto"
           autoplay
           loop
-          src="../assets/video-oftalmo.mp4"
+          src="../../assets/video-oftalmo.mp4"
         />
         <div class="overlay"></div>
       </div>
@@ -27,13 +27,17 @@
       </div>
       <div class="div-mouse-animado">
         <img
-          src="../assets/mouse-animado.png"
+          src="../../assets/mouse-animado.png"
           alt="Mouse animado"
           class="mouse-animado"
         />
       </div>
       <div class="div-seta-baixo">
-        <img src="../assets/seta-baixo.png" alt="Decorative element" class="seta-baixo" />
+        <img
+          src="../../assets/seta-baixo.png"
+          alt="Decorative element"
+          class="seta-baixo"
+        />
       </div>
     </div>
   </section>
@@ -181,7 +185,7 @@ input {
 
 <script>
 import headerHome from "./HeaderHomepage.vue";
-import db from "src/db";
+import db from "../../db.js";
 import axios from "axios";
 import mime from "mime-types";
 
