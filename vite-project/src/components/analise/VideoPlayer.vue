@@ -203,7 +203,6 @@ input[type="file"] {
 <script>
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
-import { onMounted, nextTick } from "vue";
 
 export default {
   name: "Player_de_Video",

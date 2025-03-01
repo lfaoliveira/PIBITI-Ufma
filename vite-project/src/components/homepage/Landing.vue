@@ -181,7 +181,7 @@ input {
 
 <script>
 import headerHome from "./HeaderHomepage.vue";
-import db from "../db";
+import db from "src/db";
 import axios from "axios";
 import mime from "mime-types";
 

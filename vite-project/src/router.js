@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Homepage from './components/HomePage.vue';
-import AnaliseVideo from './components/AnaliseVideo.vue';
+import Homepage from './components/homepage/HomePage.vue';
+import AnaliseVideo from './components/analise/AnaliseVideo.vue';
 import Salvar from './components/icons/Salvar.vue'
-import Loading from "./components/Loading.vue";
+import Loading from "./components/analise/Loading.vue";
 import CadastroVue from './components/Cadastro.vue';
 
 const routes = [

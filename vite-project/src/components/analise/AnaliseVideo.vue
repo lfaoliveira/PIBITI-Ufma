@@ -202,12 +202,10 @@ button {
 <script>
 import seta from "./icons/Voltar.vue";
 import { mapGetters } from "vuex";
-import Rodape from "./Rodape.vue";
+import Rodape from "../Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue";
 import VideoPlayer from "./VideoPlayer.vue";
-import { Buffer } from "node:buffer";
-import axios from "axios";
-import db from "../db.js";
+import db from "src\db.js";
 
 const VIDEO_DEMO_URL = "";
 const GRAF_DEMO_url = "";
