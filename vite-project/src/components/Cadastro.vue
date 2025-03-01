@@ -35,6 +35,7 @@
           <button type="submit" class="register-button">Registrar</button>
         </form>
       </div>
+      <div></div>
     </main>
     <Rodape class="rodape" margem-imagem="clamp(2px, 2vmin, 10px)"></Rodape>
   </section>
@@ -141,7 +142,7 @@
     background-color: var(--sec-color);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s;
@@ -162,7 +163,7 @@
 import Voltar from "./icons/Voltar.vue";
 import Rodape from "./Rodape.vue";
 import ErroCadastro from "./erros/ErroCadastro.vue";
-import { ref } from "vue";
+import { VueElement } from "vue";
 
 export default {
   components: {
@@ -180,40 +181,34 @@ export default {
       checks: false,
     };
   },
-  mounted() {},
+  mounted() {
+    console.log("MOUNTED CADASTRO");
+  },
   props: {},
   methods: {
     fnVoltar() {
       this.$router.push({ name: "home" });
     },
-    cadastro($evt) {
-      const handleTipoErro = (string, referencia, tipo) => {
-        if (string.length === 0) {
-          referencia.errado = true;
-          referencia.tipo = tipo;
-        } else {
-          referencia.tipo = null;
-          referencia.errado = false;
-        }
-      };
-      console.log($evt);
-      handleTipoErro(this.email, this.$refs.errado1, "Email");
-
-      handleTipoErro(this.cpf, this.$refs.errado2, "CPF");
-
-      handleTipoErro(this.crm, this.$refs.errado3, "CRM");
-
-      if (!this.checks) {
-        this.$refs.erro4.errado = true;
-        this.$refs.erro4.tipo = "checks";
+    handleTipoErro(string, referencia = VueElement, tipo) {
+      if (string.length === 0) {
+        referencia.handleErro(tipo);
       } else {
-        this.$refs.erro4.tipo = null;
-        this.$refs.erro4.errado = false;
+        referencia.handleSucess();
       }
+    },
+    cadastro($evt) {
+      console.log("AQUI");
+      this.handleTipoErro(this.email, this.$refs.erro1, "Email");
+      this.handleTipoErro(this.cpf, this.$refs.erro2, "CPF");
+      this.handleTipoErro(this.crm, this.$refs.erro3, "CRM");
 
-      console.log("EMAIL: ", this.email);
-      console.log("CPF: ", this.cpf);
-      console.log("CRM: ", this.crm);
+      const referencia = this.$refs.erro4;
+      if (this.checks === false) {
+        referencia.handleErro("checks");
+      } else {
+        referencia.handleSucess();
+      }
+      console.log("FIM CADASTRO");
     },
   },
 };

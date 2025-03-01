@@ -1,47 +1,67 @@
-<template>
-  <div class="erro" v-if="errado">{{ this.texto }}</div>
-</template>
-
 <script>
 import { ref } from "vue";
-const errado = ref(false);
 
 export default {
   name: "CadComp",
   created() {
-    /*   this.$watch("texto", (newVal) => {
-      if (newVal !== "") {
-        this.errado = true;
-      } else {
-        this.errado = false;
-      }
+    /* document.addEventListener("cadastroCerto", () => {
+      console.log(this.tipo + " OK");
     }); */
   },
   data() {
     return {
+      cont: 0,
       texto: "",
-      tipo: "",
+      tipo: null,
     };
   },
   mounted() {
-    console.log(this.errado);
-
-    if (this.tipo === "checks") {
-      this.texto = "Aceite os Termos e Condições!";
-    } else {
-      this.texto = this.tipo + " Incorreto!";
-    }
+    console.log("MOUNTED ERROS");
   },
   props: {},
-  methods: {},
+  methods: {
+    handleErro(tipo) {
+      console.log("ERRO AQUI");
+      this.tipo = tipo;
+      if (this.tipo === "checks") {
+        this.texto = "Aceite os Termos e Condições!";
+      } else {
+        this.texto = this.tipo + " Incorreto!";
+      }
+      const caixa = this.$refs.caixaErro;
+      caixa.style.display = "unset";
+      console.log("TIPO ERRO: ");
+    },
+    handleSucess() {
+      const caixa = this.$refs.caixaErro;
+      caixa.style.display = "none";
+      this.texto = "adadaw";
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+* {
+  box-sizing: content-box;
+}
+
 .erro {
   width: 100%;
   height: 50px;
   background-color: white;
-  color: black;
+  color: red;
+  display: none;
 }
 </style>
+
+<template>
+  <div
+    class="erro"
+    ref="caixaErro"
+    @erroCadastro="handleErro"
+    @cadastroCerto="handleSucess"
+  >
+    {{ this.texto }}
+  </div>
+</template>
