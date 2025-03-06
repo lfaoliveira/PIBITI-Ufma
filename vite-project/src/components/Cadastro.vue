@@ -189,12 +189,8 @@ export default {
     fnVoltar() {
       this.$router.push({ name: "home" });
     },
-    handleTipoErro(string, referencia = VueElement, tipo) {
-      if (string.length === 0) {
-        referencia.handleErro(tipo);
-      } else {
-        referencia.handleSucess();
-      }
+    handleTipoErro(str = String, referencia = VueElement, tipo = String) {
+      const resposta = referencia.checkErro(tipo.toLowerCase(), str);
     },
     cadastro($evt) {
       console.log("AQUI");
@@ -203,11 +199,7 @@ export default {
       this.handleTipoErro(this.crm, this.$refs.erro3, "CRM");
 
       const referencia = this.$refs.erro4;
-      if (this.checks === false) {
-        referencia.handleErro("checks");
-      } else {
-        referencia.handleSucess();
-      }
+      referencia.checkErro("checks", this.checks);
       console.log("FIM CADASTRO");
     },
   },
