@@ -16,7 +16,13 @@
 
           <div class="form-group">
             <label>CPF</label>
-            <input type="text" v-model="this.cpf" placeholder="Digite seu CPF" />
+            <input
+              type="text"
+              v-model="this.cpf"
+              maxlength="14"
+              placeholder="Digite seu CPF"
+              id="inputCPF"
+            />
           </div>
           <ErroCadastro ref="erro2"></ErroCadastro>
 
@@ -185,6 +191,26 @@ export default {
     };
   },
   mounted() {
+    //funcao pra botar ponto e traço visualmente no CPF
+    const input = document.querySelector("#inputCPF");
+    input.addEventListener("keypress", () => {
+      //tira espacos
+      input.value = input.value.replace(/\s/g, "");
+      let tamanho = input.value.length;
+
+      if (tamanho == 3 || tamanho == 7) {
+        if (input.value[tamanho - 1] == ".") {
+          console.log("retornou");
+          return;
+        }
+        input.value += ".";
+      } else if (tamanho == 11) {
+        if (input.value[tamanho - 1] == "-") {
+          return;
+        }
+        input.value += "-";
+      }
+    });
     console.log("MOUNTED CADASTRO");
   },
   props: {},
@@ -196,7 +222,6 @@ export default {
       const resposta = referencia.checkErro(tipo.toLowerCase(), str);
     },
     cadastro($evt) {
-      console.log("AQUI");
       this.handleTipoErro(this.email, this.$refs.erro1, "Email");
       this.handleTipoErro(this.cpf, this.$refs.erro2, "CPF");
       this.handleTipoErro(this.crm, this.$refs.erro3, "CRM");

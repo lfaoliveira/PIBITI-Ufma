@@ -31,27 +31,19 @@ export default {
 
       if (typeof func !== "function") {
         console.error(`Handler for type "${tipo}" is not defined`);
-        return;
+        return null;
       }
 
       const retorno = func(string);
       if (retorno == "OK") {
         this.handleSucess();
-        console.log("SUCESSO: ");
+        alert(string);
+        console.log("SUCESSO: ", tipo);
+        return;
       } else {
         this.texto = retorno;
         const caixa = this.$refs.caixaErro;
         caixa.style.display = "unset";
-        console.log("TIPO ERRO: ");
-      }
-    },
-    handleErro(tipo) {
-      console.log("ERRO AQUI");
-      this.tipo = tipo;
-      if (tipo === "checks") {
-        this.texto = "Aceite os Termos e Condições!";
-      } else {
-        this.texto = retorno;
       }
     },
 
@@ -64,35 +56,43 @@ export default {
       }
     },
     erroCPF(strCpf) {
-      // Match CPF, permitindo 1 ou 0 traços
-      const cpfRegex = /^[\d]{9}-?[\d]{2}$/;
+      // Match CPF, permitindo traço, ponto e espaco na string
+      const cpfRegex = /^(\d\s*){9}[-|\.]?\d{2}\s*$/g;
 
       const inval = "CPF inválido!";
 
-      // cpf so pode ter 11 ou 12 caracteres
-      if (strCpf.length !== 11 || strCpf.length !== 12 || !cpfRegex.test(strCpf)) {
+      // Remove pontos e tracos
+      strCpf = strCpf.replace(/\.|-|\s/g, "");
+
+      console.log("INICIO CHECAGEM CPF");
+
+      // cpf so pode ter 11 caracteres, depis do tratamento
+      if (strCpf.length !== 11 || !cpfRegex.test(strCpf)) {
+        console.log("CPF INVALIDO");
         return inval;
       }
 
-      if (strCPF == "00000000000") return inval;
-
-      for (i = 1; i <= 9; i++) {
-        Soma = Soma + parseInt(strCPF.substring(i - 1, i)) * (11 - i);
+      //nao retirar!
+      if (strCpf == "00000000000") return inval;
+      let Soma = 0;
+      for (let i = 1; i <= 9; i++) {
+        Soma = Soma + parseInt(strCpf.substring(i - 1, i)) * (11 - i);
       }
 
-      Resto = (Soma * 10) % 11;
+      let Resto = (Soma * 10) % 11;
 
       if (Resto == 10 || Resto == 11) Resto = 0;
-      if (Resto != parseInt(strCPF.substring(9, 10))) return inval;
+      if (Resto != parseInt(strCpf.substring(9, 10))) return inval;
+      console.log("PRIMEIRO CHECK OK");
 
       Soma = 0;
-      for (i = 1; i <= 10; i++) {
-        Soma = Soma + parseInt(strCPF.substring(i - 1, i)) * (12 - i);
+      for (let i = 1; i <= 10; i++) {
+        Soma = Soma + parseInt(strCpf.substring(i - 1, i)) * (12 - i);
       }
       Resto = (Soma * 10) % 11;
       if (Resto == 10 || Resto == 11) Resto = 0;
-      if (Resto != parseInt(strCPF.substring(10, 11))) return inval;
-
+      if (Resto != parseInt(strCpf.substring(10, 11))) return inval;
+      console.log("SEGUNDO CHECK OK");
       return "OK";
     },
     erroCRM(strCrm) {
