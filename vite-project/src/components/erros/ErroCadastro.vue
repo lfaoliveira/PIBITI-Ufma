@@ -34,25 +34,28 @@ export default {
         return null;
       }
 
-      const retorno = func(string);
-      if (retorno == "OK") {
-        this.handleSucess();
-        alert(string);
-        console.log("SUCESSO: ", tipo);
-        return;
-      } else {
-        this.texto = retorno;
+      const arrayRet = func(string);
+      const texto = arrayRet[0];
+      const valor = arrayRet[1];
+
+      if (valor == null) {
+        this.texto = texto;
         const caixa = this.$refs.caixaErro;
         caixa.style.display = "unset";
+      } else {
+        this.handleSucess();
+        alert(`VALOR: ${valor}`);
+        console.log("SUCESSO: ", tipo);
+        return valor;
       }
     },
 
     erroEmail(strEmail) {
       const emailRegex = /^[\w]+@[\w]+\.[\w]+$/;
       if (strEmail === "exemplo@email.com" || !emailRegex.test(strEmail)) {
-        return "Digite um email válido!";
+        return ["Digite um email válido!", null];
       } else {
-        return "OK";
+        return ["OK", strEmail];
       }
     },
     erroCPF(strCpf) {
@@ -69,11 +72,11 @@ export default {
       // cpf so pode ter 11 caracteres, depis do tratamento
       if (strCpf.length !== 11 || !cpfRegex.test(strCpf)) {
         console.log("CPF INVALIDO");
-        return inval;
+        return [inval, null];
       }
 
       //nao retirar!
-      if (strCpf == "00000000000") return inval;
+      if (strCpf == "00000000000") return [inval, null];
       let Soma = 0;
       for (let i = 1; i <= 9; i++) {
         Soma = Soma + parseInt(strCpf.substring(i - 1, i)) * (11 - i);
@@ -82,7 +85,7 @@ export default {
       let Resto = (Soma * 10) % 11;
 
       if (Resto == 10 || Resto == 11) Resto = 0;
-      if (Resto != parseInt(strCpf.substring(9, 10))) return inval;
+      if (Resto != parseInt(strCpf.substring(9, 10))) return [inval, null];
       console.log("PRIMEIRO CHECK OK");
 
       Soma = 0;
@@ -91,9 +94,9 @@ export default {
       }
       Resto = (Soma * 10) % 11;
       if (Resto == 10 || Resto == 11) Resto = 0;
-      if (Resto != parseInt(strCpf.substring(10, 11))) return inval;
+      if (Resto != parseInt(strCpf.substring(10, 11))) return [inval, null];
       console.log("SEGUNDO CHECK OK");
-      return "OK";
+      return ["OK", strCpf];
     },
     erroCRM(strCrm) {
       // TODO: CRIAR LOGICA PARA LIDAR COM CRM
@@ -101,10 +104,11 @@ export default {
       return "";
     },
     erroChecks(strChecks) {
-      if (Boolean(strChecks) === false) {
-        return "Aceite os Termos e Condições!";
+      const boolCheck = Boolean(strChecks);
+      if (boolCheck === false) {
+        return ["Aceite os Termos e Condições!", null];
       } else {
-        return "OK";
+        return ["OK", boolCheck];
       }
     },
     handleSucess() {

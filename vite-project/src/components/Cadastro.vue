@@ -4,7 +4,7 @@
       <Voltar class="seta" :onclick="fnVoltar"></Voltar>
     </header>
     <main class="content-area">
-      <div class="registration-box">
+      <section class="registration-box">
         <h1 class="titulo-cad">Cadastre-se</h1>
 
         <form class="registration-form" @submit.prevent="cadastro">
@@ -20,6 +20,7 @@
               type="text"
               v-model="this.cpf"
               maxlength="14"
+              autocomplete="off"
               placeholder="Digite seu CPF"
               id="inputCPF"
             />
@@ -32,18 +33,18 @@
           </div>
           <ErroCadastro ref="erro3"></ErroCadastro>
 
-          <div class="terms">
+          <div class="campo-termos">
             <input type="checkbox" v-model="this.checks" id="terms" />
             <label for="terms"
               >Concordo com os
-              <a href="/termos">Termos e Condições</a>
+              <a href="/termos" id="link-termos">Termos e Condições</a>
             </label>
           </div>
           <ErroCadastro ref="erro4"></ErroCadastro>
 
           <button type="submit" class="register-button">Registrar</button>
         </form>
-      </div>
+      </section>
       <div></div>
     </main>
     <Rodape class="rodape" margem-imagem="clamp(2px, 2vmin, 10px)"></Rodape>
@@ -128,7 +129,7 @@
     }
   }
 
-  .terms {
+  .campo-termos {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
@@ -143,6 +144,18 @@
     label {
       color: #666;
     }
+  }
+
+  #link-termos {
+    color: blue;
+    background-color: white;
+    padding: 0px;
+  }
+  #link-termos:hover {
+    font-size: clamp(17px, 1.4vmin, 19px);
+    background-color: rgb(230, 230, 230);
+    border-radius: 10px;
+    padding: 0.25vmin;
   }
 
   .register-button {
@@ -219,6 +232,7 @@ export default {
       this.$router.push({ name: "home" });
     },
     handleTipoErro(str = String, referencia = VueElement, tipo = String) {
+      // armazenar resposta
       const resposta = referencia.checkErro(tipo.toLowerCase(), str);
     },
     cadastro($evt) {
