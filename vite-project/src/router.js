@@ -4,6 +4,9 @@ import AnaliseVideo from './components/analise/AnaliseVideo.vue';
 import Salvar from './components/icons/Salvar.vue'
 import Loading from "./components/analise/Loading.vue";
 import CadastroVue from './components/Cadastro.vue';
+import Termos from './components/termos/Termos.vue';
+
+
 
 const routes = [
     { name: 'home', path: '/', component: Homepage }, // Root path (Home page)
@@ -24,6 +27,9 @@ const routes = [
     {
         name: 'cad', path: '/cad', component: CadastroVue,
     },
+    {
+        name: 'termos', path:'/termos', component: Termos,
+    }
 ];
 
 const router = createRouter({

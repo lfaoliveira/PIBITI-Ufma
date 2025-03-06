@@ -28,7 +28,10 @@
 
           <div class="terms">
             <input type="checkbox" v-model="this.checks" id="terms" />
-            <label for="terms">Concordo com os Termos e Condições</label>
+            <label for="terms"
+              >Concordo com os
+              <a href="/termos">Termos e Condições</a>
+            </label>
           </div>
           <ErroCadastro ref="erro4"></ErroCadastro>
 
