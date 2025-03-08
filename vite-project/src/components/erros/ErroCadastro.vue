@@ -51,6 +51,9 @@ export default {
     },
 
     erroEmail(strEmail) {
+      const regexEspaco = /[\s]+/;
+      strEmail = strEmail.replace(regexEspaco);
+
       const emailRegex = /^[\w]+@[\w]+\.[\w]+$/;
       if (strEmail === "exemplo@email.com" || !emailRegex.test(strEmail)) {
         return ["Digite um email válido!", null];
