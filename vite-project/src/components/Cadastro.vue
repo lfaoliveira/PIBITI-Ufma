@@ -183,7 +183,7 @@
 
 <script>
 import Voltar from "./icons/Voltar.vue";
-import Rodape from "./Rodape.vue";
+import Rodape from "./auxiliares/Rodape.vue";
 import ErroCadastro from "./erros/ErroCadastro.vue";
 import { VueElement } from "vue";
 

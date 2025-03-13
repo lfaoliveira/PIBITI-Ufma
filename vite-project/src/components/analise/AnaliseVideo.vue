@@ -202,7 +202,7 @@ button {
 <script>
 import seta from "../icons/Voltar.vue";
 import { mapGetters } from "vuex";
-import Rodape from "../Rodape.vue";
+import Rodape from "../auxiliares/Rodape.vue";
 import HeaderAnalise from "./HeaderAnalise.vue";
 import VideoPlayer from "./VideoPlayer.vue";
 import db from "../../db.js";

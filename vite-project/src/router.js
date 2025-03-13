@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Homepage from './components/homepage/HomePage.vue';
+import Homepage from './components/inicio/HomePage.vue';
 import AnaliseVideo from './components/analise/AnaliseVideo.vue';
 import Salvar from './components/icons/Salvar.vue'
 import Loading from "./components/analise/Loading.vue";
 import CadastroVue from './components/Cadastro.vue';
-import Termos from './components/termos/Termos.vue';
+import Termos from './components/inicio/Termos.vue';
 
 
 

@@ -4,11 +4,9 @@
 
 <script>
 export default {
-
-  name: "demo",
+  name: "Test",
   created() {},
   data() {
-    // INSERIR LÓGICA DE MOSTRAR VIDEO E RESULTADOS DE DEMO
     return {};
   },
   props: {},
@@ -16,6 +14,4 @@ export default {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style lang="scss" scoped></style>

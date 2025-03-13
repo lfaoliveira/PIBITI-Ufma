@@ -18,7 +18,7 @@
 
 <script>
 import HeaderAnal from "./HeaderAnalise.vue";
-import Rodape from "../Rodape.vue";
+import Rodape from "../auxiliares/Rodape.vue";
 
 //estimativa em milisegundos
 let estimativaTotal = 20 * 1000;

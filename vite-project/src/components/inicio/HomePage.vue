@@ -1,11 +1,8 @@
 <template>
   <section class="secao-landing">
-    <!-- TODO: AJEITAR HEADER E SECAO INICIAL -->
     <headerHome />
     <div class="conteudo-secao">
       <div id="div-video-home">
-        <!-- ADICIONAR AUTOPLAY E LOOP PRA TER O RESULTADO FINAL -->
-
         <video
           alt="Header background"
           class="video-background"
@@ -24,20 +21,6 @@
       <div class="cntr-cta">
         <input type="file" id="fileInput" accept="video/*" />
         <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
-      </div>
-      <div class="div-mouse-animado">
-        <img
-          src="../../assets/mouse-animado.png"
-          alt="Mouse animado"
-          class="mouse-animado"
-        />
-      </div>
-      <div class="div-seta-baixo">
-        <img
-          src="../../assets/seta-baixo.png"
-          alt="Decorative element"
-          class="seta-baixo"
-        />
       </div>
     </div>
   </section>
@@ -77,7 +60,6 @@
   width: 100%;
   height: 100%;
   position: absolute;
-  z-index: 0;
   pointer-events: none;
   background-color: rgba(18, 18, 18.1, 0.41);
 }
@@ -165,83 +147,21 @@ input {
   height: auto;
   position: relative;
 }
-.div-seta-baixo {
-  margin: auto;
-  align-self: center;
-  width: clamp(8vmin, 45px, 70px);
-  margin-top: -4vh;
-  margin-bottom: clamp(0vh, 0vh, 3vh);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2;
-}
-
-.seta-baixo {
-  margin: auto;
-  width: 100%;
-}
 </style>
 
 <script>
-import headerHome from "./HeaderHomepage.vue";
+import headerHome from "./HeaderInicio.vue";
 import db from "../../db.js";
 import axios from "axios";
 import mime from "mime-types";
 
 export default {
-  name: "Landing",
+  name: "HomePage",
   components: {
     headerHome,
   },
   setup() {},
-  methods: {
-    async handleFileUpload($evt) {
-      const file = $evt.target.files[0];
-
-      if (file) {
-        // AQUI ENTRA LOGICA DE PROCESSAMENTO DE VIDEO
-        const urlServer = "http://localhost:5000/analise"; // Replace with your server URL
-        const formData = new FormData();
-        formData.append("file", file); // 'file' is the key used for the file on the server
-
-        try {
-          this.$router.push({ name: "loading" });
-
-          const result = await axios.post(urlServer, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-          console.log(`RESULTADO`, result);
-          const resultJSON = result.data;
-          const strResult = resultJSON.string;
-          const graficoURL = resultJSON.grafico;
-          const videoURL = resultJSON.video;
-          console.log("VIDEO RECEBIDO: ", videoURL, typeof videoURL);
-          const extension = resultJSON.extVideo;
-
-          const mimeConst = mime.lookup(extension);
-
-          await db.open();
-          const processData = {
-            string: strResult,
-            video: videoURL,
-            grafico: graficoURL,
-            mimeVideo: mimeConst,
-          };
-          let constId = await db.add(processData);
-
-          // alert(constId);
-          console.log("VIDEO PROCESSADO");
-          this.$router.push({
-            name: "analiseVideo",
-            query: { idVideoAnalise: constId },
-          });
-        } catch (error) {
-          console.error(error + "An error occurred while uploading the file.");
-        }
-      }
-    },
-  },
+  methods: {},
   props: {},
   data() {
     return {};
