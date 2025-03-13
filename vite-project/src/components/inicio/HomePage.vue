@@ -1,7 +1,7 @@
 <template>
-  <section class="secao-landing">
+  <main class="secao-landing">
     <headerHome />
-    <div class="conteudo-secao">
+    <section class="conteudo-secao">
       <div id="div-video-home">
         <video
           alt="Header background"
@@ -11,19 +11,19 @@
           loop
           src="../../assets/video-oftalmo.mp4"
         />
-        <div class="overlay"></div>
+        <figure class="overlay" />
       </div>
       <div class="div-titulo">
         <h1 class="section-title" id="titulo">
           Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
         </h1>
       </div>
-      <div class="cntr-cta">
-        <input type="file" id="fileInput" accept="video/*" />
-        <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
+      <div class="botoes">
+        <ButMedio @click="fnDuvidas" texto="Como Funciona?" ativo="true"></ButMedio>
+        <ButMedio @click="fnAcesso" texto="Fazer Análise" ativo="true"></ButMedio>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
 
 <style scoped>
@@ -46,10 +46,10 @@
 
 #div-video-home {
   position: absolute;
-  width: clamp(92%, 95%, 98%);
+  width: clamp(92%, 100%, 100%);
   display: flex;
   align-self: center;
-  height: 100%;
+  height: 80%;
   /* margin: 5vmin 0vmin 0vmin 0vmin; */
   top: 0px;
   flex-wrap: wrap;
@@ -118,13 +118,15 @@
   padding: clamp(1px, 4px, 10px) clamp(6px, 19px, 22px);
 }
 
-.label-cta {
-  border: none;
-  font-size: clamp(1.5vmin, 5vmin, 22px);
-  font-family: MontSerrat, Bold;
-  color: #fff;
-  cursor: pointer;
-  width: auto;
+.botoes {
+  display: flex;
+  height: 20vmin;
+  flex-direction: column;
+  margin: auto;
+  align-items: center;
+  gap: 2vmin;
+  flex-shrink: 0;
+  z-index: 1;
 }
 
 input {
@@ -151,24 +153,27 @@ input {
 
 <script>
 import headerHome from "./HeaderInicio.vue";
-import db from "../../db.js";
-import axios from "axios";
-import mime from "mime-types";
+import ButMedio from "../auxiliares/ButtonMedio.vue";
 
 export default {
   name: "HomePage",
   components: {
     headerHome,
+    ButMedio,
   },
   setup() {},
-  methods: {},
+  methods: {
+    fnDuvidas() {
+      this.$router.push("/duvidas");
+    },
+    fnAcesso() {
+      this.$router.push("/acesso");
+    },
+  },
   props: {},
   data() {
     return {};
   },
-  mounted() {
-    // listener pra quando fileInput recebe mudança
-    document.getElementById("fileInput").onchange = this.handleFileUpload;
-  },
+  mounted() {},
 };
 </script>

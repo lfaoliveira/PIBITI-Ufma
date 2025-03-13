@@ -10,7 +10,7 @@ export default {
   name: "botaoMedio",
   methods: {},
   props: {
-    ativo: false,
+    ativo: true,
     texto: "",
   },
   created() {},
@@ -25,17 +25,22 @@ export default {
 }
 
 .button {
-  width: 179px;
-  height: 51px;
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  width: 261px;
+  height: 74px;
   border: none;
   border-radius: 40px;
   font-size: 24px;
   font-weight: bold;
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
+
+  /* FONTE */
+  font-size: clamp(18px, 3vmin, 22px);
 }
 
 .classeAtivo {

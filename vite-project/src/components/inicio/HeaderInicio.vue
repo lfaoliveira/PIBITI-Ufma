@@ -20,6 +20,13 @@ export default {
   },
   methods: {
     setActive(index) {
+      const mapa = { 0: fnSistema, 1: fnMétodo, 2: fnAutores, 3: fnDuvidas };
+      const func = mapa[index];
+      if (typeof func !== "function") {
+        console.error(`Handler for type "${tipo}" is not defined`);
+        return null;
+      }
+      func();
       this.activeIndex = index;
     },
   },
@@ -29,9 +36,16 @@ export default {
 <style scoped>
 .navbar {
   width: 100%;
+  position: absolute;
+  top: 0px;
   z-index: 1;
   background-color: #12071c;
-  padding: 15px;
+  display: flex;
+  height: 8vmin;
+  padding: 10px;
+  align-items: center;
+  gap: 30px;
+  flex-shrink: 0;
 }
 
 .nav-list {
@@ -52,6 +66,6 @@ export default {
 }
 
 .nav-item a.active {
-  font-weight: bold;
+  font-weight: 800;
 }
 </style>
