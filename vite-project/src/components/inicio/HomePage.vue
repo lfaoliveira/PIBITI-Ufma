@@ -49,7 +49,7 @@
   width: clamp(92%, 100%, 100%);
   display: flex;
   align-self: center;
-  height: 80%;
+  height: 100%;
   /* margin: 5vmin 0vmin 0vmin 0vmin; */
   top: 0px;
   flex-wrap: wrap;
@@ -79,7 +79,7 @@
   flex-wrap: wrap;
   flex-flow: column wrap;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   justify-content: space-between;
   align-content: center;
 }
@@ -106,23 +106,11 @@
   margin: 0vmin auto;
 }
 
-.cntr-cta {
-  margin: clamp(30px, 27vmin, 165px) auto 0vmin auto;
-  background-color: #6113c6;
-  position: relative;
-  display: flex;
-  border-radius: 59px;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59);
-  padding: clamp(1px, 4px, 10px) clamp(6px, 19px, 22px);
-}
-
 .botoes {
   display: flex;
   height: 20vmin;
   flex-direction: column;
-  margin: auto;
+  margin: 20vmin auto;
   align-items: center;
   gap: 2vmin;
   flex-shrink: 0;
@@ -131,23 +119,6 @@
 
 input {
   display: none;
-}
-
-.div-mouse-animado {
-  display: flex;
-  align-items: center;
-  justify-items: center;
-  margin: 10vmin auto 0vmin auto;
-  align-self: flex-start;
-  width: clamp(2em, 7vmin, 120px);
-  height: auto;
-  position: relative;
-}
-
-.mouse-animado {
-  width: 100%;
-  height: auto;
-  position: relative;
 }
 </style>
 

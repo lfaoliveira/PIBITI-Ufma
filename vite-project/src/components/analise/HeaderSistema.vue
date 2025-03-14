@@ -4,13 +4,18 @@
 
 <script>
 export default {
-  name: "Test",
+  name: "HeaderSistema",
   created() {},
   data() {
     return {};
   },
   props: {},
-  methods: {},
+  methods: {
+    fnVoltar() {
+      // retorna 1 página
+      this.$router.go(-1);
+    },
+  },
 };
 </script>
 

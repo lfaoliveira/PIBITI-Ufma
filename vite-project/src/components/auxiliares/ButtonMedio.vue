@@ -30,8 +30,10 @@ export default {
   justify-content: center;
   align-items: center;
 
-  width: 261px;
-  height: 74px;
+  /* width: 261px;
+  height: 74px; */
+  width: 37vmin;
+  height: 10vmin;
   border: none;
   border-radius: 40px;
   font-size: 24px;
@@ -41,6 +43,7 @@ export default {
 
   /* FONTE */
   font-size: clamp(18px, 3vmin, 22px);
+  font-style: normal;
 }
 
 .classeAtivo {
