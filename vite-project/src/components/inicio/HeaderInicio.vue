@@ -83,6 +83,9 @@ export default {
   display: flex;
   width: max-content;
   /* Add these properties */
+  font-style: normal;
+
+  word-spacing: 4%;
   align-items: center;
   justify-content: center;
   padding: 5px; /* Add some padding around the item */
