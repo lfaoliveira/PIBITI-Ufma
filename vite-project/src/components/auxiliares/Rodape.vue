@@ -26,7 +26,7 @@
 .footer-logo {
   width: 100px;
   height: auto;
-  margin: 20px auto;
+  margin: 0px auto 20px auto;
 }
 
 .footer-nav {
