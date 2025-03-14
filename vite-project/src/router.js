@@ -5,6 +5,9 @@ import Salvar from './components/icons/Salvar.vue'
 import Loading from "./components/analise/Loading.vue";
 import CadastroVue from './components/Cadastro.vue';
 import Termos from './components/inicio/Termos.vue';
+import Metodo from './components/inicio/Metodo.vue';
+import Duvidas from './components/inicio/Duvidas.vue';
+import Equipe from './components/inicio/Equipe.vue';
 
 
 
@@ -16,7 +19,6 @@ const routes = [
         component: AnaliseVideo,
         props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }),
     },
-    { path: '/salvar', name: 'salvar', component: Salvar },
     {
         path: '/demo', component: AnaliseVideo,
         props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }),
@@ -29,7 +31,16 @@ const routes = [
     },
     {
         name: 'termos', path:'/termos', component: Termos,
-    }
+    },
+    {
+        path: '/metodo', name: 'PaginaMetodo', component: Metodo
+    },
+    {
+        path: '/duvidas', name: 'PaginaDuvidas', component: Duvidas
+    },
+    {
+        path: '/equipe', name: 'PaginaEquipe', component: Equipe
+    },
 ];
 
 const router = createRouter({
