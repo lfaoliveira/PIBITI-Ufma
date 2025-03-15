@@ -90,14 +90,9 @@ export default {
 <style lang="scss" scoped>
 $Fonte-Titulo-Secao: clamp(22px, 5vmin, 30px);
 
-* {
-  gap: 20px;
-}
-
 .frame-pagina {
   display: flex;
   flex-direction: column;
-
   justify-content: center;
   gap: 20px;
 }
@@ -108,14 +103,14 @@ $Fonte-Titulo-Secao: clamp(22px, 5vmin, 30px);
   padding: 0px 20px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 40px;
+  gap: 20px;
 }
 
 .titulo-secao {
   text-align: center;
   font-size: $Fonte-Titulo-Secao;
   font-style: normal;
-  font-weight: 700;
+  font-weight: 600;
   line-height: normal;
 }
 
@@ -146,12 +141,13 @@ $Fonte-Titulo-Secao: clamp(22px, 5vmin, 30px);
   padding-bottom: 20px;
   align-items: center;
   padding: 1px;
-  border: 2px solid #c9c9c998;
+  border: 1px solid #61616198;
 }
 
 .optic-nerve-image {
-  width: clamp(35vmin, 376px, 45vmin);
-  height: clamp(20vmin, 306px, 100%);
+  width: auto;
+  height: clamp(24vmin, 236px, 50vmin);
+  aspect-ratio: 379/336;
 }
 
 .tipo1 {
@@ -164,7 +160,7 @@ $Fonte-Titulo-Secao: clamp(22px, 5vmin, 30px);
   background-color: white;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .texto-imagem {
     flex-direction: column;
   }
@@ -175,8 +171,10 @@ $Fonte-Titulo-Secao: clamp(22px, 5vmin, 30px);
     align-items: center;
   }
   .optic-nerve-image {
-    width: clamp(20vmin, 376px, 376px);
-    height: clamp(30vmin, 306px, 40vmin);
+    width: clamp(20vmin, 286px, 376px);
+    // height: clamp(30vmin, 246px, 40vmin);
+    height: auto;
+    aspect-ratio: 379/336;
   }
 }
 </style>
