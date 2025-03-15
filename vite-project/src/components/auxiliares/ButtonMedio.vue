@@ -17,10 +17,9 @@ export default {
 };
 </script>
 
-<style scoped>
-* {
-  --tam-fonte-botao: clamp(18px, 3vmin, 22px);
-}
+<style lang="scss" scoped>
+$tam-fonte-botao: clamp(18px, 3vmin, 22px);
+$peso-fonte-butao: 600;
 
 .button-container {
   /* display: flex;
@@ -44,21 +43,28 @@ export default {
   border-radius: 40px;
   padding: 1vmin;
   font-size: 24px;
-  font-weight: 600;
+  font-weight: $peso-fonte-butao;
   color: white;
   cursor: pointer;
 
   /* FONTE */
-  font-size: var(--tam-fonte-botao);
+  font-size: $tam-fonte-botao;
   font-style: normal;
 }
 
 .button:hover {
-  font-size: calc(var(--tam-fonte-botao) * 1.08);
+  font-size: calc($tam-fonte-botao * 1.08);
   background-color: hsl(267, 82%, 50%);
   transition: all 0.3s ease-out, transform 0.9s cubic-bezier(0.17, 0.67, 0.76, 0.93);
   height: 12vmin;
   width: 40vmin;
+}
+
+@media (max-width: 450px) {
+  .button {
+    $tam-fonte-botao: clamp(14px, 2.5vmin, 19px);
+    font-size: $tam-fonte-botao;
+  }
 }
 
 .classeAtivo {

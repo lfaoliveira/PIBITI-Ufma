@@ -1,4 +1,5 @@
 <template>
+  <Header></Header>
   <div class="frame-pagina">
     <section class="secao-texto tipo1">
       <h2 class="titulo-secao">Sobre o Software</h2>
@@ -72,11 +73,13 @@
 
 <script>
 import Rodape from "../auxiliares/Rodape.vue";
+import Header from "./HeaderInicio.vue";
 
 export default {
   name: "compMetodo",
   components: {
     Rodape,
+    Header,
   },
   created() {},
   data() {

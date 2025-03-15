@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar">
     <ul class="nav-list">
-      <!-- Para cada item dentro de menuItens, so ativa quem tiver indice activeIndex -->
+      <!$ Para cada item dentro de menuItens, so ativa quem tiver indice activeIndex $>
       <li class="nav-item" v-for="(item, index) in menuItems" :key="index">
         <a :class="{ active: activeIndex === index }" @click="setActive(index)">
           {{ item }}
@@ -51,15 +51,11 @@ export default {
 };
 </script>
 
-<style scoped>
-* {
-  --font-size-buts: clamp(2vmin, 20px, 22px);
-}
+<style lang="scss" scoped>
+$font-size-buts: clamp(2vmin, 16px, 20px);
 
 .navbar {
-  width: 100%;
-  position: absolute;
-  top: 0px;
+  width: clamp(100%, 100%, 100%);
   z-index: 1;
   background-color: #12071c;
   display: flex;
@@ -88,13 +84,12 @@ export default {
   word-spacing: 4%;
   align-items: center;
   justify-content: center;
-  padding: 5px; /* Add some padding around the item */
 }
 
 .nav-item a {
   cursor: pointer;
   color: white;
-  font-size: var(--font-size-buts);
+  font-size: $font-size-buts;
   width: fit-content;
   font-weight: normal;
   text-decoration: none;
@@ -106,8 +101,15 @@ export default {
 }
 
 .nav-item a:hover {
-  font-size: calc(var(--font-size-buts) * 1.07);
+  font-size: calc($font-size-buts * 1.05);
   /* Remove the padding here as it's now handled by the parent */
+}
+
+@media (max-width: 500px) {
+  .nav-item a {
+    $font-size-buts: clamp(1vmin, 12px, 16px);
+    font-size: $font-size-buts;
+  }
 }
 
 .nav-item a.active {
