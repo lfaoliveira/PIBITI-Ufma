@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar">
     <ul class="nav-list">
-      <!$ Para cada item dentro de menuItens, so ativa quem tiver indice activeIndex $>
+      <!-- Para cada item dentro de menuItens, so ativa quem tiver indice igual a activeIndex -->
       <li class="nav-item" v-for="(item, index) in menuItems" :key="index">
         <a :class="{ active: activeIndex === index }" @click="setActive(index)">
           {{ item }}
@@ -16,11 +16,15 @@ export default {
   data() {
     return {
       menuItems: ["Sistema", "Método", "Autores", "Dúvidas?"],
-      activeIndex: 0,
     };
   },
+  props: {
+    activeIndex: 0,
+  },
+
   methods: {
     setActive(index) {
+      this.$emit("update:activeIndex", index);
       const mapa = {
         0: this.fnSistema,
         1: this.fnMetodo,
@@ -33,10 +37,9 @@ export default {
         return null;
       }
       func();
-      this.activeIndex = index;
     },
     fnSistema() {
-      this.$router.push("/sistema");
+      this.$router.push("/");
     },
     fnMetodo() {
       this.$router.push("/metodo");

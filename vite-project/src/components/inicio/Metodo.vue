@@ -1,5 +1,5 @@
 <template>
-  <Header></Header>
+  <Header :activeIndex="1"></Header>
   <div class="frame-pagina">
     <section class="secao-texto tipo1">
       <h2 class="titulo-secao">Sobre o Software</h2>

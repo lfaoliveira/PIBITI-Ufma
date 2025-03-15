@@ -1,6 +1,6 @@
 <template>
   <main class="secao-landing">
-    <headerHome />
+    <headerHome :activeIndex="0" />
 
     <div id="div-video-home">
       <video

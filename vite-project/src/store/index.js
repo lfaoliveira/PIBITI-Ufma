@@ -4,7 +4,6 @@ const savedState = JSON.parse(localStorage.getItem('vuex-state')) || {};
 
 
 //gerencia de estados do vuex
-/* ATUALMENTE INÚTIL POIS NÃO ARMAZENA DADOS BINÁRIOS */
 
 const store = createStore({
   state: {
