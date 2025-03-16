@@ -42,6 +42,11 @@
   color: #000;
   font: 700 14px Montserrat, sans-serif;
 }
+
+.footer-link:hover {
+  color: #000;
+  background: #e3a3ff;
+}
 </style>
 
 <script>

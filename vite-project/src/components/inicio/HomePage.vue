@@ -53,7 +53,6 @@ $height-video: 100%;
   height: 100%;
   /* margin: 5vmin 0vmin 0vmin 0vmin; */
   position: absolute;
-  left: -8.667px;
 
   bottom: 0px;
   flex-wrap: wrap;
