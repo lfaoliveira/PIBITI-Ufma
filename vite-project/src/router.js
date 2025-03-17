@@ -1,13 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Homepage from './components/inicio/HomePage.vue';
 import AnaliseVideo from './components/analise/AnaliseVideo.vue';
-import Salvar from './components/icons/Salvar.vue'
 import Loading from "./components/analise/Loading.vue";
-import CadastroVue from './components/Cadastro.vue';
 import Termos from './components/inicio/Termos.vue';
 import Metodo from './components/inicio/Metodo.vue';
 import Duvidas from './components/inicio/Duvidas.vue';
 import Equipe from './components/inicio/Equipe.vue';
+import Acesso from './components/Acesso.vue';
 
 
 
@@ -24,22 +23,22 @@ const routes = [
         props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }),
     }, // pagina de exibição da demonstração
     {
-        name: 'loading', path: '/loading', component: Loading,
+        name: 'PaginaCarregando', path: '/loading', component: Loading,
     },
     {
-        name: 'cad', path: '/cad', component: CadastroVue,
+        name: 'PaginaAcesso', path: '/acesso', component: Acesso,
     },
     {
-        name: 'termos', path:'/termos', component: Termos,
+        name: 'PaginaTermos', path:'/termos', component: Termos,
     },
     {
-        path: '/metodo', name: 'PaginaMetodo', component: Metodo
+        name: 'PaginaMetodo', path: '/metodo' , component: Metodo
     },
     {
-        path: '/duvidas', name: 'PaginaDuvidas', component: Duvidas
+        name: 'PaginaDuvidas', path: '/duvidas',  component: Duvidas
     },
     {
-        path: '/equipe', name: 'PaginaEquipe', component: Equipe
+        name: 'PaginaEquipe', path: '/equipe',  component: Equipe
     },
 ];
 

@@ -32,7 +32,7 @@
       <div class="textos">
         <h1 class="nome">{{ this.lista_dados[0].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">{{ this.lista_dados[0].descricao }}</div>
+        <p class="desc">{{ this.lista_dados[0].descricao }}</p>
       </div>
     </section>
 
@@ -44,7 +44,7 @@
       <div class="textos">
         <h1 class="nome">{{ this.lista_dados[1].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">{{ this.lista_dados[1].descricao }}</div>
+        <p class="desc">{{ this.lista_dados[1].descricao }}</p>
       </div>
     </section>
 
@@ -56,7 +56,7 @@
       <div class="textos">
         <h1 class="nome">{{ this.lista_dados[2].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">{{ this.lista_dados[2].descricao }}</div>
+        <p class="desc">{{ this.lista_dados[2].descricao }}</p>
       </div>
     </section>
 
@@ -68,7 +68,7 @@
       <div class="textos">
         <h1 class="nome">{{ this.lista_dados[3].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">{{ this.lista_dados[3].descricao }}</div>
+        <p class="desc">{{ this.lista_dados[3].descricao }}</p>
       </div>
     </section>
 
@@ -80,7 +80,7 @@
       <div class="textos">
         <h1 class="nome">{{ this.lista_dados[4].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">{{ this.lista_dados[4].descricao }}</div>
+        <p class="desc">{{ this.lista_dados[4].descricao }}</p>
       </div>
     </section>
 

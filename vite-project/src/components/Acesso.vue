@@ -1,10 +1,10 @@
-<template>
+<template class="a">
   <div></div>
 </template>
 
 <script>
 export default {
-  name: "Test",
+  name: "acesso",
   created() {},
   data() {
     return {};
@@ -14,4 +14,10 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.a {
+  width: 100px;
+  height: 100px;
+  background: red;
+}
+</style>
