@@ -103,7 +103,7 @@ $Fonte-Titulo-Secao: clamp(22px, 5vmin, 30px);
 .secao-texto {
   display: flex;
   width: 100%;
-  padding: 0px 20px;
+  padding: 20px 20px;
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;

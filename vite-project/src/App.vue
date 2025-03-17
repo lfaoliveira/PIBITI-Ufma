@@ -3,23 +3,21 @@
 </template>
 
 <script>
-
 export default {
-  name:"App",
-  props: {  },
+  name: "App",
+  props: {},
   data() {
     return {
       _: 0,
     };
   },
-  mounted(){
-    
-  },
-
+  mounted() {},
 };
 </script>
 
-<style scoped>
-
-
+<style lang="scss">
+$fonte-maior: 48px;
+$fonte-secao: 32px;
+$fonte-paragrafo-info: 20px;
+$fonte-but-grande: 24px;
 </style>

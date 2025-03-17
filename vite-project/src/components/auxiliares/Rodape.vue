@@ -45,7 +45,7 @@
 
 .footer-link:hover {
   color: #000;
-  background: #e3a3ff;
+  background: #7f8084;
 }
 </style>
 

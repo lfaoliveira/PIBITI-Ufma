@@ -30,82 +30,57 @@
       </div>
       <!-- TODO: TERMINAR DE FAZER LOGICA DE PREEENCHIMENTO DE DADOS-->
       <div class="textos">
-        <h1 class="nome">Luis Felipe Araujo de Oliveira</h1>
+        <h1 class="nome">{{ this.lista_dados[0].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">
-          Ut at ante quis urna euismod aliquam ut sit amet tellus. Nunc molestie et lectus
-          et interdum. Cras tempus varius massa convallis vulputate
-        </div>
+        <div class="desc">{{ this.lista_dados[0].descricao }}</div>
       </div>
     </section>
 
-    <section class="secao-participacao tipo1">
+    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[1].tipo}`">
       <div class="div-img">
-        <img class="img-pessoa" src="..\..\assets\dummy.png" />
+        <img class="img-pessoa" :src="this.lista_dados[1].img" />
       </div>
+      <!-- TODO: TERMINAR DE FAZER LOGICA DE PREEENCHIMENTO DE DADOS-->
       <div class="textos">
-        <h1 class="nome">Prof. João Dalysson</h1>
+        <h1 class="nome">{{ this.lista_dados[1].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">
-          Ut at ante quis urna euismod aliquam ut sit amet tellus. Nunc molestie et lectus
-          et interdum. Cras tempus varius massa convallis vulputate
-        </div>
+        <div class="desc">{{ this.lista_dados[1].descricao }}</div>
       </div>
     </section>
 
-    <section class="secao-participacao tipo2">
+    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[2].tipo}`">
       <div class="div-img">
-        <img class="img-pessoa" src="..\..\assets\dummy.png" />
+        <img class="img-pessoa" :src="this.lista_dados[2].img" />
       </div>
+      <!-- TODO: TERMINAR DE FAZER LOGICA DE PREEENCHIMENTO DE DADOS-->
       <div class="textos">
-        <h1 class="nome">Prof. Luis Rivero</h1>
+        <h1 class="nome">{{ this.lista_dados[2].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">
-          Ut at ante quis urna euismod aliquam ut sit amet tellus. Nunc molestie et lectus
-          et interdum. Cras tempus varius massa convallis vulputate
-        </div>
+        <div class="desc">{{ this.lista_dados[2].descricao }}</div>
       </div>
     </section>
 
-    <section class="secao-participacao tipo1">
+    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[3].tipo}`">
       <div class="div-img">
-        <img class="img-pessoa" src="..\..\assets\dummy.png" />
+        <img class="img-pessoa" :src="this.lista_dados[3].img" />
       </div>
+      <!-- TODO: TERMINAR DE FAZER LOGICA DE PREEENCHIMENTO DE DADOS-->
       <div class="textos">
-        <h1 class="nome">Polyana Bezerra</h1>
+        <h1 class="nome">{{ this.lista_dados[3].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">
-          Ut at ante quis urna euismod aliquam ut sit amet tellus. Nunc molestie et lectus
-          et interdum. Cras tempus varius massa convallis vulputate
-        </div>
+        <div class="desc">{{ this.lista_dados[3].descricao }}</div>
       </div>
     </section>
 
-    <section class="secao-participacao tipo2">
+    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[4].tipo}`">
       <div class="div-img">
-        <img class="img-pessoa" src="..\..\assets\dummy.png" />
+        <img class="img-pessoa" :src="this.lista_dados[4].img" />
       </div>
+      <!-- TODO: TERMINAR DE FAZER LOGICA DE PREEENCHIMENTO DE DADOS-->
       <div class="textos">
-        <h1 class="nome">Dr. Jorge</h1>
+        <h1 class="nome">{{ this.lista_dados[4].nome }}</h1>
         <h1 class="participacao">Participação:</h1>
-        <div class="desc">
-          Ut at ante quis urna euismod aliquam ut sit amet tellus. Nunc molestie et lectus
-          et interdum. Cras tempus varius massa convallis vulputate
-        </div>
-      </div>
-    </section>
-
-    <section class="secao-participacao tipo1">
-      <div class="div-img">
-        <img class="img-pessoa" src="..\..\assets\dummy.png" />
-      </div>
-      <div class="textos">
-        <h1 class="nome">ADAddwdawdadw awd adawd</h1>
-        <h1 class="participacao">Participação:</h1>
-        <div class="desc">
-          Ut at ante quis urna euismod aliquam ut sit amet tellus. Nunc molestie et lectus
-          et interdum. Cras tempus varius massa convallis vulputate
-        </div>
+        <div class="desc">{{ this.lista_dados[4].descricao }}</div>
       </div>
     </section>
 
@@ -151,61 +126,38 @@ export default {
           nome: "Luis Felipe Araujo de Oliveira",
           descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
           tipo: "tipo2",
-          img: null,
+          img: "src/assets/dummy.png",
         },
         {
           nome: "Prof. João Dalysson",
           descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
           tipo: "tipo1",
-          img: null,
+          img: "src/assets/dummy.png",
         },
         {
           nome: "Prof. Luis Rivero",
           descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
           tipo: "tipo2",
-          img: null,
+          img: "src/assets/dummy.png",
         },
         {
           nome: "Polyana Bezerra",
           descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
           tipo: "tipo1",
-          img: null,
+          img: "src/assets/dummy.png",
         },
         {
           nome: "Dr. Jorge",
           descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
           tipo: "tipo2",
-          img: null,
+          img: "src/assets/dummy.png",
         },
       ],
     };
   },
   props: {},
-  methods: {
-    insertParticipationSection() {
-      nomeParticip.forEach((obj) => {
-        const tempDiv = document.createElement("section");
-        tempDiv.innerHTML = `
-          <section class="secao-participacao ${obj.tipo || "tipo1"}">
-            <div class="div-img">
-              <img class="img-pessoa" src="${obj.img || "../../assets/dummy.png"}" />
-            </div>
-            <div class="textos">
-              <h1 class="nome">${obj.name}</h1>
-              <h1 class="participacao">Participação:</h1>
-              <div class="desc">${obj.desc}</div>
-            </div>
-          </section>
-        `;
-        const newSection = tempDiv.firstElementChild;
-
-        document.querySelector(".frame-pagina").appendChild(newSection);
-      });
-    },
-  },
-  mounted() {
-    this.insertParticipationSection();
-  },
+  methods: {},
+  mounted() {},
 };
 </script>
 
@@ -225,7 +177,7 @@ export default {
   gap: clamp(15vmin, 120px, 20vmin);
   align-self: stretch;
   width: 100%;
-  height: clamp(100px, 20vmin, 140px);
+  height: clamp(80px, 15vmin, 140px);
 }
 @media (max-width: 575px) {
   #divisor {
@@ -286,6 +238,7 @@ export default {
     flex: 1 0 0;
 
     .desc {
+      font-size: 24px;
       width: 75%;
     }
   }
