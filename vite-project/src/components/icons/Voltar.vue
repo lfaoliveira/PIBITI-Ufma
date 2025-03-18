@@ -23,27 +23,9 @@ export default {
 
 <style lang="scss" scoped>
 .containerSeta {
-  //   @include mix-botao-header;
-  padding: clamp(10px, 2%, 20px);
-  border-radius: var(--raio-butao);
-  background: none;
-  display: inline-block;
-  text-align: center;
-  justify-content: center;
-  /* gap: clamp(4vmin, 4.5vmin, 5vmin); */
-  align-items: center;
-  width: fit-content;
-  height: var(--alt-butao);
-  box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.29);
-  margin: auto 0px;
-
-  cursor: pointer;
-}
-
-.containerSeta:hover {
-  .texto {
-    font-size: calc($fonte-header * 1.1);
-  }
+  @include mix-botao-header;
+  display: inline-flex;
+  flex-direction: row;
 }
 
 #imagemSeta {

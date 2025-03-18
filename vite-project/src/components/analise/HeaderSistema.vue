@@ -9,21 +9,21 @@
 
     <div v-else-if="this.tipo === 'salvar'" class="header">
       <Voltar></Voltar>
-      <button>Dúvidas?</button>
+      <button class="nav-item">Dúvidas?</button>
       <div class="ladoDireito">
-        <Salvar modo="on"></Salvar>
+        <Salvar modo="on" class="nav-item butSalvar"></Salvar>
       </div>
     </div>
     <div v-else-if="this.tipo === 'salvaroff'" class="header">
       <Voltar></Voltar>
-      <button>Dúvidas?</button>
+      <button class="nav-item">Dúvidas?</button>
       <div class="ladoDireito">
-        <Salvar modo="off"></Salvar>
+        <Salvar modo="off" class="butSalvar"></Salvar>
       </div>
     </div>
-    <div v-else class="header">
+    <div v-else-if="this.tipo === 'outro'" class="header">
       <Voltar></Voltar>
-      <button>Dúvidas?</button>
+      <button class="nav-item">Dúvidas?</button>
     </div>
   </nav>
 </template>
@@ -84,7 +84,7 @@ export default {
 .ladoDireito {
   flex: 1 0 0;
   display: flex;
-  padding: 9px 20px;
+  height: 100%;
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
@@ -92,5 +92,10 @@ export default {
 
 .nav-item {
   @include mix-botao-header($escala: 1.1);
+}
+.butSalvar {
+  margin: 0px;
+  display: inline-flex;
+  flex-direction: row;
 }
 </style>

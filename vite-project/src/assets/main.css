@@ -3,7 +3,7 @@
 a,
 .green {
   text-decoration: none;
-  color: rgb(208, 0, 255);
+  color: rgb(34, 0, 255);
   transition: 0.4s;
   padding: 3px;
 }
@@ -11,7 +11,6 @@ a,
 @media (hover: hover) {
   a:hover {
     background-color: hsla(267, 81%, 37%, 0.63);
-    
   }
 }
 
@@ -46,5 +45,5 @@ html, body, #app {
   height: auto;
   color: black;
   width: clamp( 100%, 1440px,100%);
-  box-shadow: 0px 0px 17px 1.2px rgba(114, 113, 113, 0.4);
+  /* box-shadow: 0px 0px 17px 1.2px rgba(114, 113, 113, 0.4); */
 } 

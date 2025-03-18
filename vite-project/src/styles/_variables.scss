@@ -4,6 +4,12 @@
     font-family: 'Montserrat', sans-serif;
 }
 
+$primary-clor: #fff;
+$sec-color: #6113C6;
+$terc-color: #792359;
+$quart-color: #3A0D75;
+$quint-color: #0E0021;
+
 $alt-headers: clamp(5vmin, 80px, 12vmin);
 
 
@@ -22,14 +28,29 @@ $form-fonte-peq: 16px;
 $form-fonte-titulo: 20px;
 
 
+h1{
+    font-size: $fonte-titulo-secao;
+}
 
+p{
+    font-size: $form-fonte-peq;
+}
 
+a{
+    padding: 0px;
+}
 
+@mixin frame-pagina($gap: 20px){
+    display: flex;
+    flex-direction: column;
+    gap: $gap;
+}
 
 @mixin mix-botao-header($escala: 1.1) {
     cursor: pointer;
     color: white;
     font-size: $fonte-header;
+    background:none;
     width: fit-content;
     font-weight: normal;
     text-decoration: none;

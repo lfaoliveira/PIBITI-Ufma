@@ -19,8 +19,8 @@
       </h1>
     </div>
     <div class="botoes">
-      <ButMedio @click="fnDuvidas" texto="Como Funciona?" ativo="true"></ButMedio>
-      <ButMedio @click="fnAcesso" texto="Fazer Análise" ativo="true"></ButMedio>
+      <ButMedio @click="fnDuvidas" texto="Como Funciona?" ativo="true"> </ButMedio>
+      <ButMedio @click="fnAcesso" texto="Fazer Análise" ativo="true"> </ButMedio>
     </div>
   </main>
 </template>

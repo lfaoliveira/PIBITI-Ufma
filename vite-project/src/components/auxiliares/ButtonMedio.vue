@@ -1,7 +1,23 @@
 <template>
   <div class="button-container">
-    <button v-if="ativo" class="button classeAtivo">{{ texto }}</button>
-    <button v-if="!ativo" class="button classeInativo">{{ texto }}</button>
+    <button
+      :type="type"
+      @click="$emit('click', $event)"
+      v-if="ativo == true"
+      class="button classeAtivo"
+      enabled
+    >
+      {{ texto }}
+    </button>
+    <button
+      :type="type"
+      @click="$emit('click', $event)"
+      v-if="ativo == false"
+      class="button classeInativo"
+      disabled
+    >
+      {{ texto }}
+    </button>
   </div>
 </template>
 
@@ -12,8 +28,12 @@ export default {
   props: {
     ativo: true,
     texto: "",
+    type: "button",
   },
   created() {},
+  mounted() {
+    console.log(this.ativo);
+  },
 };
 </script>
 
@@ -38,7 +58,7 @@ $peso-fonte-butao: 600;
   /* width: 261px;
   height: 74px; */
   width: 37vmin;
-  height: 10vmin;
+  height: 2.6lh;
   border: none;
   border-radius: 40px;
   padding: 1vmin;
@@ -48,26 +68,22 @@ $peso-fonte-butao: 600;
   cursor: pointer;
 
   /* FONTE */
-  font-size: $tam-fonte-botao;
+  font-size: $fonte-but-medio;
   font-style: normal;
 
   transition: all 0.3s ease-out 0s;
 }
 
-.button:hover {
-  background-color: hsl(267, 82%, 50%);
+.button:enabled:hover {
+  background-color: hsl(267, 77%, 46%);
   transform: scale(1.08); // Increase size by 10% on hover
 }
-
-@media (max-width: 450px) {
-  .button {
-    $tam-fonte-botao: clamp(14px, 2.5vmin, 19px);
-    font-size: $tam-fonte-botao;
-  }
+.button:disabled {
+  cursor: default;
 }
 
 .classeAtivo {
-  background-color: hsla(267, 81%, 37%, 0.776);
+  background-color: hsl(267, 81%, 37%);
 }
 
 .classeInativo {
