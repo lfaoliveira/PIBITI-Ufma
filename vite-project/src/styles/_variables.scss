@@ -1,0 +1,46 @@
+// GLOBAL CSS VARIABLES
+
+*{
+    font-family: 'Montserrat', sans-serif;
+}
+
+$alt-headers: clamp(5vmin, 80px, 12vmin);
+
+
+$fonte-titulo-secao: 32px;
+$fonte-titulo-maior: 48px;
+$fonte-p-info: 20px;
+$fonte-but-grande: 24px;
+$fonte-but-medio: 20px;
+$fonte-but-pequeno: 20px;
+$fonte-header: clamp(2vmin, 16px, 20px);
+
+@media (max-width: 500px) {
+    $fonte-header: clamp(1vmin, 12px, 16px);
+}
+$form-fonte-peq: 16px;
+$form-fonte-titulo: 20px;
+
+
+
+
+
+
+@mixin mix-botao-header($escala: 1.1) {
+    cursor: pointer;
+    color: white;
+    font-size: $fonte-header;
+    width: fit-content;
+    font-weight: normal;
+    text-decoration: none;
+    transition: all 0.3s; /* Change to all to animate both font-size and padding */
+    padding: 1vmin;
+    /* Add this to prevent layout shift */
+    display: inline-block;
+    text-align: center;
+
+    &:hover {
+        background: hsla(267, 81%, 37%, 0.63);
+        transform: scale($escala);
+    }
+  }

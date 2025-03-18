@@ -1,6 +1,6 @@
 <template>
-  <button class="salvar">
-    <img  class="icone-download" alt="Save icon" src="../../assets/download.png" />
+  <button class="salvar" @click="rotaSalvar" :disabled="styleSalvar">
+    <img class="icone-download" alt="Save icon" src="../../assets/download.png" />
     <p class="texto-salvar">Salvar Resultado</p>
   </button>
 </template>
@@ -12,14 +12,28 @@ export default {
   data() {
     return {};
   },
-  props: {},
-  methods: {},
+  props: {
+    modo: { type: String, default: "off" },
+  },
+  methods: {
+    rotaSalvar() {
+      this.$router.push("/salvar");
+    },
+  },
+  computed: {
+    styleSalvar() {
+      if (this.modo == "off") {
+        return "true";
+      } else {
+        return "false";
+      }
+    },
+  },
 };
 </script>
 
-<style scoped>
-
-.salvar{
+<style lang="scss" scoped>
+.salvar:enabled {
   background-color: #6113c6;
   display: flex;
   justify-content: center;
@@ -34,22 +48,24 @@ export default {
   border-radius: var(--raio-butao);
   box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.39);
   cursor: pointer;
-  
 }
 
-.icone-download{
+.salvar:disabled {
+  opacity: 0.5;
+}
+
+.icone-download {
   border-radius: clamp(10px, 3%, 15px);
   width: clamp(30px, 5vmin, 8vmin);
   height: auto;
-
-  /* box-shadow: 0px 0.45vmin 8px 0px rgba(0, 0, 0, 0.59); */
   justify-self: start;
   margin: 0px 0px clamp(2px, 0.5vmin, 10px) 0px;
   /* margin-right: clamp(15px, 20px, 28px); */
   padding: clamp(1px, 3px, 6px);
 }
 
-.texto-salvar{
+.texto-salvar {
+  text-decoration: underline;
   color: #fff;
   font-weight: 800;
   margin: auto;

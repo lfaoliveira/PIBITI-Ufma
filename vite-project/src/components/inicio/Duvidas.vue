@@ -9,7 +9,7 @@
         enim, quis tincidunt neque. Suspendisse vitae condimentum ipsum. Praesent faucibus
         nunc eu odio aliquet congue.
       </p>
-      <p id="p2">
+      <p>
         Praesent nec justo turpis. Maecenas tortor est, posuere in orci quis, tempus
         sagittis nisl. Proin ullamcorper faucibus odio eget fermentum. Ut vitae dapibus
         enim, quis tincidunt neque. Suspendisse vitae condimentum ipsum. Praesent faucibus
@@ -42,7 +42,7 @@ import Rodape from "../auxiliares/Rodape.vue";
 import HeaderInicio from "./HeaderInicio.vue";
 
 export default {
-  name: "Test",
+  name: "duvidas",
   components: {
     HeaderInicio,
     Rodape,

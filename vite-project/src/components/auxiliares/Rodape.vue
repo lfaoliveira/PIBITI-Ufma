@@ -15,7 +15,7 @@
   </footer>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .footer {
   width: 100%;
   display: flex;

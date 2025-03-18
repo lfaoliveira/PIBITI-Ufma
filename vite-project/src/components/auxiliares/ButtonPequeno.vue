@@ -17,7 +17,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .button-container {
   display: flex;
   flex-direction: column;

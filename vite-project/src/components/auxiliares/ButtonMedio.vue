@@ -50,14 +50,13 @@ $peso-fonte-butao: 600;
   /* FONTE */
   font-size: $tam-fonte-botao;
   font-style: normal;
+
+  transition: all 0.3s ease-out 0s;
 }
 
 .button:hover {
-  font-size: calc($tam-fonte-botao * 1.08);
   background-color: hsl(267, 82%, 50%);
-  transition: all 0.3s ease-out, transform 0.9s cubic-bezier(0.17, 0.67, 0.76, 0.93);
-  height: 12vmin;
-  width: 40vmin;
+  transform: scale(1.08); // Increase size by 10% on hover
 }
 
 @media (max-width: 450px) {
