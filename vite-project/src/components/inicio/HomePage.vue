@@ -107,7 +107,8 @@ $height-video: 100%;
   align-items: flex-start;
   flex-direction: column;
   align-items: center;
-  gap: 2vmin;
+  gap: 5vmin;
+
   flex-shrink: 0;
   z-index: 1;
 }

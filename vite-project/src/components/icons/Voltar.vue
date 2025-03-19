@@ -23,7 +23,7 @@ export default {
 
 <style lang="scss" scoped>
 .containerSeta {
-  @include mix-botao-header;
+  @include botao-header;
   display: inline-flex;
   flex-direction: row;
 }

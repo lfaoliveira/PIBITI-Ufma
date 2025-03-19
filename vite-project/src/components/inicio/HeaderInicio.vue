@@ -79,7 +79,7 @@ export default {
 }
 
 .nav-item a {
-  @include mix-botao-header($escala: 1.1);
+  @include botao-header($escala: 1.1);
 }
 
 .nav-item a.active {

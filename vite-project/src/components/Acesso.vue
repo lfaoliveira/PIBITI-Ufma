@@ -23,9 +23,9 @@
         </form>
       </section>
 
-      <section v-if="tipo === 'cadastro'">
+      <section class="sec-cadastro" v-if="tipo === 'cadastro'">
         <h1>Cadastro (Apenas Médicos)</h1>
-        <form @submit.prevent="valAcesso">
+        <form class="form-cadastro" @submit.prevent="valAcesso">
           <div class="form-group">
             <label>Email</label>
             <input type="text" v-model="this.email" placeholder="exemplo@email.com" />
@@ -58,7 +58,12 @@
             <a @click="trocaAcesso">Fazer Login</a>
           </p>
 
-          <ButtonMedio type="submit" :ativo="true" texto="Cadastro"></ButtonMedio>
+          <ButtonMedio
+            class="but-cadastro"
+            type="submit"
+            :ativo="true"
+            texto="Cadastro"
+          ></ButtonMedio>
         </form>
       </section>
 
@@ -73,7 +78,7 @@
             <a href="/termos" id="link-termos">Termos e Condições</a>
           </label>
         </div>
-        <ButtonMedio :ativo="true" texto="Análise Avulsa"></ButtonMedio>
+        <ButtonMedio @click="avulsa" :ativo="true" texto="Análise Avulsa"></ButtonMedio>
       </section>
     </main>
     <Rodape></Rodape>
@@ -123,13 +128,18 @@ export default {
         this.tipo = "cadastro";
       }
     },
+    avulsa() {
+      //botar pra mostrar pop-up aqui
+    },
   },
 };
 </script>
 
 <style lang="scss" scoped>
+$larg-form-cad: 70%;
+
 .frame-pagina {
-  @include frame-pagina($gap: 60px);
+  @include frame-pagina($gap: 5vmin);
   height: max-content;
 }
 
@@ -164,6 +174,20 @@ form {
   flex-direction: column;
   gap: 2vmin;
   width: 100%;
+}
+
+.form-cadastro {
+  width: $larg-form-cad;
+}
+.sec-cadastro {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.but-cadastro {
+  position: relative;
+  margin: 0px 0px 0px calc($larg-form-cad/2 - 15%);
 }
 
 .form-group {

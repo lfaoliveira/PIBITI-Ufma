@@ -40,11 +40,11 @@ export default {
 <style lang="scss" scoped>
 $tam-fonte-botao: clamp(18px, 3vmin, 22px);
 $peso-fonte-butao: 600;
-
+$alt-botao: clamp(1lh, 9vmin, 3lh);
 .button-container {
   @include container-botoes;
   .button {
-    @include botao-acao($escala: 1.08, $height: 2.6lh);
+    @include botao-acao($escala: 1.08, $height: $alt-botao);
     font-weight: $peso-fonte-butao;
     font-size: $fonte-but-medio;
     color: white;

@@ -91,7 +91,7 @@ export default {
 }
 
 .nav-item {
-  @include mix-botao-header($escala: 1.1);
+  @include botao-header($escala: 1.1);
 }
 .butSalvar {
   margin: 0px;

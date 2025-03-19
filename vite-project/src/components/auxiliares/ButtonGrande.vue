@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: "botaoMedio",
+  name: "botaoGrande",
   methods: {},
   props: {
     ativo: true,
@@ -31,61 +31,24 @@ export default {
     type: "button",
   },
   created() {},
-  mounted() {},
+  mounted() {
+    console.log("ATIVO MEDIO: ", this.ativo);
+  },
 };
 </script>
 
 <style lang="scss" scoped>
-$tam-fonte-botao: clamp(18px, 3vmin, 22px);
+$tam-fonte-botao: clamp(20px, 4vmin, 24px);
 $peso-fonte-butao: 600;
+$alt-botao: clamp(2lh, 11vmin, 3lh);
 
 .button-container {
-  width: 100%;
-  /* display: flex;
-    flex-direction: column;
-    align-items: center; */
-  display: inline-block;
-  text-align: center;
-  padding: 1vmin;
-}
-
-.button {
-  justify-content: center;
-  align-items: center;
-  display: inline-block;
-  text-align: center;
-  /* width: 261px;
-    height: 74px; */
-  width: 100%;
-  height: 2.6lh;
-  border: none;
-  border-radius: 40px;
-  padding: 1vmin;
-  font-size: 24px;
-  font-weight: $peso-fonte-butao;
-  color: white;
-  cursor: pointer;
-
-  /* FONTE */
-  font-size: $fonte-but-medio;
-  font-style: normal;
-
-  transition: all 0.3s ease-out 0s;
-}
-
-.button:enabled:hover {
-  background-color: hsl(267, 77%, 46%);
-  transform: scale(1.08); // Increase size by 10% on hover
-}
-.button:disabled {
-  cursor: default;
-}
-
-.classeAtivo {
-  background-color: hsl(267, 81%, 37%);
-}
-
-.classeInativo {
-  background-color: #d0a7f6;
+  @include container-botoes;
+  .button {
+    @include botao-acao($escala: 1.08, $height: $alt-botao);
+    font-weight: $peso-fonte-butao;
+    font-size: $fonte-but-medio;
+    color: white;
+  }
 }
 </style>
