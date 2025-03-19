@@ -16,16 +16,53 @@
 
           <p>
             Não Possui Login?
-            <a @click="fnTermos">Fazer Cadastro</a>
+            <a @click="trocaAcesso">Fazer Cadastro</a>
           </p>
 
-          <ButtonMedio :type="submit" :ativo="true" texto="Fazer Login"></ButtonMedio>
+          <ButtonMedio type="submit" :ativo="true" texto="Fazer Login"></ButtonMedio>
         </form>
       </section>
 
-      <section v-if="tipo === 'cadastro'"></section>
+      <section v-if="tipo === 'cadastro'">
+        <h1>Cadastro (Apenas Médicos)</h1>
+        <form @submit.prevent="valAcesso">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="text" v-model="this.email" placeholder="exemplo@email.com" />
+          </div>
+          <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" v-model="this.nome" placeholder="" />
+          </div>
 
-      <figure class="linha"></figure>
+          <div class="form-group">
+            <label>CRM</label>
+            <input type="text" v-model="this.crm" placeholder="" />
+          </div>
+
+          <div class="form-group">
+            <label>Senha</label>
+            <input type="text" v-model="this.senha" placeholder="" />
+          </div>
+
+          <div class="div-termos-label">
+            <input type="checkbox" v-model="this.checks" id="checkTermos" />
+            <label id="termos-label" for="checkTermos"
+              >Concordo com os
+              <a href="/termos" id="link-termos">Termos e Condições</a>
+            </label>
+          </div>
+
+          <p id="possuiLogin">
+            Já Possui Login?
+            <a @click="trocaAcesso">Fazer Login</a>
+          </p>
+
+          <ButtonMedio type="submit" :ativo="true" texto="Cadastro"></ButtonMedio>
+        </form>
+      </section>
+
+      <div class="linha"></div>
 
       <section class="avulsa">
         <h1>Análise Avulsa</h1>
@@ -66,6 +103,8 @@ export default {
       tipo: "login",
       email: "",
       senha: "",
+      crm: "",
+      nome: "",
       checks: false,
     };
   },
@@ -77,6 +116,13 @@ export default {
     fnTermos() {
       this.$router.push("/termos");
     },
+    trocaAcesso() {
+      if (this.tipo === "cadastro") {
+        this.tipo = "login";
+      } else {
+        this.tipo = "cadastro";
+      }
+    },
   },
 };
 </script>
@@ -87,8 +133,13 @@ export default {
   height: max-content;
 }
 
+h1 {
+  font-weight: 600;
+  width: max-content;
+}
+
 main {
-  width: 60%;
+  width: fit-content;
   margin: auto;
   display: flex;
   align-items: center;
@@ -108,18 +159,6 @@ a {
   }
 }
 
-.div-termos-label {
-  display: flex;
-  gap: 1vmin;
-  #link-termos {
-    font-weight: bold;
-  }
-}
-
-#checkTermos::selection {
-  color: red;
-}
-
 form {
   display: flex;
   flex-direction: column;
@@ -127,46 +166,76 @@ form {
   width: 100%;
 }
 
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  label {
+    font-size: $form-fonte-titulo;
+  }
+
+  input {
+    width: 100%;
+    padding: 1%;
+    height: 2lh;
+    font-size: $form-fonte-peq;
+    border: 2px solid #b3b3b3;
+    border-radius: 1vmin;
+    background-color: white;
+    outline: none;
+    transition: border-color 0.3s ease-in-out;
+
+    &::placeholder {
+      color: #757575;
+    }
+
+    &:focus {
+      border-color: #444444;
+    }
+  }
+}
+
 .login {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1vmin;
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-
-    label {
-      font-size: $form-fonte-titulo;
-    }
-
-    input {
-      width: 100%;
-      padding: 1%;
-      height: 2lh;
-      font-size: $form-fonte-peq;
-      border: 2px solid #b3b3b3;
-      border-radius: 1vmin;
-      background-color: white;
-      outline: none;
-      transition: border-color 0.3s ease-in-out;
-
-      &::placeholder {
-        color: #757575;
-      }
-
-      &:focus {
-        border-color: #444444;
-      }
-    }
-  }
 }
 
 .linha {
-  width: 2px;
+  width: clamp(2px, 2px, 2px);
+
   height: 100%;
   background: #9524ff;
+  @media (max-width: 900px) {
+    padding: clamp(1px, 1px, 1px);
+  }
+}
+
+.div-termos-label {
+  display: flex;
+  gap: 1vmin;
+  #link-termos {
+    font-weight: 500;
+  }
+}
+
+input[type="checkbox"] {
+  accent-color: #2c2c2c; /* Changes the check color */
+}
+
+.avulsa {
+  height: 100%;
+  gap: 2vmin;
+  display: flex;
+  flex-direction: column;
+}
+
+#possuiLogin {
+  font-weight: bold;
+  a {
+    font-weight: 600;
+  }
 }
 </style>

@@ -19,8 +19,8 @@
       </h1>
     </div>
     <div class="botoes">
-      <ButMedio @click="fnDuvidas" texto="Como Funciona?" ativo="true"> </ButMedio>
-      <ButMedio @click="fnAcesso" texto="Fazer Análise" ativo="true"> </ButMedio>
+      <ButMedio @click="fnDuvidas" texto="Como Funciona?" :ativo="true"> </ButMedio>
+      <ButMedio @click="fnAcesso" texto="Fazer Análise" :ativo="true"> </ButMedio>
     </div>
   </main>
 </template>
@@ -94,15 +94,17 @@ $height-video: 100%;
   font-weight: 600;
   font-size: $fonte-titulo;
   text-align: start;
+  @media (max-width: 500px) {
+    text-align: center;
+  }
   width: auto;
   margin: 0vmin auto;
 }
 
 .botoes {
   display: flex;
-  flex-direction: column;
+  width: 30vmin;
   align-items: flex-start;
-  flex-shrink: 0;
   flex-direction: column;
   align-items: center;
   gap: 2vmin;

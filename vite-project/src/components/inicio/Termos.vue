@@ -1,19 +1,21 @@
 <template>
-  <header class="div-header">
-    <Voltar class="seta" :onclick="fnVoltar"></Voltar>
-  </header>
+  <HeaderSistema tipo="outro" />
+  <h1>Termos e Condições</h1>
   <main>
-    <div>asdadadwadwddwaddadwdawdawdadwadadadd adwda adawda adawd awd</div>
+    <h1>Título dos Termos e Condições</h1>
+    <!-- TODO: BOTAR REATIVIDADE DO VUE COM STRINGS PRA PREENCHER ESSA PORRA -->
   </main>
 </template>
 
 <script>
 import Voltar from "../icons/Voltar.vue";
+import HeaderSistema from "../analise/HeaderSistema.vue";
 
 export default {
   name: "termosComp",
   components: {
     Voltar,
+    HeaderSistema,
   },
   created() {},
   data() {
