@@ -1,7 +1,23 @@
 <template>
   <div class="button-container">
-    <button v-if="ativo" class="button classeAtivo">{{ texto }}</button>
-    <button v-if="!ativo" class="button classeInativo">{{ texto }}</button>
+    <button
+      :type="type"
+      @click="$emit('click', $event)"
+      v-if="ativo == true"
+      class="button classeAtivo"
+      enabled
+    >
+      {{ texto }}
+    </button>
+    <button
+      :type="type"
+      @click="$emit('click', $event)"
+      v-if="ativo == false"
+      class="button classeInativo"
+      disabled
+    >
+      {{ texto }}
+    </button>
   </div>
 </template>
 
@@ -10,39 +26,29 @@ export default {
   name: "botaoPequeno",
   methods: {},
   props: {
-    ativo: false,
+    ativo: true,
     texto: "",
+    type: "button",
   },
   created() {},
+  mounted() {
+    // console.log("ATIVO PEQUNO: ", this.ativo);
+  },
 };
 </script>
 
 <style lang="scss" scoped>
+$tam-fonte-botao: clamp(16px, 3vmin, 20px);
+$peso-fonte-butao: 600;
+$alt-botao: clamp(2lh, 7.5vmin, 3lh);
+
 .button-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.button {
-  width: 300px;
-  height: 80px;
-  border: none;
-  border-radius: 40px;
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.classeAtivo {
-  background-color: #5c1ab5;
-}
-
-.classeInativo {
-  background-color: #d0a7f6;
+  @include container-botoes;
+  .button {
+    @include botao-acao($escala: 1.05, $height: $alt-botao);
+    font-weight: $peso-fonte-butao;
+    font-size: $fonte-but-medio;
+    color: white;
+  }
 }
 </style>

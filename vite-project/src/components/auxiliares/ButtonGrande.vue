@@ -45,7 +45,7 @@ $alt-botao: clamp(2lh, 11vmin, 3lh);
 .button-container {
   @include container-botoes;
   .button {
-    @include botao-acao($escala: 1.08, $height: $alt-botao);
+    @include botao-acao($escala: 1.03, $height: $alt-botao);
     font-weight: $peso-fonte-butao;
     font-size: $fonte-but-medio;
     color: white;

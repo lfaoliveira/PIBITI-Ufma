@@ -19,7 +19,7 @@
             <a @click="trocaAcesso">Fazer Cadastro</a>
           </p>
 
-          <ButtonMedio type="submit" :ativo="true" texto="Fazer Login"></ButtonMedio>
+          <ButtonGrande type="submit" :ativo="true" texto="Fazer Login"></ButtonGrande>
         </form>
       </section>
 
@@ -58,12 +58,12 @@
             <a @click="trocaAcesso">Fazer Login</a>
           </p>
 
-          <ButtonMedio
+          <ButtonGrande
             class="but-cadastro"
             type="submit"
             :ativo="true"
             texto="Cadastro"
-          ></ButtonMedio>
+          ></ButtonGrande>
         </form>
       </section>
 
@@ -78,7 +78,7 @@
             <a href="/termos" id="link-termos">Termos e Condições</a>
           </label>
         </div>
-        <ButtonMedio @click="avulsa" :ativo="true" texto="Análise Avulsa"></ButtonMedio>
+        <ButtonGrande @click="avulsa" :ativo="true" texto="Análise Avulsa"></ButtonGrande>
       </section>
     </main>
     <Rodape></Rodape>
@@ -87,7 +87,7 @@
 
 <script>
 import HeaderSistema from "./analise/HeaderSistema.vue";
-import ButtonMedio from "./auxiliares/ButtonMedio.vue";
+import ButtonGrande from "./auxiliares/ButtonGrande.vue";
 import Rodape from "./auxiliares/Rodape.vue";
 
 const def = "default";
@@ -100,7 +100,7 @@ export default {
   components: {
     HeaderSistema,
     Rodape,
-    ButtonMedio,
+    ButtonGrande,
   },
   created() {},
   data() {
@@ -136,7 +136,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$larg-form-cad: 70%;
+$larg-form-cad: 100%;
 
 .frame-pagina {
   @include frame-pagina($gap: 5vmin);
@@ -187,7 +187,7 @@ form {
 
 .but-cadastro {
   position: relative;
-  margin: 0px 0px 0px calc($larg-form-cad/2 - 15%);
+  margin: 0px 2vmin;
 }
 
 .form-group {
