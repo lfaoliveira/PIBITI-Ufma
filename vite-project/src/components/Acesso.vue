@@ -7,14 +7,19 @@
         <form @submit.prevent="valAcesso">
           <div class="form-group">
             <label>Email</label>
-            <input type="text" v-model="this.email" placeholder="exemplo@email.com" />
+            <input
+              @input="checkEmail"
+              type="text"
+              v-model="this.email"
+              placeholder="exemplo@email.com"
+            />
           </div>
           <div class="form-group">
             <label>Senha</label>
-            <input type="text" v-model="this.senha" placeholder="" />
+            <input @input="checkSenha" type="text" v-model="this.senha" placeholder="" />
           </div>
 
-          <p>
+          <p id="semLogin">
             Não Possui Login?
             <a @click="trocaAcesso">Fazer Cadastro</a>
           </p>
@@ -28,21 +33,26 @@
         <form class="form-cadastro" @submit.prevent="valAcesso">
           <div class="form-group">
             <label>Email</label>
-            <input type="text" v-model="this.email" placeholder="exemplo@email.com" />
+            <input
+              @input="checkEmail"
+              type="text"
+              v-model="this.email"
+              placeholder="exemplo@email.com"
+            />
           </div>
           <div class="form-group">
             <label>Nome Completo</label>
-            <input type="text" v-model="this.nome" placeholder="" />
+            <input @input="checkNome" type="text" v-model="this.nome" placeholder="" />
           </div>
 
           <div class="form-group">
             <label>CRM</label>
-            <input type="text" v-model="this.crm" placeholder="" />
+            <input @input="checkCRM" type="text" v-model="this.crm" placeholder="" />
           </div>
 
           <div class="form-group">
             <label>Senha</label>
-            <input type="text" v-model="this.senha" placeholder="" />
+            <input @input="checkSenha" type="text" v-model="this.senha" placeholder="" />
           </div>
 
           <div class="div-termos-label">
@@ -130,6 +140,11 @@ export default {
     },
     avulsa() {
       //botar pra mostrar pop-up aqui
+    },
+    handleSucess() {
+      const caixa = this.$refs.caixaErro;
+      caixa.style.display = "none";
+      this.texto = "adadaw";
     },
   },
 };
@@ -256,7 +271,8 @@ input[type="checkbox"] {
   flex-direction: column;
 }
 
-#possuiLogin {
+#possuiLogin,
+#semLogin {
   font-weight: bold;
   a {
     font-weight: 600;
