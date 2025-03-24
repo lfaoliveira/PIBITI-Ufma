@@ -1,5 +1,5 @@
 <template>
-  <footer class="footer">
+  <footer>
     <img
       src="https://cdn.builder.io/api/v1/image/assets/TEMP/938d419ab519c103a1e0833b1a20709f879d21b943df87ce5a6ad7be4a35e7b8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
       alt="Logo footer"
@@ -16,36 +16,36 @@
 </template>
 
 <style lang="scss" scoped>
-.footer {
+footer {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
+  align-self: flex-end;
 
-.footer-logo {
-  width: 100px;
-  height: auto;
-  margin: 0px auto 20px auto;
-}
+  .footer-logo {
+    width: 100px;
+    height: auto;
+    margin: 0px auto 20px auto;
+  }
 
-.footer-nav {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  max-width: 600px;
-  position: relative;
-  left: -1vmin;
-}
+  .footer-nav {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 600px;
+    position: relative;
+    left: -1vmin;
+  }
 
-.footer-link {
-  color: #000;
-  font: 700 14px Montserrat, sans-serif;
-}
-
-.footer-link:hover {
-  color: #000;
-  background: #7f8084;
+  .footer-link {
+    color: #000;
+    font: 700 14px Montserrat, sans-serif;
+    &:hover {
+      color: #000;
+      background: #7f8084;
+    }
+  }
 }
 </style>
 

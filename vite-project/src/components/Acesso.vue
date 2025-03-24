@@ -47,7 +47,16 @@
 
           <div class="form-group">
             <label>CRM</label>
-            <input @input="checkCRM" type="text" v-model="this.crm" placeholder="" />
+            <div class="grupo-crm">
+              <select v-model="this.uf" class="select-crm">
+                <option value="" key="">UF</option>
+                <option v-for="item in this.ufs" :key="item" :value="item">
+                  {{ item }}
+                </option>
+              </select>
+
+              <input @input="checkCRM" type="text" v-model="this.crm" placeholder="" />
+            </div>
           </div>
 
           <div class="form-group">
@@ -77,10 +86,13 @@
         </form>
       </section>
 
-      <div class="linha"></div>
+      <span class="linha" />
 
       <section class="avulsa">
         <h1>Análise Avulsa</h1>
+        <p class="aviso">
+          Aviso! A Análise Avulsa não salvará nenhuma informação dos pacientes
+        </p>
         <div class="div-termos-label">
           <input type="checkbox" v-model="this.checks" id="checkTermos" />
           <label id="termos-label" for="checkTermos"
@@ -88,7 +100,11 @@
             <a href="/termos" id="link-termos">Termos e Condições</a>
           </label>
         </div>
-        <ButtonGrande @click="avulsa" :ativo="true" texto="Análise Avulsa"></ButtonGrande>
+        <ButtonGrande
+          @click="fnAvulsa"
+          :ativo="true"
+          texto="Análise Avulsa"
+        ></ButtonGrande>
       </section>
     </main>
     <Rodape></Rodape>
@@ -121,15 +137,47 @@ export default {
       crm: "",
       nome: "",
       checks: false,
+      uf: "",
+      ufs: [
+        "AC",
+        "AL",
+        "AP",
+        "AM",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MT",
+        "MS",
+        "MG",
+        "PA",
+        "PB",
+        "PR",
+        "PE",
+        "PI",
+        "RJ",
+        "RN",
+        "RS",
+        "RO",
+        "RR",
+        "SC",
+        "SP",
+        "SE",
+        "TO",
+      ],
     };
   },
-  props: {},
   methods: {
     valAcesso($evt) {
-      console.log(this.email, this.senha);
+      console.log(this.email, this.crm);
     },
     fnTermos() {
       this.$router.push("/termos");
+    },
+    fnAvulsa() {
+      //TODO: prompt de uplaod de video;
     },
     trocaAcesso() {
       if (this.tipo === "cadastro") {
@@ -138,9 +186,10 @@ export default {
         this.tipo = "cadastro";
       }
     },
-    avulsa() {
-      //botar pra mostrar pop-up aqui
+    checkEmail($evt) {
+      console.log($evt);
     },
+
     handleSucess() {
       const caixa = this.$refs.caixaErro;
       caixa.style.display = "none";
@@ -155,12 +204,13 @@ $larg-form-cad: 100%;
 
 .frame-pagina {
   @include frame-pagina($gap: 5vmin);
-  height: max-content;
+  height: 100vh;
 }
 
 h1 {
   font-weight: 600;
   width: max-content;
+  margin: 0px;
 }
 
 main {
@@ -235,6 +285,22 @@ form {
   }
 }
 
+.grupo-crm {
+  flex-direction: row;
+  display: flex;
+  gap: 1vmin;
+  .select-crm {
+    background: white;
+    border: 2px solid #b3b3b3;
+    border-radius: 1vmin;
+    padding: 0vmin 1.5vmin 0vmin 0.5vmin;
+    &:focus,
+    &:hover {
+      border-color: #444444;
+    }
+  }
+}
+
 .login {
   display: flex;
   flex-direction: column;
@@ -246,7 +312,7 @@ form {
   width: clamp(2px, 2px, 2px);
 
   height: 100%;
-  background: #9524ff;
+  background: $sec-color;
   @media (max-width: 900px) {
     padding: clamp(1px, 1px, 1px);
   }
@@ -269,6 +335,10 @@ input[type="checkbox"] {
   gap: 2vmin;
   display: flex;
   flex-direction: column;
+  .aviso {
+    width: 43vmin;
+    color: $terc-color;
+  }
 }
 
 #possuiLogin,

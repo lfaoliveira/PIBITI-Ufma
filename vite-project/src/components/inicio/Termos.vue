@@ -52,14 +52,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@supports not (-webkit-animation: alternate) {
-  // Firefox
-  main {
-    scrollbar-width: thin;
-    scrollbar-color: #888 #ff3b3b;
-  }
-}
-
 .frame-pagina {
   @include frame-pagina($gap: 2vmin);
   height: max-content;
@@ -80,6 +72,14 @@ main {
 
   overflow: auto; // Ensure the element is scrollable
   height: 50vmin;
+}
+
+@supports not (-webkit-animation: alternate) {
+  // Firefox
+  main {
+    scrollbar-width: thin;
+    scrollbar-color: #6b3eff #ff3b3b;
+  }
 }
 
 .texto-termos {

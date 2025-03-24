@@ -41,7 +41,7 @@ export default {
             const extension = resultJSON.extVideo;
 
             const mimeVar = mime.lookup(extension);
-
+            // TODO: MUDAR LOGICA DE ARMAZENAMENTO DE DADOS
             await db.open();
             const videoData = {
               string: strResult,
