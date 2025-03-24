@@ -34,6 +34,11 @@ export default {
         { titulo: "c", p: "a3" },
         { titulo: "d", p: "a4" },
         { titulo: "e", p: "a5" },
+        { titulo: "a", p: "a1" },
+        { titulo: "b", p: "a2" },
+        { titulo: "c", p: "a3" },
+        { titulo: "d", p: "a4" },
+        { titulo: "e", p: "a5" },
       ],
     };
   },
@@ -47,8 +52,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@supports not (-webkit-animation: alternate) {
+  // Firefox
+  main {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #ff3b3b;
+  }
+}
+
 .frame-pagina {
-  @include frame-pagina($gap: 5vmin);
+  @include frame-pagina($gap: 2vmin);
   height: max-content;
 }
 h1 {
@@ -56,11 +69,17 @@ h1 {
 }
 
 main {
-  width: 100%;
+  border: 1px solid black;
+  width: 90%;
+  align-self: center;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  @include webkit-scrollbar;
+
+  overflow: auto; // Ensure the element is scrollable
+  height: 50vmin;
 }
 
 .texto-termos {

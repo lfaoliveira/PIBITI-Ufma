@@ -1,4 +1,7 @@
 // GLOBAL CSS VARIABLES
+@import "../src/assets/main.css";
+
+
 
 *{
     font-family: 'Montserrat', sans-serif;
@@ -111,3 +114,41 @@ a{
     
       
 }
+
+/* Define scrollbar styles for WebKit browsers */
+@mixin webkit-scrollbar {
+    &::-webkit-scrollbar {
+      width: 1.5vmin; // Width of the scrollbar
+      height: 1.5vmin; // Height of the scrollbar (for horizontal scrollbars)
+    }
+  
+    &::-webkit-scrollbar-track {
+      background: #ffffff; // Color of the track
+      border-radius: 10px; // Rounded corners for the track
+    }
+  
+    &::-webkit-scrollbar-thumb {
+      background: #707070; // Color of the scrollbar thumbW
+      border-radius: 10px; // Rounded corners for the thumb
+    }
+  
+    &::-webkit-scrollbar-thumb:hover {
+      background: #555; // Color of the thumb when hovered
+    }
+}
+  
+  /* Define scrollbar styles for Firefox */
+  @mixin firefox-scrollbar {
+    scrollbar-width:auto;
+    scrollbar-color: #888 #f1f1f1;
+}
+  
+  /* Apply the mixins to the desired elements */
+  %scrollable-content {
+    @include webkit-scrollbar;
+    @include firefox-scrollbar;
+    overflow: auto; // Ensure the element is scrollable
+    max-height: 2000px; // Example height
+}
+
+
