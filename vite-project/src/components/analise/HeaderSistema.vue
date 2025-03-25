@@ -68,17 +68,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.nav-bar {
+  background: #0e0021;
+}
 .header {
   display: flex;
   width: 100%;
   height: $alt-headers;
   padding: 10px;
+  margin: 0px;
   align-items: center;
   gap: 30px;
   flex-shrink: 0;
-}
-.nav-bar {
-  background: #0e0021;
 }
 
 .ladoDireito {

@@ -52,7 +52,8 @@ export default {
   z-index: 1;
   background-color: #12071c;
   display: flex;
-  height: min-content;
+  height: $alt-headers;
+  margin: 0px;
   padding: 10px;
   align-items: center;
   gap: 30px;

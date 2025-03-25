@@ -13,7 +13,7 @@
             <label>Senha</label>
             <input @input="checkSenha" type="text" v-model="this.senha" placeholder="" />
           </div>
-
+          <a href="/esqueceuSenha" id="esqueci">Esqueci minha senha</a>
           <p id="semLogin">
             Não Possui Login?
             <a @click="trocaAcesso">Fazer Cadastro</a>
@@ -237,20 +237,21 @@ export default {
     },
     checkEmail() {
       const emailRegex = /^[\w]+@[\w]+\.[\w]+$/;
+      //tira espacos
       this.email = this.email.replace(/\s/, "");
       let passou = emailRegex.test(this.email);
 
-      if (passou && this.email === "exemplo@meail.com") passou = false;
+      if (passou && this.email === "exemplo@email.com") passou = false;
       else if (this.email === "") passou = true;
       this.boolErros.email = !passou;
     },
     checkNome() {
       if (this.nome !== "") {
-        let nomeRegex = /\d/;
+        //Tudo que nao seja letra e espaco sai
+        let nomeRegex = /[^A-Za-z\s]/;
         this.nome = this.nome.replace(nomeRegex, "");
-        nomeRegex = /\n|\t|\r/;
-        this.nome = this.nome.replace(nomeRegex, " ");
-        nomeRegex = /\s{2,}/;
+        //ajusta espaços
+        nomeRegex = /[\s\n\t\r]{2,}/;
         this.nome = this.nome.replace(nomeRegex, " ");
       }
     },
@@ -289,9 +290,6 @@ export default {
       } else {
         this.boolErros.crm.numero = false;
       }
-    },
-    fnTermos() {
-      this.$router.push("/termos");
     },
     fnAvulsa() {
       //TODO: prompt de uplaod de video;

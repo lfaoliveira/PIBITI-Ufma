@@ -19,7 +19,7 @@ class Validator{
     }
 
     /**
-     * Validates and processes user registration information
+     * Valida cadastro e insere dados no MongolDB
      * @param {string} email - User's email address
      * @param {string} senha - User's password
      * @param {string} nome - User's name
@@ -27,20 +27,7 @@ class Validator{
      * @returns {Array} Array containing [error message, null] if validation fails
      */
     cadastro(email=String, senha=String, nome=String, crm=String){
-        email = email.replace(this.regexEspaco);
-        if(!this.emailRegex.test(strEmail)){
-            return ["Insira um email válido!", null];
-        }
-        if(!this.senhaRegex.test(senha)){
-            //TODO: Aqui tem que  ter bullet list com campos de senha
-            return ["adaddawdadwdwadwd", null];
-        }
-        if(!this.nomeRegex.test(nome)){
-        return ["Nome contem números!", null];
-        }
-        if(!this.crmRegex.test(crm)){
-            return ["Insira um CRM válido!", null];
-        }
+        
     }
 }
 
