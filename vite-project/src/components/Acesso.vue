@@ -7,12 +7,7 @@
         <form @submit.prevent="valAcesso">
           <div class="form-group">
             <label>Email</label>
-            <input
-              @input="checkEmail"
-              type="text"
-              v-model="this.email"
-              placeholder="exemplo@email.com"
-            />
+            <input type="text" v-model="this.email" placeholder="exemplo@email.com" />
           </div>
           <div class="form-group">
             <label>Senha</label>
@@ -24,7 +19,11 @@
             <a @click="trocaAcesso">Fazer Cadastro</a>
           </p>
 
-          <ButtonGrande type="submit" :ativo="true" texto="Fazer Login"></ButtonGrande>
+          <ButtonGrande
+            type="submit"
+            :ativo="checkCampos()"
+            texto="Fazer Login"
+          ></ButtonGrande>
         </form>
       </section>
 
@@ -33,6 +32,9 @@
         <form class="form-cadastro" @submit.prevent="valAcesso">
           <div class="form-group">
             <label>Email</label>
+            <p v-if="this.boolErros.email" class="erro">
+              {{ this.stringErros.email }}
+            </p>
             <input
               @input="checkEmail"
               type="text"
@@ -47,8 +49,14 @@
 
           <div class="form-group">
             <label>CRM</label>
+            <p v-if="this.boolErros.crm.uf" class="erro">
+              {{ this.stringErros.crm.uf }}
+            </p>
+            <p v-if="this.boolErros.crm.numero" class="erro">
+              {{ this.stringErros.crm.numero }}
+            </p>
             <div class="grupo-crm">
-              <select v-model="this.uf" class="select-crm">
+              <select @change="checkCRM" v-model="this.uf" class="select-crm">
                 <option value="" key="">UF</option>
                 <option v-for="item in this.ufs" :key="item" :value="item">
                   {{ item }}
@@ -62,6 +70,14 @@
           <div class="form-group">
             <label>Senha</label>
             <input @input="checkSenha" type="text" v-model="this.senha" placeholder="" />
+            <ul class="errors-senha">
+              <li v-if="this.boolErros.senha.cadastro.numCaracteres" class="erro">
+                {{ this.stringErros.senha.cadastro.numCaracteres }}
+              </li>
+              <li v-if="this.boolErros.senha.cadastro.maiusculas" class="erro">
+                {{ this.stringErros.senha.cadastro.maiusculas }}
+              </li>
+            </ul>
           </div>
 
           <div class="div-termos-label">
@@ -80,7 +96,7 @@
           <ButtonGrande
             class="but-cadastro"
             type="submit"
-            :ativo="true"
+            :ativo="checkCampos()"
             texto="Cadastro"
           ></ButtonGrande>
         </form>
@@ -102,7 +118,7 @@
         </div>
         <ButtonGrande
           @click="fnAvulsa"
-          :ativo="true"
+          :ativo="this.checks"
           texto="Análise Avulsa"
         ></ButtonGrande>
       </section>
@@ -115,6 +131,8 @@
 import HeaderSistema from "./analise/HeaderSistema.vue";
 import ButtonGrande from "./auxiliares/ButtonGrande.vue";
 import Rodape from "./auxiliares/Rodape.vue";
+
+import Validator from "../scripts/valAcesso";
 
 const def = "default";
 const off = "salvaroff";
@@ -138,6 +156,28 @@ export default {
       nome: "",
       checks: false,
       uf: "",
+      stringErros: {
+        email: "Email Inválido",
+        crm: { uf: "Insira uma UF válida!", numero: "Insira um número válido!" },
+        senha: {
+          cadastro: {
+            numCaracteres: "A senha deve conter 8 a 20 caracteres",
+            maiusculas: "A senha deve ter pelo menos 1 letra maiúscula",
+          },
+          login: "Senha Incorreta!",
+        },
+      },
+      boolErros: {
+        email: false,
+        crm: { uf: false, numero: false },
+        senha: {
+          cadastro: {
+            numCaracteres: false,
+            maiusculas: false,
+          },
+          login: false,
+        },
+      },
       ufs: [
         "AC",
         "AL",
@@ -171,7 +211,84 @@ export default {
   },
   methods: {
     valAcesso($evt) {
-      console.log(this.email, this.crm);
+      if (this.tipo === "login") {
+      } else if (this.tipo === "cadastro" && this.uf !== "") {
+        const res = Validator.cadastro(
+          this.email,
+          this.senha,
+          this.nome,
+          `${this.uf}-${this.crm}`
+        );
+      } else {
+      }
+    },
+    checkCampos() {
+      if (this.tipo === "login") {
+        return this.email !== "" && this.senha !== "";
+      } else {
+        return (
+          this.checks &&
+          this.email !== "" &&
+          this.senha !== "" &&
+          this.uf !== "" &&
+          this.crm !== ""
+        );
+      }
+    },
+    checkEmail() {
+      const emailRegex = /^[\w]+@[\w]+\.[\w]+$/;
+      this.email = this.email.replace(/\s/, "");
+      let passou = emailRegex.test(this.email);
+
+      if (passou && this.email === "exemplo@meail.com") passou = false;
+      else if (this.email === "") passou = true;
+      this.boolErros.email = !passou;
+    },
+    checkNome() {
+      if (this.nome !== "") {
+        let nomeRegex = /\d/;
+        this.nome = this.nome.replace(nomeRegex, "");
+        nomeRegex = /\n|\t|\r/;
+        this.nome = this.nome.replace(nomeRegex, " ");
+        nomeRegex = /\s{2,}/;
+        this.nome = this.nome.replace(nomeRegex, " ");
+      }
+    },
+    checkSenha() {
+      const regChar = /^.{8,20}$/;
+      const regMaiusc = /[A-Z]/;
+      if (this.tipo === "cadastro") {
+        const passou1 = regChar.test(this.senha);
+        if (!passou1) {
+          console.log("MUITO PEQUENO");
+          this.boolErros.senha.cadastro.numCaracteres = true;
+        }
+        const passou2 = regMaiusc.test(this.senha);
+        if (!passou2) {
+          console.log("SEM MAISUCULAS");
+          this.boolErros.senha.cadastro.maiusculas = true;
+        }
+        if (passou1 && passou2) {
+          this.boolErros.senha.cadastro.numCaracteres = false;
+          this.boolErros.senha.cadastro.maiusculas = false;
+        }
+      }
+    },
+    checkCRM() {
+      const regNumCRM = /^\d{1,6}$/;
+      this.crm = this.crm.replace(/\s/, "");
+      if (this.uf === "") {
+        this.boolErros.crm.uf = true;
+        return;
+      } else {
+        this.boolErros.crm.uf = false;
+      }
+
+      if (!regNumCRM.test(this.crm)) {
+        this.boolErros.crm.numero = true;
+      } else {
+        this.boolErros.crm.numero = false;
+      }
     },
     fnTermos() {
       this.$router.push("/termos");
@@ -186,8 +303,9 @@ export default {
         this.tipo = "cadastro";
       }
     },
-    checkEmail($evt) {
-      console.log($evt);
+    checkUF() {
+      if (this.uf === "UF") {
+      }
     },
 
     handleSucess() {
@@ -217,7 +335,7 @@ main {
   width: fit-content;
   margin: auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: 20px;
   flex: 1 0 0;
@@ -262,6 +380,7 @@ form {
 
   label {
     font-size: $form-fonte-titulo;
+    font-weight: 600;
   }
 
   input {
@@ -338,6 +457,7 @@ input[type="checkbox"] {
   .aviso {
     width: 43vmin;
     color: $terc-color;
+    font-weight: 600;
   }
 }
 
@@ -347,5 +467,16 @@ input[type="checkbox"] {
   a {
     font-weight: 600;
   }
+}
+
+.errors-senha {
+  padding: 0px;
+  margin-left: 1vmin;
+  list-style-type: circle;
+}
+
+.erro {
+  color: red;
+  margin-left: 1vmin;
 }
 </style>
