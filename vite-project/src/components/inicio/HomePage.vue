@@ -1,6 +1,6 @@
 <template>
   <main class="secao-landing">
-    <headerHome :activeIndex="0" />
+    <HeaderSistema :activeIndex="0"></HeaderSistema>
 
     <div id="div-video-home">
       <video
@@ -19,8 +19,8 @@
       </h1>
     </div>
     <div class="botoes">
-      <ButMedio @click="fnDuvidas" texto="Como Funciona?" :ativo="true"> </ButMedio>
-      <ButMedio @click="fnAcesso" texto="Fazer Análise" :ativo="true"> </ButMedio>
+      <Button @click="fnDuvidas" texto="Como Funciona?" :ativo="true"> </Button>
+      <Button @click="fnFicha" texto="Fazer Análise" :ativo="true"> </Button>
     </div>
   </main>
 </template>
@@ -119,22 +119,22 @@ input {
 </style>
 
 <script>
-import headerHome from "./HeaderInicio.vue";
-import ButMedio from "../auxiliares/ButtonMedio.vue";
+import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+import Button from "../auxiliares/Button.vue";
 
 export default {
   name: "HomePage",
   components: {
-    headerHome,
-    ButMedio,
+    HeaderSistema,
+    Button,
   },
   setup() {},
   methods: {
     fnDuvidas() {
       this.$router.push("/duvidas");
     },
-    fnAcesso() {
-      this.$router.push("/acesso");
+    fnFicha() {
+      this.$router.push("/ficha");
     },
   },
   props: {},

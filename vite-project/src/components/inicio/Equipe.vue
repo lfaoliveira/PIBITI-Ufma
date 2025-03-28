@@ -1,6 +1,7 @@
 <template>
   <div class="frame-pagina">
-    <HeaderInicio :activeIndex="2"></HeaderInicio>
+    <HeaderSistema :activeIndex="2"></HeaderSistema>
+
     <div id="divisor" class="secao">
       <img
         src="../../assets/logo_VIP_Lab.png"
@@ -109,13 +110,13 @@
 </template>
 
 <script>
-import HeaderInicio from "./HeaderInicio.vue";
 import Rodape from "../auxiliares/Rodape.vue";
+import HeaderSistema from "../auxiliares/HeaderSistema.vue";
 
 export default {
   name: "autores",
   components: {
-    HeaderInicio,
+    HeaderSistema,
     Rodape,
   },
   created() {},

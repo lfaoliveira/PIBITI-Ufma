@@ -1,6 +1,6 @@
 <template>
   <section class="frame-pagina">
-    <HeaderSistema tipo="default"></HeaderSistema>
+    <HeaderSistema :activeIndex="5"></HeaderSistema>
     <main>
       <section v-if="tipo === 'login'" class="login">
         <h1>Fazer Login</h1>
@@ -19,11 +19,7 @@
             <a @click="trocaAcesso">Fazer Cadastro</a>
           </p>
 
-          <ButtonGrande
-            type="submit"
-            :ativo="checkCampos()"
-            texto="Fazer Login"
-          ></ButtonGrande>
+          <Button type="submit" :ativo="checkCampos()" texto="Fazer Login"></Button>
         </form>
       </section>
 
@@ -93,34 +89,13 @@
             <a @click="trocaAcesso">Fazer Login</a>
           </p>
 
-          <ButtonGrande
+          <Button
             class="but-cadastro"
             type="submit"
             :ativo="checkCampos()"
             texto="Cadastro"
-          ></ButtonGrande>
+          ></Button>
         </form>
-      </section>
-
-      <span class="linha" />
-
-      <section class="avulsa">
-        <h1>Análise Avulsa</h1>
-        <p class="aviso">
-          Aviso! A Análise Avulsa não salvará nenhuma informação dos pacientes
-        </p>
-        <div class="div-termos-label">
-          <input type="checkbox" v-model="this.checks" id="checkTermos" />
-          <label id="termos-label" for="checkTermos"
-            >Concordo com os
-            <a href="/termos" id="link-termos">Termos e Condições</a>
-          </label>
-        </div>
-        <ButtonGrande
-          @click="fnAvulsa"
-          :ativo="this.checks"
-          texto="Análise Avulsa"
-        ></ButtonGrande>
       </section>
     </main>
     <Rodape></Rodape>
@@ -128,8 +103,8 @@
 </template>
 
 <script>
-import HeaderSistema from "./analise/HeaderSistema.vue";
-import ButtonGrande from "./auxiliares/ButtonGrande.vue";
+import HeaderSistema from "./auxiliares/HeaderSistema.vue";
+import Button from "./auxiliares/Button.vue";
 import Rodape from "./auxiliares/Rodape.vue";
 
 import Validator from "../scripts/valAcesso";
@@ -144,11 +119,13 @@ export default {
   components: {
     HeaderSistema,
     Rodape,
-    ButtonGrande,
+    Button,
   },
   created() {},
+  mounted() {},
   data() {
     return {
+      val: new Validator(),
       tipo: "login",
       email: "",
       senha: "",
@@ -212,13 +189,15 @@ export default {
   methods: {
     valAcesso($evt) {
       if (this.tipo === "login") {
-      } else if (this.tipo === "cadastro" && this.uf !== "") {
-        const res = Validator.cadastro(
+        //Validar LOGIN
+      } else if (this.tipo === "cadastro") {
+        const res = this.val.cadastro(
           this.email,
           this.senha,
           this.nome,
           `${this.uf}-${this.crm}`
         );
+        console.log(res);
       } else {
       }
     },
@@ -226,13 +205,7 @@ export default {
       if (this.tipo === "login") {
         return this.email !== "" && this.senha !== "";
       } else {
-        return (
-          this.checks &&
-          this.email !== "" &&
-          this.senha !== "" &&
-          this.uf !== "" &&
-          this.crm !== ""
-        );
+        return this.checks && this.checkEmail() && this.checkSenha() && this.checkCRM();
       }
     },
     checkEmail() {
@@ -244,6 +217,7 @@ export default {
       if (passou && this.email === "exemplo@email.com") passou = false;
       else if (this.email === "") passou = true;
       this.boolErros.email = !passou;
+      return passou;
     },
     checkNome() {
       if (this.nome !== "") {
@@ -253,43 +227,49 @@ export default {
         //ajusta espaços
         nomeRegex = /[\s\n\t\r]{2,}/;
         this.nome = this.nome.replace(nomeRegex, " ");
+        return true;
       }
+      return false;
     },
     checkSenha() {
-      const regChar = /^.{8,20}$/;
+      let passou = true;
       const regMaiusc = /[A-Z]/;
-      if (this.tipo === "cadastro") {
-        const passou1 = regChar.test(this.senha);
-        if (!passou1) {
-          console.log("MUITO PEQUENO");
-          this.boolErros.senha.cadastro.numCaracteres = true;
-        }
-        const passou2 = regMaiusc.test(this.senha);
-        if (!passou2) {
-          console.log("SEM MAISUCULAS");
-          this.boolErros.senha.cadastro.maiusculas = true;
-        }
-        if (passou1 && passou2) {
-          this.boolErros.senha.cadastro.numCaracteres = false;
-          this.boolErros.senha.cadastro.maiusculas = false;
-        }
+
+      const passou1 = this.senha.length >= 8 && this.senha.length <= 20;
+      if (!passou1) {
+        this.boolErros.senha.cadastro.numCaracteres = true;
+        passou = false;
+      } else {
+        this.boolErros.senha.cadastro.numCaracteres = false;
       }
+      const passou2 = regMaiusc.test(this.senha);
+      if (!passou2) {
+        this.boolErros.senha.cadastro.maiusculas = true;
+        passou = false;
+      } else {
+        this.boolErros.senha.cadastro.maiusculas = false;
+      }
+      return passou;
     },
     checkCRM() {
+      let passou = true;
       const regNumCRM = /^\d{1,6}$/;
       this.crm = this.crm.replace(/\s/, "");
       if (this.uf === "") {
         this.boolErros.crm.uf = true;
-        return;
+        passou = false;
+        return passou;
       } else {
         this.boolErros.crm.uf = false;
       }
 
       if (!regNumCRM.test(this.crm)) {
         this.boolErros.crm.numero = true;
+        passou = false;
       } else {
         this.boolErros.crm.numero = false;
       }
+      return passou;
     },
     fnAvulsa() {
       //TODO: prompt de uplaod de video;
@@ -299,10 +279,6 @@ export default {
         this.tipo = "login";
       } else {
         this.tipo = "cadastro";
-      }
-    },
-    checkUF() {
-      if (this.uf === "UF") {
       }
     },
 
@@ -435,28 +411,13 @@ form {
   }
 }
 
-.div-termos-label {
-  display: flex;
-  gap: 1vmin;
-  #link-termos {
-    font-weight: 500;
-  }
-}
-
 input[type="checkbox"] {
   accent-color: #2c2c2c; /* Changes the check color */
 }
 
-.avulsa {
-  height: 100%;
-  gap: 2vmin;
+.div-termos-label {
   display: flex;
-  flex-direction: column;
-  .aviso {
-    width: 43vmin;
-    color: $terc-color;
-    font-weight: 600;
-  }
+  gap: 1vmin;
 }
 
 #possuiLogin,

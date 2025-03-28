@@ -1,5 +1,6 @@
 <template>
-  <HeaderInicio :activeIndex="3" />
+  <HeaderSistema :activeIndex="3" />
+
   <div class="frame-pagina">
     <section class="secao-conteudo">
       <h2>Como obter o vídeo que será processado?</h2>
@@ -38,13 +39,13 @@
 </template>
 
 <script>
+import HeaderSistema from "../auxiliares/HeaderSistema.vue";
 import Rodape from "../auxiliares/Rodape.vue";
-import HeaderInicio from "./HeaderInicio.vue";
 
 export default {
   name: "duvidas",
   components: {
-    HeaderInicio,
+    HeaderSistema,
     Rodape,
   },
   created() {},

@@ -7,6 +7,7 @@ import Metodo from './components/inicio/Metodo.vue';
 import Duvidas from './components/inicio/Duvidas.vue';
 import Equipe from './components/inicio/Equipe.vue';
 import Acesso from './components/Acesso.vue';
+import FichaDiag from './components/analise/FichaDiag.vue';
 
 
 
@@ -39,6 +40,9 @@ const routes = [
     },
     {
         name: 'PaginaEquipe', path: '/equipe',  component: Equipe
+    },
+    {
+        name: 'FichaDiag', path: '/ficha',  component: FichaDiag
     },
 ];
 

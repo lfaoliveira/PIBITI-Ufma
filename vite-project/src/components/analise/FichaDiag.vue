@@ -1,4 +1,6 @@
 <template>
+  <HeaderSistema :activeIndex="4" />
+
   <div class="cntr-cta">
     <input type="file" id="fileInput" accept="video/*" />
     <label for="fileInput" ref="" class="label-cta"> Analisar Vídeo </label>
@@ -9,9 +11,13 @@
 import db from "../../db.js";
 import axios from "axios";
 import mime from "mime-types";
+import HeaderSistema from "../auxiliares/HeaderSistema.vue";
 
 export default {
   name: "Test",
+  components: {
+    HeaderSistema,
+  },
   created() {},
   data() {
     return {};

@@ -1,15 +1,29 @@
 <template>
   <footer>
-    <img
-      src="https://cdn.builder.io/api/v1/image/assets/TEMP/938d419ab519c103a1e0833b1a20709f879d21b943df87ce5a6ad7be4a35e7b8?placeholderIfAbsent=true&apiKey=8b29090e827e422ea4601ed102c7c8ec"
-      alt="Logo footer"
-      class="footer-logo"
-    />
+    <ul class="logos">
+      <img
+        src="../../assets/logo_VIP_Lab.png"
+        alt="Logo footer"
+        id="logo-vip"
+        class="footer-logo"
+      />
+      <img
+        src="../../assets/logo ufma.png"
+        alt="Logo footer"
+        id="logo-ufma"
+        class="footer-logo"
+      />
+      <img
+        src="../../assets/LogoNCAFundBranco2000_2021.png"
+        alt="Logo footer"
+        id="logo-nca"
+        href="/"
+        class="footer-logo"
+      />
+    </ul>
     <nav class="footer-nav">
-      <a href="#" class="footer-link">Avisos Legais</a>
-      <a href="mailto:contato@email.ufma.br" class="footer-link"
-        >Contato: contato@email.ufma.br</a
-      >
+      <a href="mailto:contato@email.ufma.br" class="footer-link">Suporte</a>
+      <a href="#" class="footer-link">Termos e Condições</a>
       <a href="#" class="footer-link">Sobre</a>
     </nav>
   </footer>
@@ -17,25 +31,45 @@
 
 <style lang="scss" scoped>
 footer {
-  width: 100%;
-  display: flex;
+  display: inline-flex;
+  padding: 0px 4px;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  align-self: flex-end;
+  gap: 20px;
+  width: 100%;
 
-  .footer-logo {
-    width: 100px;
-    height: auto;
-    margin: 0px auto 20px auto;
+  .logos {
+    display: flex;
+    padding: 1vmin 0.5vmin 0vmin 0vmin;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 10vmin;
+    align-self: stretch;
+    #logo-vip {
+      width: 125.189px;
+      aspect-ratio: 125.19/88.34;
+      margin: 0;
+    }
+    #logo-ufma {
+      width: 88.336px;
+      aspect-ratio: 88.34/88.34;
+      margin: 0;
+    }
+    #logo-nca {
+      width: 113.542px;
+      aspect-ratio: 113.54/88.34;
+      margin: 0;
+    }
   }
 
   .footer-nav {
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
+    align-items: center;
+    gap: 6vmin;
+    align-self: stretch;
     width: 100%;
-    max-width: 600px;
-    position: relative;
-    left: -1vmin;
   }
 
   .footer-link {
@@ -55,10 +89,7 @@ export default {
   data() {
     return {};
   },
-  mounted() {
-    const logo = document.querySelector(".footer-logo");
-    logo.style.marginBottom = this.margemImagem;
-  },
+  mounted() {},
   props: {
     margemImagem: { type: String, default: "20px" },
   },

@@ -1,10 +1,5 @@
 <template>
-  <button
-    class="salvar"
-    @click="rotaSalvar"
-    :enabled="butEnabled"
-    :disabled="!butEnabled"
-  >
+  <button class="salvar" @click="fnSalvar" :enabled="butEnabled" :disabled="!butEnabled">
     <img class="icone-download" alt="Save icon" src="../../assets/download.png" />
     <p class="texto-salvar">Salvar Resultado</p>
   </button>
@@ -21,8 +16,8 @@ export default {
     modo: { type: String, default: "off" },
   },
   methods: {
-    rotaSalvar() {
-      this.$router.push("/salvar");
+    fnSalvar() {
+      //logica para baixar o pdf dos resultados para a maquina do usuario
     },
   },
   computed: {
@@ -40,13 +35,16 @@ export default {
 <style lang="scss" scoped>
 .salvar {
   background: none;
-  display: flex;
+
   justify-content: center;
   gap: 1vmin;
   align-items: center;
   margin: auto;
   width: fit-content;
   cursor: pointer;
+  @include botao-header;
+  flex-direction: row;
+  display: inline-flex;
 }
 
 .salvar:disabled {

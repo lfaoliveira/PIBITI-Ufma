@@ -6,12 +6,6 @@
 </template>
 
 <style scoped>
-* {
-  --alt-butao: clamp(40px, 5vmin, 77px);
-  --raio-butao: clamp(10px, 40%, 20px);
-  font-family: "Montserrat", "Inter";
-  border: 0px;
-}
 input {
   display: none;
 }
