@@ -7,6 +7,9 @@ from werkzeug.utils import secure_filename
 import numpy as np
 from flask import Flask, render_template, jsonify, request, send_from_directory, url_for, abort
 
+from flask_pymongo import PyMongo
+import hashlib
+
 from flask_cors import CORS
 from tensorflow.python.framework.ops import disable_eager_execution
 import tensorflow as tf
@@ -99,6 +102,9 @@ app = Flask(__name__)
 Possível risco de segurança!
 """
 CORS(app)
+app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
+mongo = PyMongo(app)
+alg_hash = hashlib.sha3_256
 
 print("APP INICIADO")
 # path para arquivos temporarios
@@ -122,7 +128,6 @@ if not os.path.exists(path_pesos_yolo):
     download_peso(app.config["WKDIR"])
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
-
 video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
 # --------------------- MODELO --------------------------#
@@ -252,6 +257,47 @@ def demo_func():
     """
     return analisar(video_demo)
     # servidor retorna string contando os resultados e grafico como respsotas HTTP
+
+
+@app.route("/cadastro", methods=["POST"])
+def cad_func():
+    dict_valores = request.form.to_dict()
+    email = dict_valores["email"]
+    nome = dict_valores["nome"]
+    crm = dict_valores["crm"]
+    senha_utf8 = dict_valores["senha"].encode('utf-8')
+    senha = alg_hash(senha_utf8).hexdigest()
+
+    medicos = mongo.db.get_collection("Medicos")
+    res = medicos.find_one({"email": email})
+    if res != None:
+        return "JA_EXISTE"
+
+    # print(f"\n\nVALORES CAD: {email, senha, nome, crm}\n\n")
+
+    medicos.insert_one({"email": email, "nome": nome,
+                       "crm": crm, "senha": senha})
+    return "CADASTRADO"
+
+
+@app.route("/val_login", methods=["GET"])
+def val_login():
+    """
+    Validates user registration by checking email and password from form submission.
+    Gets email and password values from submitted form data to process user registration.
+    Returns:
+        None
+    Raises:
+        None
+    """
+    email, senha = request.form.get("email"), request.form.get("senha")
+    senha = alg_hash(senha.encode('utf-8')).hexdigest()
+    medicos = mongo.db.get_collection("Medicos")
+    res = medicos.find_one({"email": email, "senha": senha})
+    if res != None:
+        return "OK"
+    else:
+        raise ValueError("Email e/ou Senha incorreto(s)!")
 
 
 if __name__ == "__main__":

@@ -2,6 +2,12 @@
   <section class="frame-pagina">
     <HeaderSistema :activeIndex="5"></HeaderSistema>
     <main>
+      <OverlayAviso
+        :titulo="'Já há um usuário cadastrado com este email'"
+        :subtexto="'Faça login no sistema para prosseguir'"
+        :srcImg="'src/assets/alert_circle.png'"
+      ></OverlayAviso>
+
       <section v-if="tipo === 'login'" class="login">
         <h1>Fazer Login</h1>
         <form @submit.prevent="valAcesso">
@@ -24,8 +30,8 @@
       </section>
 
       <section class="sec-cadastro" v-if="tipo === 'cadastro'">
-        <h1>Cadastro (Apenas Médicos)</h1>
-        <form class="form-cadastro" @submit.prevent="valAcesso">
+        <h1>Cadastro</h1>
+        <form ref="formCadastro" class="form-cadastro" @submit.prevent="valAcesso">
           <div class="form-group">
             <label>Email</label>
             <p v-if="this.boolErros.email" class="erro">
@@ -106,8 +112,8 @@
 import HeaderSistema from "./auxiliares/HeaderSistema.vue";
 import Button from "./auxiliares/Button.vue";
 import Rodape from "./auxiliares/Rodape.vue";
-
-import Validator from "../scripts/valAcesso";
+import axios from "axios";
+import OverlayAviso from "./auxiliares/OverlayAviso.vue";
 
 const def = "default";
 const off = "salvaroff";
@@ -120,13 +126,19 @@ export default {
     HeaderSistema,
     Rodape,
     Button,
+    OverlayAviso,
   },
   created() {},
-  mounted() {},
+  mounted() {
+    document.addEventListener("keypress", ($evt) => {
+      if ($evt.key === "enter") {
+        alert("enter");
+      }
+    });
+  },
   data() {
     return {
-      val: new Validator(),
-      tipo: "login",
+      tipo: "cadastro",
       email: "",
       senha: "",
       crm: "",
@@ -155,6 +167,7 @@ export default {
           login: false,
         },
       },
+      jaCadastrado: false,
       ufs: [
         "AC",
         "AL",
@@ -187,18 +200,23 @@ export default {
     };
   },
   methods: {
-    valAcesso($evt) {
+    async valAcesso($evt) {
       if (this.tipo === "login") {
         //Validar LOGIN
       } else if (this.tipo === "cadastro") {
-        const res = this.val.cadastro(
-          this.email,
-          this.senha,
-          this.nome,
-          `${this.uf}-${this.crm}`
-        );
-        console.log(res);
-      } else {
+        const form = new FormData();
+        form.append("email", this.email);
+        form.append("senha", this.senha);
+        form.append("nome", this.nome);
+        form.append("crm", `${this.uf}-${this.crm}`);
+        // alert(this.$store.getters.getUrlCadastro);
+
+        const res = await axios.post(this.$store.getters.getUrlCadastro, form);
+        if (res.data === "JA_EXISTE") {
+          this.jaCadastrado = true;
+          //logica pra alertar que usuario ja esta cadastrado e pedir pra fazer login
+        }
+        console.log(`HTTP CADASTRO: ${res.data}`);
       }
     },
     checkCampos() {
@@ -303,6 +321,7 @@ h1 {
   font-weight: 600;
   width: max-content;
   margin: 0px;
+  text-align: center;
 }
 
 main {
@@ -340,6 +359,7 @@ form {
   display: flex;
   align-items: flex-start;
   flex-direction: column;
+  gap: 5vmin;
 }
 
 .but-cadastro {
