@@ -1,8 +1,15 @@
-<template>
+<template
+  @fechaAviso="
+    () => {
+      this.cadastroRepetido = false;
+    }
+  "
+>
   <section class="frame-pagina">
     <HeaderSistema :activeIndex="5"></HeaderSistema>
     <main>
       <OverlayAviso
+        :aberto="cadastroRepetido"
         :titulo="'Já há um usuário cadastrado com este email'"
         :subtexto="'Faça login no sistema para prosseguir'"
         :srcImg="'src/assets/alert_circle.png'"
@@ -135,6 +142,7 @@ export default {
         alert("enter");
       }
     });
+    document.addEventListener("fechaAviso", () => {});
   },
   data() {
     return {
@@ -167,7 +175,7 @@ export default {
           login: false,
         },
       },
-      jaCadastrado: false,
+      cadastroRepetido: false,
       ufs: [
         "AC",
         "AL",
@@ -203,6 +211,11 @@ export default {
     async valAcesso($evt) {
       if (this.tipo === "login") {
         //Validar LOGIN
+        const form = new FormData();
+        form.append("email", this.email);
+        form.append("senha", this.senha);
+        const res = await axios.post(this.$store.getters.getUrlCadastro, form);
+        //
       } else if (this.tipo === "cadastro") {
         const form = new FormData();
         form.append("email", this.email);
@@ -213,8 +226,11 @@ export default {
 
         const res = await axios.post(this.$store.getters.getUrlCadastro, form);
         if (res.data === "JA_EXISTE") {
-          this.jaCadastrado = true;
+          this.cadastroRepetido = true;
+          this.$emit("abreAviso");
+          console.log("EMITIU abreAviso");
           //logica pra alertar que usuario ja esta cadastrado e pedir pra fazer login
+        } else {
         }
         console.log(`HTTP CADASTRO: ${res.data}`);
       }

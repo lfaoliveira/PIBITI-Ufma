@@ -1,5 +1,12 @@
-<template>
-  <section class="overlay">
+<template
+  @abreAviso="
+    () => {
+      this.aberto = true;
+      console.log('RECEBEU ABRE AVISO');
+    }
+  "
+>
+  <section v-if="this.aberto" class="overlay">
     <div class="alerta">
       <img :src="srcImg" />
       <ul class="textos">
@@ -9,7 +16,7 @@
       </ul>
     </div>
     <div class="div-but">
-      <Button @click="fnClose()" :texto="'OK'" :ativo="true"></Button>
+      <Button @click="this.fnClose" :texto="'OK'" :ativo="true"></Button>
     </div>
   </section>
 </template>
@@ -23,9 +30,13 @@ export default {
     Button,
   },
   created() {},
+  mounted() {},
   data() {
-    return {};
+    return {
+      aberto: false,
+    };
   },
+
   props: {
     titulo: "",
     subtexto: "",
@@ -34,7 +45,7 @@ export default {
   },
   methods: {
     fnClose() {
-      //fechar overlay;
+      this.$emit("fechaAviso");
     },
   },
 };
@@ -42,16 +53,8 @@ export default {
 
 <style lang="scss" scoped>
 .overlay {
-  z-index: 20;
-  display: flex;
-  width: clamp(50%, 50%, 50%);
-  position: absolute;
-  margin: auto;
-  background: white;
-  border: 1px solid black;
-  height: 90vmin;
-  flex-direction: column;
-  align-items: center;
+  @include overlay;
+
   gap: 5vmin;
 
   img {
