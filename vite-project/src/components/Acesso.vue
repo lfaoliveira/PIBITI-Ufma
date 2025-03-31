@@ -1,14 +1,13 @@
-<template
-  @fechaAviso="
-    () => {
-      this.cadastroRepetido = false;
-    }
-  "
->
+<template>
   <section class="frame-pagina">
     <HeaderSistema :activeIndex="5"></HeaderSistema>
     <main>
       <OverlayAviso
+        @fechaAviso="
+          () => {
+            this.cadastroRepetido = false;
+          }
+        "
         :aberto="cadastroRepetido"
         :titulo="'Já há um usuário cadastrado com este email'"
         :subtexto="'Faça login no sistema para prosseguir'"
@@ -38,7 +37,12 @@
 
       <section class="sec-cadastro" v-if="tipo === 'cadastro'">
         <h1>Cadastro</h1>
-        <form ref="formCadastro" class="form-cadastro" @submit.prevent="valAcesso">
+        <form
+          @keyup.enter="$emit('submit')"
+          ref="formCadastro"
+          class="form-cadastro"
+          @submit.prevent="valAcesso"
+        >
           <div class="form-group">
             <label>Email</label>
             <p v-if="this.boolErros.email" class="erro">
@@ -135,14 +139,16 @@ export default {
     Button,
     OverlayAviso,
   },
+  emits: ["abreAviso"],
   created() {},
   mounted() {
-    document.addEventListener("keypress", ($evt) => {
-      if ($evt.key === "enter") {
-        alert("enter");
-      }
+    document.addEventListener("fechaAviso", () => {
+      this.cadastroRepetido = false;
     });
-    document.addEventListener("fechaAviso", () => {});
+    document.addEventListener("abreAviso", () => {
+      this.cadastroRepetido = true;
+      console.log("TENTOU ABRIR A PORRA DOA VISO");
+    });
   },
   data() {
     return {
@@ -210,7 +216,7 @@ export default {
   methods: {
     async valAcesso($evt) {
       if (this.tipo === "login") {
-        //Validar LOGIN
+        //TODO: MUDAR
         const form = new FormData();
         form.append("email", this.email);
         form.append("senha", this.senha);
@@ -320,6 +326,9 @@ export default {
       const caixa = this.$refs.caixaErro;
       caixa.style.display = "none";
       this.texto = "adadaw";
+    },
+    handleAbre() {
+      this.$emit("update:aberto", true);
     },
   },
 };

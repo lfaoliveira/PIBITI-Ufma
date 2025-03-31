@@ -1,12 +1,5 @@
-<template
-  @abreAviso="
-    () => {
-      this.aberto = true;
-      console.log('RECEBEU ABRE AVISO');
-    }
-  "
->
-  <section v-if="this.aberto" class="overlay">
+<template>
+  <section v-show="aberto" class="overlay">
     <div class="alerta">
       <img :src="srcImg" />
       <ul class="textos">
@@ -32,12 +25,11 @@ export default {
   created() {},
   mounted() {},
   data() {
-    return {
-      aberto: false,
-    };
+    return {};
   },
 
   props: {
+    aberto: null,
     titulo: "",
     subtexto: "",
     opcional: "",
@@ -45,6 +37,7 @@ export default {
   },
   methods: {
     fnClose() {
+      this.$emit("update:aberto", false);
       this.$emit("fechaAviso");
     },
   },
