@@ -11,6 +11,7 @@ import 'video.js/dist/video-js.css';
 import App from './App.vue'
 
 const app = createApp(App);
-app.use(router).use(store); // Use the router in the app
+
+app.use(router).use(store) // Use  router, vue-store and vue-cookies in the app
 app.mount('#app');
 

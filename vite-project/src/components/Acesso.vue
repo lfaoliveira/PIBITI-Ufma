@@ -3,17 +3,22 @@
     <HeaderSistema :activeIndex="5"></HeaderSistema>
     <main>
       <OverlayAviso
-        @fechaAviso="
-          () => {
-            this.cadastroRepetido = false;
-          }
-        "
-        :aberto="cadastroRepetido"
+        :tipoAviso="'cadastroRepetido'"
         :titulo="'Já há um usuário cadastrado com este email'"
         :subtexto="'Faça login no sistema para prosseguir'"
         :srcImg="'src/assets/alert_circle.png'"
       ></OverlayAviso>
 
+      <OverlayAviso
+        ref="avisoSucesso"
+        :tipoAviso="'cadastroSucesso'"
+        :titulo="'Cadastro feito com sucesso!'"
+        :subtexto="'Nosso time está verificando seu CRM e enviará um email de confirmação assim que possível.'"
+        :opcional="'Antes disso não será possível salvar seus diagnósticos'"
+        :srcImg="'src/assets/check_circle.png'"
+      ></OverlayAviso>
+
+      <!-- PARTE DO LOGIN -->
       <section v-if="tipo === 'login'" class="login">
         <h1>Fazer Login</h1>
         <form @submit.prevent="valAcesso">
@@ -25,16 +30,19 @@
             <label>Senha</label>
             <input @input="checkSenha" type="text" v-model="this.senha" placeholder="" />
           </div>
+          <p v-if="this.boolErros.senha.login" class="erro">
+            {{ this.stringErros.senha.login }}
+          </p>
           <a href="/esqueceuSenha" id="esqueci">Esqueci minha senha</a>
           <p id="semLogin">
             Não Possui Login?
-            <a @click="trocaAcesso">Fazer Cadastro</a>
+            <a @click="trocaAcesso">Cadastre-se</a>
           </p>
 
           <Button type="submit" :ativo="checkCampos()" texto="Fazer Login"></Button>
         </form>
       </section>
-
+      <!-- PARTE DO CADASTRO -->
       <section class="sec-cadastro" v-if="tipo === 'cadastro'">
         <h1>Cadastro</h1>
         <form
@@ -126,10 +134,10 @@ import Rodape from "./auxiliares/Rodape.vue";
 import axios from "axios";
 import OverlayAviso from "./auxiliares/OverlayAviso.vue";
 
-const def = "default";
-const off = "salvaroff";
-const on = "salvar";
-const outro = "outro";
+import emitter from "../eventBus";
+
+const cadSucesso = "cadastroSucesso";
+const cadRepetido = "cadastroRepetido";
 
 export default {
   name: "acesso",
@@ -152,7 +160,7 @@ export default {
   },
   data() {
     return {
-      tipo: "cadastro",
+      tipo: "login",
       email: "",
       senha: "",
       crm: "",
@@ -167,7 +175,7 @@ export default {
             numCaracteres: "A senha deve conter 8 a 20 caracteres",
             maiusculas: "A senha deve ter pelo menos 1 letra maiúscula",
           },
-          login: "Senha Incorreta!",
+          login: "Email e/ou Senha incorreto(s)!",
         },
       },
       boolErros: {
@@ -220,8 +228,17 @@ export default {
         const form = new FormData();
         form.append("email", this.email);
         form.append("senha", this.senha);
-        const res = await axios.post(this.$store.getters.getUrlCadastro, form);
-        //
+        const res = await axios.post(this.$store.getters.getUrlLogin, form);
+        // sucesso login
+        if (res.data === "OK") {
+          this.boolErros.senha.login = false;
+          console.log("Sucesso no LOGIN");
+          this.$router.push("/perfil");
+        } else {
+          //erro no login
+          this.boolErros.senha.login = true;
+        }
+        // CADASTRO
       } else if (this.tipo === "cadastro") {
         const form = new FormData();
         form.append("email", this.email);
@@ -232,11 +249,9 @@ export default {
 
         const res = await axios.post(this.$store.getters.getUrlCadastro, form);
         if (res.data === "JA_EXISTE") {
-          this.cadastroRepetido = true;
-          this.$emit("abreAviso");
-          console.log("EMITIU abreAviso");
-          //logica pra alertar que usuario ja esta cadastrado e pedir pra fazer login
+          emitter.emit(cadRepetido);
         } else {
+          emitter.emit(cadSucesso);
         }
         console.log(`HTTP CADASTRO: ${res.data}`);
       }
@@ -311,9 +326,7 @@ export default {
       }
       return passou;
     },
-    fnAvulsa() {
-      //TODO: prompt de uplaod de video;
-    },
+
     trocaAcesso() {
       if (this.tipo === "cadastro") {
         this.tipo = "login";
@@ -326,9 +339,6 @@ export default {
       const caixa = this.$refs.caixaErro;
       caixa.style.display = "none";
       this.texto = "adadaw";
-    },
-    handleAbre() {
-      this.$emit("update:aberto", true);
     },
   },
 };

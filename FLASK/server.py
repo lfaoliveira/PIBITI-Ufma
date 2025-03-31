@@ -5,10 +5,11 @@ import base64
 import os
 from werkzeug.utils import secure_filename
 import numpy as np
-from flask import Flask, render_template, jsonify, request, send_from_directory, url_for, abort
+from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
 
 from flask_pymongo import PyMongo
 import hashlib
+from datetime import timedelta
 
 from flask_cors import CORS
 from tensorflow.python.framework.ops import disable_eager_execution
@@ -98,13 +99,20 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 
 
 app = Flask(__name__)
-"""ALERTA!!!!!!!!!! somente usar isso em producao, ja que isso habilita requisicoes de qualquer origem
+"""ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
 CORS(app)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
 mongo = PyMongo(app)
+app.secret_key = os.environ.get('SECRET_KEY').encode('utf-8')
+app.config.update(SESSION_COOKIE_SECURE=True,
+                  SESSION_COOKIE_HTTPONLY=True,
+                  SESSION_COOKIE_SAMESITE='Lax',
+                  PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+                  )
 alg_hash = hashlib.sha3_256
+
 
 print("APP INICIADO")
 # path para arquivos temporarios
@@ -229,6 +237,7 @@ def analisar():
     path_out = converter_arq(
         path_out_pre, path_out)
 
+    # TODO: NAO REMOVER ARQUIVO DE INPUT!!!!!!!!!!!!!!!!!
     os.remove(path_out_pre)
     os.remove(path_convert)
     """ with open(path_out, "rb") as file:
@@ -250,17 +259,24 @@ def analisar():
     return jsonify(result)
 
 
-@app.route("/demo", methods=["POST"])
-def demo_func():
-    """
-    Pega video de demonstracao do servidor, finge processamento e retorna resultados
-    """
-    return analisar(video_demo)
-    # servidor retorna string contando os resultados e grafico como respsotas HTTP
-
-
 @app.route("/cadastro", methods=["POST"])
 def cad_func():
+    """
+    Insere dados de médico no banco de dados.
+    Esta função processa dados de formulário para cadastro de profissionais médicos, incluindo
+    email, nome, CRM (registro médico) e senha. Verifica a existência de emails já cadastrados
+    para prevenir registros duplicados.
+    Retorna:
+        str: 'JA_EXISTE' se o email já estiver registrado
+             'CADASTRADO' se o registro for bem sucedido
+    Exceções:
+        Nenhuma explicitamente, mas pode levantar exceções relacionadas ao banco de dados
+    Notas:
+        - Senha é codificada em UTF-8 e criptografada antes do armazenamento
+        - Usa MongoDB para persistência de dados
+        - Espera dados do formulário com as chaves: 'email', 'nome', 'crm', 'senha'
+        OBS: CRM NO FORMATO 'UF-NUMERO'
+    """
     dict_valores = request.form.to_dict()
     email = dict_valores["email"]
     nome = dict_valores["nome"]
@@ -280,8 +296,40 @@ def cad_func():
     return "CADASTRADO"
 
 
-@app.route("/val_login", methods=["GET"])
+@app.route("/val_login", methods=["POST"])
 def val_login():
+    """
+    Valida cookies de sessao do usuario
+    """
+    print("\n")
+    if 'user_id' not in session:
+        print("SESSAO NAO INICIADA")
+        return False
+    else:
+        # Check if user exists in database
+        medicos = mongo.db.get_collection("Medicos")
+        usuario = medicos.find_one({"_id": session['user_id']})
+        if usuario != None:
+
+            # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
+            if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() >= time.time():
+                session.clear()
+                print("SESSAO EXPIRADA")
+                return False
+            else:
+                return True
+        else:
+            print("ID DA SESSAO TA ERRADO")
+            return False
+
+    # Optional: Add additional security checks
+    # - Check if session is expired
+    # - Verify user still exists in database
+    # - Check if session token is valid
+
+
+@app.route("/login", methods=["POST"])
+def login():
     """
     Validates user registration by checking email and password from form submission.
     Gets email and password values from submitted form data to process user registration.
@@ -290,14 +338,41 @@ def val_login():
     Raises:
         None
     """
-    email, senha = request.form.get("email"), request.form.get("senha")
+    # sessao 'permanente', com duracao de 7 dias
+
+    email, senha = request.form.get(
+        "email", None), request.form.get("senha", None)
+    if not email or not senha:
+        print("EMAIL OU SENHA INVALIDOS")
+        return abort(401)
     senha = alg_hash(senha.encode('utf-8')).hexdigest()
-    medicos = mongo.db.get_collection("Medicos")
-    res = medicos.find_one({"email": email, "senha": senha})
-    if res != None:
+
+    """logica de cookies de sessao"""
+    if val_login() == True:
         return "OK"
     else:
-        raise ValueError("Email e/ou Senha incorreto(s)!")
+        print("\nSEM SESSAO\n")
+
+    medicos = mongo.db.get_collection("Medicos")
+    usuario = medicos.find_one({"email": email})
+    if usuario != None and senha == usuario['senha']:
+        session.permanent = True
+        session['user_id'] = str(usuario['_id'])  # Store only the user ID
+        # Add session creation timestamp
+        session['_creation_time'] = time.time()
+        session.modified = True  # Ensure session is saved
+        return "OK"
+    else:
+        return "INCORRETO"
+
+
+@app.route("/logout", methods=["GET"])
+def logout():
+    try:
+        session.pop('user_id', None)
+        return make_response('', 200)
+    except Exception as e:
+        return abort(500)
 
 
 if __name__ == "__main__":

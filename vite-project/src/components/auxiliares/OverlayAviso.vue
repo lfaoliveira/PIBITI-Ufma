@@ -1,44 +1,58 @@
 <template>
-  <section v-show="aberto" class="overlay">
+  <section v-if="aberto" class="overlay">
     <div class="alerta">
       <img :src="srcImg" />
       <ul class="textos">
         <h1>{{ titulo }}</h1>
         <h1>{{ subtexto }}</h1>
-        <h1 v-if="opcional !== ''">{{ opcional }}</h1>
+        <h1 v-if="opcional !== ''" id="opcional">{{ opcional }}</h1>
       </ul>
     </div>
     <div class="div-but">
-      <Button @click="this.fnClose" :texto="'OK'" :ativo="true"></Button>
+      <Button @click="closeOverlay" :texto="'OK'" :ativo="true"></Button>
     </div>
   </section>
 </template>
 
 <script>
 import Button from "./Button.vue";
+import emitter from "../../eventBus.js";
 
 export default {
   name: "overlay",
   components: {
     Button,
   },
-  created() {},
-  mounted() {},
-  data() {
-    return {};
+  created() {
+    // Listen for the 'cadastroRepetido' event
+    emitter.on(this.tipoAviso, this.openOverlay);
   },
-
+  beforeUnmount() {
+    // Clean up the event listener
+    emitter.off(this.tipoAviso, this.openOverlay);
+  },
+  data() {
+    return {
+      aberto: null,
+    };
+  },
   props: {
-    aberto: null,
+    tipoAviso: "",
     titulo: "",
     subtexto: "",
     opcional: "",
+    rota: null,
     srcImg: { type: String, default: "", required: true },
   },
   methods: {
-    fnClose() {
-      this.$emit("update:aberto", false);
-      this.$emit("fechaAviso");
+    openOverlay() {
+      this.aberto = true;
+    },
+    closeOverlay() {
+      this.aberto = false;
+      if (this.rota !== null) {
+        this.$router.push(this.rota);
+      }
     },
   },
 };
@@ -69,6 +83,9 @@ export default {
       align-items: flex-start;
       gap: 5vmin;
       align-self: stretch;
+    }
+    #opcional {
+      color: #792359;
     }
   }
   .div-but {

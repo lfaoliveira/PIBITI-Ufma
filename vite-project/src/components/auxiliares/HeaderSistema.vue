@@ -18,11 +18,7 @@
         >
       </li>
       <li class="nav-item" v-if="this.logado">
-        <a
-          :class="{ active: activeIndex === itensEsquerdo.length + 1 }"
-          @click="setActive('Perfil')"
-          >Perfil</a
-        >
+        <a :class="{ active: activeIndex === 6 }" @click="setActive('Perfil')">Perfil</a>
       </li>
       <li class="nav-item" v-if="this.logado">
         <Salvar :modo="this.emAnalise ? 'on' : 'off'"></Salvar>
