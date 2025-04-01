@@ -229,6 +229,7 @@ export default {
         if (res.data === "OK") {
           this.boolErros.senha.login = false;
           console.log("Sucesso no LOGIN");
+          this.$store.commit("setLogado", true);
           // this.$router.push("/perfil");
         } else {
           //erro no login
@@ -248,6 +249,7 @@ export default {
           emitter.emit(cadRepetido);
         } else {
           emitter.emit(cadSucesso);
+          this.$store.commit("setLogado", true);
         }
         console.log(`HTTP CADASTRO: ${res.data}`);
       }

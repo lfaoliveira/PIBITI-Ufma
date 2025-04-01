@@ -1,7 +1,9 @@
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
+from typing import Collection
 
 from bson import ObjectId
+from flask.sessions import SessionMixin
 from flask_mail import Mail
 from analise import AnaliseParalisia
 from yolo import YOLO
@@ -100,6 +102,9 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         )
         return str_res, path_graf
 
+
+def find_user_with_session_mongo(session: SessionMixin, collection):
+    return collection.find_one({"_id": ObjectId(session['user_id'])})
 
 # ------------- VARIAVEIS GLOBAIS--------------#
 
@@ -302,6 +307,21 @@ def analisar():
     return jsonify(result)
 
 
+@app.route("/pega_diags", methods=["GET"])
+def pega_diags():
+    dados_diag = [
+        "nomePaciente",
+        "diagMedico",
+        "diagAutom",
+        "desc",
+        "dataDiag",
+        "ultimaModif",
+        "linkRelatorio",
+    ]
+    medicos = mongo.db.get_collection('Medicos')
+    usuario = find_user_with_session_mongo(session, medicos)
+
+
 @app.route("/auth", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def autenticar():
@@ -405,7 +425,7 @@ def val_login():
     else:
         # Check if user exists in database
         medicos = mongo.db.get_collection("Medicos")
-        usuario = medicos.find_one({"_id": ObjectId(session['user_id'])})
+        usuario = find_user_with_session_mongo(session, medicos)
         if usuario != None:
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
             if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():

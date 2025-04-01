@@ -43,18 +43,27 @@ export default {
     return {
       itensEsquerdo: ["Início", "Método", "Sobre", "Como Funciona?", "Fazer Análise"],
       emAnalise: false,
+      logado: false,
     };
   },
   props: {
-    logado: false,
     activeIndex: 0,
+  },
+  created() {
+    this.$store.subscribe((mutation, state) => {
+      if (mutation.type === "setLogado") {
+        this.logado = state.logado;
+      }
+    });
   },
   mounted() {
     //executar checagem se esta logado
+    this.logado = this.$store.getters.getLogado;
+    console.log(`NO HEADER: ${this.logado}`);
   },
   methods: {
-    setActive(index) {
-      this.$emit("update:activeIndex", index);
+    setActive(nome) {
+      this.$emit("update:activeIndex", nome);
 
       const mapa = {
         Início: "/",
@@ -65,11 +74,8 @@ export default {
         "Acessar Sistema": "/acesso",
         Perfil: "/perfil",
       };
-      const rota = mapa[index];
+      const rota = mapa[nome];
       this.$router.push(rota);
-    },
-    checkLogin() {
-      //usa cookies pra checar login
     },
 
     salvarResultado() {

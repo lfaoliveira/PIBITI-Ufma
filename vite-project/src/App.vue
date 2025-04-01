@@ -19,8 +19,7 @@ export default {
     });
     if (resp.status === 200) {
       this.$store.commit("setLogado", true);
-      console.log("LOGADO");
-    } else {
+      console.log("LOGADO: ", this.$store.getters.getLogado);
     }
   },
 };
