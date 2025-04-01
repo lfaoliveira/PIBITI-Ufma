@@ -1,7 +1,10 @@
+from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
+
+from bson import ObjectId
+from flask_mail import Mail
 from analise import AnaliseParalisia
 from yolo import YOLO
-import base64
 import os
 from werkzeug.utils import secure_filename
 import numpy as np
@@ -12,13 +15,14 @@ from flask_pymongo import PyMongo
 import hashlib
 from datetime import timedelta
 
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from tensorflow.python.framework.ops import disable_eager_execution
 import tensorflow as tf
 import threading
-import logging
+
 import ffmpeg
 import requests
+import csv
 
 
 def download_peso(PATH_FLASK):
@@ -99,27 +103,60 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 
 # ------------- VARIAVEIS GLOBAIS--------------#
 
+
+# Read environment variables from CSV
+arq_config = "../env.csv"
+try:
+    with open(arq_config, 'r') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            if len(row) >= 2:  # Ensure row has key and value
+                key, value = row[0], row[1]
+                os.environ[key] = value
+except FileNotFoundError:
+    print(f"Warning: Config file {arq_config} not found")
+except Exception as e:
+    print(f"{e}")
+
+
 app = Flask(__name__)
+app.config.from_object(__name__)
+
 """ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
-CORS(app, supports_credentials=True)
+
 app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
 app.config["SESSION_TYPE"] = "filesystem"
 mongo = PyMongo(app)
+
+# SEGURANÇA
 app.secret_key = os.environ.get('SECRET_KEY')
-# TODO: MUDAR SEGURANCÇA DOS COOKIES QUANO FOR PRO DEPLOY
-app.config.update(
-    SESSION_COOKIE_SECURE=False,  # Set to True in production with HTTPS
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
-)
-Session(app)
 
 alg_hash = hashlib.sha3_256
 
+# TODO: MUDAR SEGURANCÇA DOS COOKIES QUANO FOR PRO DEPLOY
+"""-------CONFIGS DE SESSAO---------------"""
+app.config.update(
+    SESSION_COOKIE_SECURE=True,  # Set to True in production with HTTPS
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='None',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+)
+Session(app)
+# CONFIGS DE EMAIL
+app.config.update(
+    MAIL_SERVER=os.environ.get('MAIL_SERVER', 'smtp.example.com'),
+    MAIL_PORT=int(os.environ.get('MAIL_PORT', 587)),
+    MAIL_USE_TLS=os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true',
+    MAIL_USE_SSL=os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true',
+    MAIL_USERNAME=os.environ.get('MAIL_USERNAME'),
+    MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
+    MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER')
+)
 
+mail = Mail(app)
+CORS(app, supports_credentials=True)
 print("APP INICIADO")
 # path para arquivos temporarios
 
@@ -265,59 +302,111 @@ def analisar():
     return jsonify(result)
 
 
-@app.route("/cadastro", methods=["POST"])
-def cad_func():
+@app.route("/auth", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def autenticar():
+    print(f"SID {session.sid}\n")
     """
-    Insere dados de médico no banco de dados.
-    Esta função processa dados de formulário para cadastro de profissionais médicos, incluindo
-    email, nome, CRM (registro médico) e senha. Verifica a existência de emails já cadastrados
-    para prevenir registros duplicados.
-    Retorna:
-        str: 'JA_EXISTE' se o email já estiver registrado
-             'CADASTRADO' se o registro for bem sucedido
-    Exceções:
-        Nenhuma explicitamente, mas pode levantar exceções relacionadas ao banco de dados
-    Notas:
-        - Senha é codificada em UTF-8 e criptografada antes do armazenamento
-        - Usa MongoDB para persistência de dados
-        - Espera dados do formulário com as chaves: 'email', 'nome', 'crm', 'senha'
-        OBS: CRM NO FORMATO 'UF-NUMERO'
+    Handles user authentication for login and registration.
+        Data received through request.form 
+            email (str): User's email
+            senha (str): password
+            nome (str): User's name (registration only)
+            crm (str): Medical license (registration only)
+
+        Data received through request.args:
+        tipo (str): 'login' or 'cadastro'
+
+        Uses session authentication and MongoDB for storage.
+        Passwords are hashed. Sessions last 7 days.
+    Notes:
+        - Passwords are hashed before storage and comparison
+        - Sessions are set to be permanent (7 days)
+        - User ID and creation time are stored in session for logged users
     """
-    dict_valores = request.form.to_dict()
-    email = dict_valores["email"]
-    nome = dict_valores["nome"]
-    crm = dict_valores["crm"]
-    senha_utf8 = dict_valores["senha"].encode('utf-8')
-    senha = alg_hash(senha_utf8).hexdigest()
+    email, senha = request.form.get(
+        "email", None), request.form.get("senha", None)
+    if email is None or senha is None:
+        print("EMAIL OU SENHA INVALIDOS")
+        return make_response('SEM EMAIL OU SENHA', BAD_REQUEST)
 
     medicos = mongo.db.get_collection("Medicos")
-    res = medicos.find_one({"email": email})
-    if res != None:
-        return "JA_EXISTE"
+    usuario = medicos.find_one({"email": email})
+    senha = alg_hash(senha.encode('utf-8')).hexdigest()
+    tipo = request.args['tipo']
+    # ---------LOGIN--------#
+    if tipo == "login":
+        # sessao 'permanente', com duracao de 7 dias
+        session.permanent = True
+        if not email or not senha:
+            print("EMAIL OU SENHA INVALIDOS")
+            return abort(UNAUTHORIZED)
 
-    # print(f"\n\nVALORES CAD: {email, senha, nome, crm}\n\n")
+        """logica de cookies de sessao"""
+        response = requests.get(
+            url_for('val_login', _external=True),
+            cookies=request.cookies
+        )
+        if response.text == 'True':
+            return "OK"
+        else:
+            print("\nSEM SESSAO\n")
+        if usuario != None and senha == usuario['senha']:
+            session['user_id'] = str(usuario['_id'])
+            # Add session creation timestamp
+            session['_creation_time'] = time.time()
+            session.modified = True  # Ensure session is saved
+            print(session)
+            return "OK"
+        else:
+            return make_response('INCORRETO', UNAUTHORIZED)
+    # ------CADASTRO--------#
+    elif (tipo == "cadastro"):
+        nome = request.form.get("nome")
+        crm = request.form.get("crm")
+        if usuario != None:
+            return "JA_EXISTE"
 
-    medicos.insert_one({"email": email, "nome": nome,
-                       "crm": crm, "senha": senha})
-    return "CADASTRADO"
+        medicos.insert_one({"email": email, "nome": nome,
+                            "crm": crm, "senha": senha})
+        return "CADASTRADO"
+
+    else:
+        return make_response('TIPO DE AUTENTICACAO ERRADO', BAD_REQUEST)
+
+
+@app.route("/esqueci_senha", methods=["POST"])
+def esqueci():
+    emailDestino = request.form.get('email', None)
+    if emailDestino:
+        pass
+        # TODO:  codigo para enviar email de recuperacao para medico
+
+
+@app.route("/mudar_senha", methods=["PUT"])
+def mudar_senha():
+    email = request.form.get('email', None)
+    novaSenha = request.form.get('novaSenha', None)
+    if novaSenha is None or email is None:
+        return make_response("", UNAUTHORIZED)
+    novaSenha = alg_hash(novaSenha.encode('utf-8')).hexdigest()
+    # TODO: codigo pra atulizar senha do usuario
 
 
 @app.route("/val_login", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def val_login():
     """
     Valida cookies de sessao do usuario
     """
-    print("\n")
-    print(f"VAL_LOGIN: {session}")
-    if 'user_id' not in session:
+    if 'user_id' not in session.keys():
         print("SESSAO NAO INICIADA")
         return "False"
     else:
         # Check if user exists in database
         medicos = mongo.db.get_collection("Medicos")
-        usuario = medicos.find_one({"_id": session['user_id']})
+        usuario = medicos.find_one({"_id": ObjectId(session['user_id'])})
         if usuario != None:
-
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
             if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():
                 session.clear()
@@ -335,52 +424,13 @@ def val_login():
     # - Check if session token is valid
 
 
-@app.route("/login", methods=["POST"])
-def login():
-    """
-    Validates user registration by checking email and password from form submission.
-    Gets email and password values from submitted form data to process user registration.
-    Returns:
-        None
-    Raises:
-        None
-    """
-    # sessao 'permanente', com duracao de 7 dias
-    session.permanent = True
-    email, senha = request.form.get(
-        "email", None), request.form.get("senha", None)
-    if not email or not senha:
-        print("EMAIL OU SENHA INVALIDOS")
-        return abort(401)
-    senha = alg_hash(senha.encode('utf-8')).hexdigest()
-
-    """logica de cookies de sessao"""
-    if requests.get(url_for('val_login', _external=True)).text == 'True':
-        return "OK"
-    else:
-        print("\nSEM SESSAO\n")
-
-    medicos = mongo.db.get_collection("Medicos")
-    usuario = medicos.find_one({"email": email})
-    if usuario != None and senha == usuario['senha']:
-
-        session['user_id'] = str(usuario['_id'])  # Store only the user ID
-        # Add session creation timestamp
-        session['_creation_time'] = time.time()
-        session.modified = True  # Ensure session is saved
-        print(session)
-        return "OK"
-    else:
-        return "INCORRETO"
-
-
 @app.route("/logout", methods=["GET"])
 def logout():
     try:
         session.pop('user_id', None)
-        return make_response('', 200)
+        return make_response('', OK)
     except Exception as e:
-        return abort(500)
+        return abort(INTERNAL_SERVER_ERROR)
 
 
 if __name__ == "__main__":

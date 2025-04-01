@@ -43,10 +43,10 @@ export default {
     return {
       itensEsquerdo: ["Início", "Método", "Sobre", "Como Funciona?", "Fazer Análise"],
       emAnalise: false,
-      logado: false,
     };
   },
   props: {
+    logado: false,
     activeIndex: 0,
   },
   mounted() {

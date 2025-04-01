@@ -1,25 +1,36 @@
 <template>
   <footer>
     <ul class="logos">
-      <img
-        src="../../assets/logo_VIP_Lab.png"
-        alt="Logo footer"
-        id="logo-vip"
-        class="footer-logo"
-      />
-      <img
-        src="../../assets/logo ufma.png"
-        alt="Logo footer"
-        id="logo-ufma"
-        class="footer-logo"
-      />
-      <img
-        src="../../assets/LogoNCAFundBranco2000_2021.png"
-        alt="Logo footer"
-        id="logo-nca"
-        href="/"
-        class="footer-logo"
-      />
+      <a
+        class="link-img"
+        href="https://sigaa.ufma.br/sigaa/public/departamento/secao_extra.jsf?lc=pt_BR&id=998&extra=208953677"
+        target="_blank"
+      >
+        <img
+          src="../../assets/logo_VIP_Lab.png"
+          alt="Logo footer"
+          id="logo-vip"
+          class="footer-logo"
+        />
+      </a>
+      <a class="link-img" href="https://portalpadrao.ufma.br/site" target="_blank">
+        <img
+          src="../../assets/logo ufma.png"
+          alt="Logo footer"
+          id="logo-ufma"
+          class="footer-logo"
+        />
+      </a>
+      <a class="link-img" href="https://anselmopaiva.github.io/" target="_blank">
+        <img
+          src="../../assets/LogoNCAFundBranco2000_2021.png"
+          alt="Logo footer"
+          id="logo-nca"
+          href="/"
+          c
+          lass="footer-logo"
+        />
+      </a>
     </ul>
     <nav class="footer-nav">
       <a href="mailto:contato@email.ufma.br" class="footer-link">Suporte</a>
@@ -38,6 +49,7 @@ footer {
   align-items: center;
   gap: 20px;
   width: 100%;
+  padding-bottom: 1vmin;
 
   .logos {
     display: flex;
@@ -46,6 +58,13 @@ footer {
     align-items: flex-start;
     gap: 10vmin;
     align-self: stretch;
+    .link-img {
+      width: auto;
+      height: auto;
+      &:hover {
+        background: none;
+      }
+    }
     #logo-vip {
       width: 125.189px;
       aspect-ratio: 125.19/88.34;

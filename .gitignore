@@ -27,6 +27,7 @@ dist-ssr
 #Python
 __pycache__
 .venv
+env.csv
 .conda
 cache
 #pesos pra execucao da YOLov3

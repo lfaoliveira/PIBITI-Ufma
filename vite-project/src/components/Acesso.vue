@@ -3,7 +3,7 @@
     <HeaderSistema :activeIndex="5"></HeaderSistema>
     <main>
       <OverlayAviso
-        :tipoAviso="'cadastroRepetido'"
+        :eventoAviso="'cadastroRepetido'"
         :titulo="'Já há um usuário cadastrado com este email'"
         :subtexto="'Faça login no sistema para prosseguir'"
         :srcImg="'src/assets/alert_circle.png'"
@@ -11,7 +11,7 @@
 
       <OverlayAviso
         ref="avisoSucesso"
-        :tipoAviso="'cadastroSucesso'"
+        :eventoAviso="'cadastroSucesso'"
         :titulo="'Cadastro feito com sucesso!'"
         :subtexto="'Nosso time está verificando seu CRM e enviará um email de confirmação assim que possível.'"
         :opcional="'Antes disso não será possível salvar seus diagnósticos'"
@@ -131,9 +131,9 @@
 import HeaderSistema from "./auxiliares/HeaderSistema.vue";
 import Button from "./auxiliares/Button.vue";
 import Rodape from "./auxiliares/Rodape.vue";
-import axios from "axios";
 import OverlayAviso from "./auxiliares/OverlayAviso.vue";
 
+import axios from "axios";
 import emitter from "../eventBus";
 
 const cadSucesso = "cadastroSucesso";
@@ -149,15 +149,7 @@ export default {
   },
   emits: ["abreAviso"],
   created() {},
-  mounted() {
-    document.addEventListener("fechaAviso", () => {
-      this.cadastroRepetido = false;
-    });
-    document.addEventListener("abreAviso", () => {
-      this.cadastroRepetido = true;
-      console.log("TENTOU ABRIR A PORRA DOA VISO");
-    });
-  },
+  mounted() {},
   data() {
     return {
       tipo: "login",
@@ -224,21 +216,25 @@ export default {
   methods: {
     async valAcesso($evt) {
       if (this.tipo === "login") {
-        //TODO: MUDAR
+        /////LOGIN
         const form = new FormData();
         form.append("email", this.email);
         form.append("senha", this.senha);
-        const res = await axios.post(this.$store.getters.getUrlLogin, form);
+        //SEMPRE ver se precisa de credenciais na requisicao
+        const res = await axios.post(this.$store.getters.getUrlLogin, form, {
+          withCredentials: true,
+        });
+        console.log(res);
         // sucesso login
         if (res.data === "OK") {
           this.boolErros.senha.login = false;
           console.log("Sucesso no LOGIN");
-          this.$router.push("/perfil");
+          // this.$router.push("/perfil");
         } else {
           //erro no login
           this.boolErros.senha.login = true;
         }
-        // CADASTRO
+        ///// CADASTRO
       } else if (this.tipo === "cadastro") {
         const form = new FormData();
         form.append("email", this.email);

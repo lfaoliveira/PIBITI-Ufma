@@ -9,6 +9,7 @@ import Equipe from './components/inicio/Equipe.vue';
 import Acesso from './components/Acesso.vue';
 import FichaDiag from './components/analise/FichaDiag.vue';
 import Perfil from './components/nav/Perfil.vue';
+import EsqueciSenha from './components/auxiliares/EsqueciSenha.vue';
 
 
 
@@ -47,6 +48,9 @@ const routes = [
     },
     {
         name: 'Perfil', path: '/perfil',  component: Perfil
+    },
+    {
+        name: 'EsqueciSenha', path: '/esqueceuSenha',  component: EsqueciSenha
     },
 ];
 

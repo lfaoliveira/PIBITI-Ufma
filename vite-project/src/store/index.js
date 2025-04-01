@@ -10,9 +10,9 @@ import { useCookies } from 'vue3-cookies';
 
 const store = createStore({
   state:{
-    cookies: useCookies(),
     urlBackend: "http://127.0.0.1:5000",
-    sharedData: null
+    sharedData: null,
+    logado: false,
 },
   mutations: {
     setSharedData(state, data) {
@@ -23,7 +23,10 @@ const store = createStore({
     },
     setCookie(state, data){
         state.cookies.set(data.cookieName, data.cookieValue, data.timeString);
-    }
+    },
+    setLogado(state, data){
+        state.logado = data;
+    },
   },
   actions: {
     updateUrlBackend({ commit }, data) {
@@ -31,15 +34,18 @@ const store = createStore({
     },
     updateCookie({ commit }, data) {
         commit('setCookie', data);
-      }
+    },
+    updateLogado({ commit }, data) {
+        commit('setLoado', data);
+    },
   },
   getters: {
-    getUrlCadastro: (state) => (state.urlBackend + "/cadastro"),
-    getUrlLogin: (state) => (state.urlBackend + "/login"),
+    getUrlCadastro: (state) => (state.urlBackend + "/auth?tipo=cadastro"),
+    getUrlLogin: (state) => (state.urlBackend + "/auth?tipo=login"),
     getUrlChecklogin: (state) => (state.urlBackend + "/val_login"),
+    getUrlEsqueciSenha: (state) => (state.urlBackend + "/esqueci_senha"),
 
-    
-    getCookies: (state) => {state.cookies},
+    getLogado: (state) => {state.logado}
   }
 });
 

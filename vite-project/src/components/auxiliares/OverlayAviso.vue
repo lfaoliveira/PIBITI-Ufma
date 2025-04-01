@@ -25,11 +25,11 @@ export default {
   },
   created() {
     // Listen for the 'cadastroRepetido' event
-    emitter.on(this.tipoAviso, this.openOverlay);
+    emitter.on(this.eventoAviso, this.openOverlay);
   },
   beforeUnmount() {
     // Clean up the event listener
-    emitter.off(this.tipoAviso, this.openOverlay);
+    emitter.off(this.eventoAviso, this.openOverlay);
   },
   data() {
     return {
@@ -37,7 +37,7 @@ export default {
     };
   },
   props: {
-    tipoAviso: "",
+    eventoAviso: "", //
     titulo: "",
     subtexto: "",
     opcional: "",

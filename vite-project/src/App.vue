@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "App",
   props: {},
@@ -11,7 +13,16 @@ export default {
       _: 0,
     };
   },
-  mounted() {},
+  async mounted() {
+    const resp = await axios.get(this.$store.getters.getUrlChecklogin, {
+      withCredentials: true,
+    });
+    if (resp.status === 200) {
+      this.$store.commit("setLogado", true);
+      console.log("LOGADO");
+    } else {
+    }
+  },
 };
 </script>
 
