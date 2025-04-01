@@ -34,3 +34,4 @@ FLASK/trained_weights_final.zip.*
 trained_weights_final.*
 tmp
 db
+flask_session

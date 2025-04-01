@@ -6,6 +6,7 @@ import os
 from werkzeug.utils import secure_filename
 import numpy as np
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
+from flask_session import Session
 
 from flask_pymongo import PyMongo
 import hashlib
@@ -17,6 +18,7 @@ import tensorflow as tf
 import threading
 import logging
 import ffmpeg
+import requests
 
 
 def download_peso(PATH_FLASK):
@@ -97,20 +99,24 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 
 # ------------- VARIAVEIS GLOBAIS--------------#
 
-
 app = Flask(__name__)
 """ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
-CORS(app)
+CORS(app, supports_credentials=True)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
+app.config["SESSION_TYPE"] = "filesystem"
 mongo = PyMongo(app)
-app.secret_key = os.environ.get('SECRET_KEY').encode('utf-8')
-app.config.update(SESSION_COOKIE_SECURE=True,
-                  SESSION_COOKIE_HTTPONLY=True,
-                  SESSION_COOKIE_SAMESITE='Lax',
-                  PERMANENT_SESSION_LIFETIME=timedelta(days=7)
-                  )
+app.secret_key = os.environ.get('SECRET_KEY')
+# TODO: MUDAR SEGURANCÇA DOS COOKIES QUANO FOR PRO DEPLOY
+app.config.update(
+    SESSION_COOKIE_SECURE=False,  # Set to True in production with HTTPS
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+)
+Session(app)
+
 alg_hash = hashlib.sha3_256
 
 
@@ -296,15 +302,16 @@ def cad_func():
     return "CADASTRADO"
 
 
-@app.route("/val_login", methods=["POST"])
+@app.route("/val_login", methods=["GET"])
 def val_login():
     """
     Valida cookies de sessao do usuario
     """
     print("\n")
+    print(f"VAL_LOGIN: {session}")
     if 'user_id' not in session:
         print("SESSAO NAO INICIADA")
-        return False
+        return "False"
     else:
         # Check if user exists in database
         medicos = mongo.db.get_collection("Medicos")
@@ -312,15 +319,15 @@ def val_login():
         if usuario != None:
 
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
-            if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() >= time.time():
+            if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():
                 session.clear()
                 print("SESSAO EXPIRADA")
-                return False
+                return "False"
             else:
-                return True
+                return "True"
         else:
             print("ID DA SESSAO TA ERRADO")
-            return False
+            return "False"
 
     # Optional: Add additional security checks
     # - Check if session is expired
@@ -339,7 +346,7 @@ def login():
         None
     """
     # sessao 'permanente', com duracao de 7 dias
-
+    session.permanent = True
     email, senha = request.form.get(
         "email", None), request.form.get("senha", None)
     if not email or not senha:
@@ -348,7 +355,7 @@ def login():
     senha = alg_hash(senha.encode('utf-8')).hexdigest()
 
     """logica de cookies de sessao"""
-    if val_login() == True:
+    if requests.get(url_for('val_login', _external=True)).text == 'True':
         return "OK"
     else:
         print("\nSEM SESSAO\n")
@@ -356,11 +363,12 @@ def login():
     medicos = mongo.db.get_collection("Medicos")
     usuario = medicos.find_one({"email": email})
     if usuario != None and senha == usuario['senha']:
-        session.permanent = True
+
         session['user_id'] = str(usuario['_id'])  # Store only the user ID
         # Add session creation timestamp
         session['_creation_time'] = time.time()
         session.modified = True  # Ensure session is saved
+        print(session)
         return "OK"
     else:
         return "INCORRETO"
@@ -378,4 +386,4 @@ def logout():
 if __name__ == "__main__":
     # para poder adicionar um sheduler de tasks de background,
     # adicionar use_reloader=False
-    app.run(debug=True, threaded=False)
+    app.run(debug=True)
