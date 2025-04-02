@@ -59,7 +59,6 @@ export default {
   mounted() {
     //executar checagem se esta logado
     this.logado = this.$store.getters.getLogado;
-    console.log(`NO HEADER: ${this.logado}`);
   },
   methods: {
     setActive(nome) {

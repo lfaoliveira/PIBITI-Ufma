@@ -47,6 +47,7 @@ footer {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  align-self: flex-end;
   gap: 20px;
   width: 100%;
   padding-bottom: 1vmin;
