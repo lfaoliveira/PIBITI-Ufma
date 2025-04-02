@@ -121,12 +121,4 @@ export default {
   font-weight: 800;
   text-decoration: underline;
 }
-.ativo {
-  background: red;
-}
-.butSalvar {
-  margin: 0px;
-  display: inline-flex;
-  flex-direction: row;
-}
 </style>

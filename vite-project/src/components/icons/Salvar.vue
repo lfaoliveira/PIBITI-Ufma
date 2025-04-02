@@ -1,7 +1,7 @@
 <template>
   <button class="salvar" @click="fnSalvar" :enabled="butEnabled" :disabled="!butEnabled">
     <img class="icone-download" alt="Save icon" src="../../assets/download.png" />
-    <p class="texto-salvar">Salvar Resultado</p>
+    <p class="texto-salvar">Baixar Resultado</p>
   </button>
 </template>
 
@@ -10,11 +10,15 @@ export default {
   name: "salvar",
   created() {},
   data() {
-    return {};
+    return {
+      modo: "off",
+    };
   },
-  props: {
-    modo: { type: String, default: "off" },
+  mounted() {
+    const but = document.querySelector(".salvar");
+    console.log("BUT DISABLED: ", but.disabled);
   },
+  props: {},
   methods: {
     fnSalvar() {
       //logica para baixar o pdf dos resultados para a maquina do usuario
@@ -45,11 +49,6 @@ export default {
   @include botao-header;
   flex-direction: row;
   display: inline-flex;
-}
-
-.salvar:disabled {
-  cursor: default;
-  opacity: 0.5;
 }
 
 .icone-download {

@@ -34,6 +34,7 @@ export default {
   data() {
     return {
       aberto: null,
+      rota: null,
     };
   },
   props: {
@@ -41,7 +42,6 @@ export default {
     titulo: "",
     subtexto: "",
     opcional: "",
-    rota: null,
     srcImg: { type: String, default: "", required: true },
   },
   methods: {

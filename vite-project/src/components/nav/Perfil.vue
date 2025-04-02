@@ -1,6 +1,13 @@
 <template>
   <main class="frame-pagina">
     <HeaderSistema :activeIndex="6"></HeaderSistema>
+    <OverlayAviso
+      :eventoAviso="'semLogin'"
+      :titulo="'Sua sessão expirou'"
+      :subtexto="'Faça Login novamente para acessar seus dados '"
+      :srcImg="'src/assets/alert_circle.png'"
+      :rota="'/acesso'"
+    ></OverlayAviso>
     <section class="info">
       <img src="../../assets/generic_avatar.png" id="foto" />
       <div class="nome-crm">
@@ -20,26 +27,26 @@
         <tr v-for="(obj, index) in entradas">
           <td class="cel-dado" v-for="(valor, key) in obj">
             <template v-if="key === 'linkRelatorio'">
-              <a :href="valor">Baixar</a>
+              <a @click="baixarRelatorio" :href="valor">Baixar</a>
             </template>
             <template v-else>
               {{ valor }}
             </template>
           </td>
           <td class="cel-acao">
-            <button class="but-acao">
-              <img src="" />
+            <button @click="fnEditar" class="but-acao" id="editar">
+              <img src="../../assets/mdi_pencil-outline.png" />
             </button>
 
-            <button class="but-acao">
-              <img src="" />
+            <button @click="fnDeletar" class="but-acao" id="deletar">
+              <img src="../../assets/mdi_trash.png" />
             </button>
           </td>
         </tr>
       </table>
       <div class="container-paginas">
         <nav class="paginas">
-          <button class="but-avancar">
+          <button @click="fnAtras" class="but-avancar">
             <img class="icone-avancar" src="../../assets/left_duo.png" />
           </button>
 
@@ -49,7 +56,7 @@
             <p>{{ this.maxPags }}</p>
           </span>
 
-          <button class="but-avancar">
+          <button @click="fnFrente" class="but-avancar">
             <img class="icone-avancar" src="../../assets/right_duo.png" />
           </button>
         </nav>
@@ -61,22 +68,54 @@
 
 <script>
 import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+import OverlayAviso from "../auxiliares/OverlayAviso.vue";
 import Rodape from "../auxiliares/Rodape.vue";
+import emitter from "../../eventBus";
+import axios from "axios";
 
 export default {
   name: "Perfil_comp",
   components: {
     HeaderSistema,
     Rodape,
+    OverlayAviso,
   },
   created() {},
+  async mounted() {
+    console.log("MONTADO PERFIL");
+    const res = await axios.get(this.$store.getters.getCheckLogin);
+
+    if (res.status != 200) {
+      this.deslogado = true;
+      emitter.emit("semLogin");
+    }
+  },
+  methods: {
+    baixarRelatorio(evt) {
+      console.log(evt.target.href);
+    },
+    fnEditar() {
+      //codigo de acao
+    },
+    fnDeletar() {
+      //codigo de acao
+    },
+    fnAtras() {
+      //pegar mais dados do BD
+    },
+    fnFrente() {
+      //pegar mais dados do BD
+    },
+  },
   data() {
     return {
       nomeMedico: "Fulano de Siclano",
       crm: "MA-666666",
       temDiags: true,
+      deslogado: false,
       pagAtual: 1,
       maxPags: "-", //esse aqui se pega do BD
+      maxItens_Pag: 10,
       header: [
         "Paciente",
         "Diagnóstico",
@@ -110,7 +149,6 @@ export default {
     };
   },
   props: {},
-  methods: {},
 };
 </script>
 
@@ -183,6 +221,22 @@ export default {
   th {
     text-align: start;
   }
+  .cel-acao {
+    .but-acao {
+      aspect-ratio: 1/1;
+      width: 4.5vmin;
+      background: none;
+      cursor: pointer;
+      &:hover,
+      &:focus {
+        background: #e4e4e4;
+        border-radius: 3vmin;
+      }
+    }
+    #editar {
+      margin-right: 1vmin;
+    }
+  }
 }
 
 .container-paginas {
@@ -206,7 +260,11 @@ export default {
     }
 
     .numero-pagina {
-      color: #676666;
+      p {
+        font-weight: 600;
+      }
+
+      color: #525252;
       display: flex;
       align-items: center;
       height: min-content;

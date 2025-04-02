@@ -92,11 +92,18 @@ a{
     display: inline-block;
     text-align: center;
 
-    &:hover {
-        background: hsla(267, 81%, 37%, 0.63);
-        font-weight:600;
-        transform: scale($escala);
+    &:not(&:disabled){
+        &:hover {
+            background: hsla(267, 81%, 37%, 0.63);
+            font-weight:600;
+            transform: scale($escala);
+        }
     }
+    &:disabled{
+        cursor: default;
+  opacity: 0.5;
+    }
+    
   }
 
 @mixin container-botoes{
