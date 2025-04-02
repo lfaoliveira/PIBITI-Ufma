@@ -17,7 +17,6 @@
 </template>
 
 <script>
-import HeaderAnal from "./HeaderAnalise.vue";
 import Rodape from "../auxiliares/Rodape.vue";
 
 //estimativa em milisegundos
@@ -27,7 +26,6 @@ export default {
   name: "Test",
   components: {
     Rodape,
-    HeaderAnal,
   },
   created() {},
   data() {

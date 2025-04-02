@@ -421,7 +421,7 @@ def val_login():
     """
     if 'user_id' not in session.keys():
         print("SESSAO NAO INICIADA")
-        return "False"
+        return make_response("False", UNAUTHORIZED)
     else:
         # Check if user exists in database
         medicos = mongo.db.get_collection("Medicos")
@@ -431,12 +431,12 @@ def val_login():
             if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():
                 session.clear()
                 print("SESSAO EXPIRADA")
-                return "False"
+                return make_response("False", UNAUTHORIZED)
             else:
-                return "True"
+                return make_response("True", OK)
         else:
             print("ID DA SESSAO TA ERRADO")
-            return "False"
+            return make_response("False", INTERNAL_SERVER_ERROR)
 
     # Optional: Add additional security checks
     # - Check if session is expired

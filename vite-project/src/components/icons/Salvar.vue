@@ -14,10 +14,7 @@ export default {
       modo: "off",
     };
   },
-  mounted() {
-    const but = document.querySelector(".salvar");
-    console.log("BUT DISABLED: ", but.disabled);
-  },
+  mounted() {},
   props: {},
   methods: {
     fnSalvar() {

@@ -17,7 +17,8 @@
     </section>
 
     <section class="secao-tabela">
-      <h1>Análises Realizadas</h1>
+      <h1 v-if="temDiags">Análises Realizadas</h1>
+      <h1 v-if="!temDiags">Não há diagnósticos</h1>
       <table v-if="temDiags">
         <thead>
           <tr class="header-row">

@@ -9,13 +9,7 @@
     >
       {{ texto }}
     </button>
-    <button
-      :type="type"
-      @click="$emit('click', $event)"
-      v-if="ativo == false"
-      class="button classeInativo"
-      disabled
-    >
+    <button :type="type" v-if="ativo == false" class="button classeInativo" disabled>
       {{ texto }}
     </button>
   </div>

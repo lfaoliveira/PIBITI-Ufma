@@ -2,8 +2,6 @@
 
 <template>
   <main class="analysis-view">
-    <HeaderAnalise id="header"></HeaderAnalise>
-
     <h1 class="page-title">Análise de Paralisia</h1>
 
     <div class="analysis-grid">
@@ -203,9 +201,7 @@ button {
 import seta from "../icons/Voltar.vue";
 import { mapGetters } from "vuex";
 import Rodape from "../auxiliares/Rodape.vue";
-import HeaderAnalise from "./HeaderAnalise.vue";
 import VideoPlayer from "./VideoPlayer.vue";
-import db from "../../db.js";
 
 const VIDEO_DEMO_URL = new URL("../../assets/video-demo.mp4", import.meta.url).href;
 const GRAF_DEMO_url = new URL("../../assets/grafico-demo.png", import.meta.url).href;
@@ -218,7 +214,6 @@ export default {
     VideoPlayer,
     seta,
     Rodape,
-    HeaderAnalise,
   },
   created() {},
   data() {

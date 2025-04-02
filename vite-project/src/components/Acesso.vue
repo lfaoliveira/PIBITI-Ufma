@@ -343,8 +343,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$larg-form-cad: 100%;
-
 .frame-pagina {
   @include frame-pagina($gap: 5vmin);
   height: 100vh;
@@ -386,7 +384,7 @@ form {
 }
 
 .form-cadastro {
-  width: $larg-form-cad;
+  width: 100%;
 }
 .sec-cadastro {
   display: flex;
