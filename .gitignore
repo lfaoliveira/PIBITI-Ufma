@@ -28,7 +28,7 @@ dist-ssr
 __pycache__
 .venv
 env.csv
-.conda
+env-pibiti
 cache
 #pesos pra execucao da YOLov3
 FLASK/trained_weights_final.zip.*

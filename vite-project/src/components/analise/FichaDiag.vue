@@ -19,7 +19,7 @@
         @keyup.enter="$emit('submit')"
         ref="form"
         class="form-cadastro"
-        @submit.prevent="getDiag"
+        @submit.prevent="enviaDiag"
       >
         <div class="form-group">
           <label>Nome do Paciente</label>
@@ -155,8 +155,20 @@ export default {
     },
   },
   methods: {
-    getDiag() {
+    async enviaDiag() {
       //envia dados pro banco de dados e comeca logica de processamento
+      const formData = new FormData();
+      formData.append("video", this.videoObj);
+      formData.append("nome", this.videoObj);
+      formData.append("paralisia", this.paralisia);
+      formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
+      formData.append("desc", this.desc);
+      const res = await axios.post(this.$store.getters.getDiag, form, {
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        return this.$router.push({ name: "PaginaCarregando" });
+      }
     },
     getVideo($evt) {
       //checagem por tipos de video
