@@ -1,0 +1,10 @@
+name: env-pibiti
+python: "3.9"
+prefix: "."
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - tensorflow<=2.8.0
+  - pip:
+    - -r ./FLASK/requirements.txt

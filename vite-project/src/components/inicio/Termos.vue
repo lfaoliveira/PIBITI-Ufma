@@ -4,7 +4,6 @@
     <h1>Termos e Condições</h1>
     <main>
       <h1>Título dos Termos e Condições</h1>
-      <!-- TODO: BOTAR REATIVIDADE DO VUE COM STRINGS PRA PREENCHER ESSA PORRA -->
       <ol class="texto-termos">
         <li class="subsecao-termos" v-for="(obj, index) in termos">
           <h2>{{ `${index + 1}. ${obj.titulo}` }}</h2>
