@@ -106,8 +106,10 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 def find_user_with_session_mongo(session: SessionMixin, collection):
     return collection.find_one({"_id": ObjectId(session['user_id'])})
 
-# ------------- VARIAVEIS GLOBAIS--------------#
 
+# ------------- VARIAVEIS GLOBAIS--------------#
+DIAGS = "Diagnosticos"
+MEDICOS = "Medicos"
 
 # Read environment variables from CSV
 arq_config = "../env.csv"
@@ -137,7 +139,6 @@ mongo = PyMongo(app)
 
 # SEGURANÇA
 app.secret_key = os.environ.get('SECRET_KEY')
-
 alg_hash = hashlib.sha3_256
 
 # TODO: MUDAR SEGURANCÇA DOS COOKIES QUANO FOR PRO DEPLOY
@@ -231,11 +232,109 @@ def serve_file(filename):
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
 
 
+def get_pdf() -> str:
+    # FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR URL EXTERNA DO PDF
+    pass
+
+
 @app.route("/analise", methods=["POST"])
 def analisar():
     """
     Takes video  input, executa the model e and returns result as JSON
     """
+    timestamp = time.time()
+    id_diag = request.form.get("id_diag", None)
+    filename = request.form.get("filename", None)
+    arq = None
+    diag = None
+    if id_diag != None:
+        diag = mongo.db.get_collection(DIAGS).find({"_id": ObjectId(id_diag)})
+    else:
+        return make_response("INPUT NULO!", BAD_REQUEST)
+
+    # VERSÃO LOGADO
+    if "user_id" in session:
+        user = session["user_id"]
+    else:
+        user = "TEMP"
+    ext = allowed_file(filename)
+    if ext is None:
+        print("Incorrect file type!\n\n")
+        return SystemError
+
+    nome_video = f"{user}_{str(round(timestamp, 4))}"
+    nome_local = f"{nome_video}.{ext}"
+    filename_arq_input = secure_filename(f"INPUT_{nome_local}")
+
+    # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
+    path_arq_input = os.path.join(
+        app.config["TEMP_FOLDER"], filename_arq_input)
+    arq.save(path_arq_input)
+
+    with open(path_arq_input, 'wb') as f:
+        f.write(diag["videoLabel"])
+
+    """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
+    arq_stream = arq.stream"""
+
+    EXT_OUT = "mp4"
+    nome_local = f"{nome_video}.{EXT_OUT}"
+    # path cujo unico proposito eh servir de temporario pras conversoes de video
+    path_aux_conv = os.path.join(
+        app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
+
+    path_arq_input_conv = converter_arq(
+        path_arq_input, path_aux_conv)
+
+    nome_local = f"{nome_video}.{EXT_OUT}"
+    path_out_antes_conv = os.path.join(
+        app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
+
+    # executando predicao
+    res_tensor, graf_tensor = predict(
+        analisador, path_arq_input_conv, path_out_antes_conv, timestamp
+    )
+    with tf.compat.v1.Session() as sess:
+        # Run the session to get the tensor's value
+        res_np = sess.run(res_tensor)
+        graf_np = sess.run(graf_tensor)
+    # Decode bytes to string since predict returns all output as tensor
+    str_res, path_graf = res_np.decode('utf-8'), graf_np.decode('utf-8')
+
+    path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
+
+    path_out = converter_arq(
+        path_out_antes_conv, path_out)
+
+    # OBS: NAO REMOVER ARQUIVO DE INPUT!!!!!!!!!!!!!!!!!
+    os.remove(path_out_antes_conv)
+    os.remove(path_aux_conv)
+    """ with open(path_out, "rb") as file:
+        video_base64 = base64.b64encode(file.read()).decode('utf-8')
+
+    with open(path_graf, "rb") as file:
+        grafico_base64 = base64.b64encode(file.read()).decode('utf-8') """
+
+    url_pdf = get_pdf()
+
+    resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
+    url_graf = resposta_json["file_url"]
+
+    resposta_json = get_file(os.path.basename(path_out))[0].get_json()
+    url_video_out = resposta_json["file_url"]
+
+    result = {"string": str_res, "grafico": url_graf, "pdf": url_pdf,
+              "video": url_video_out, "extVideo": EXT_OUT}
+    # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
+
+    return jsonify(result)
+
+
+""" @app.route("/analise", methods=["POST"])
+def analisar():
+    '''
+    Takes video  input, executa the model e and returns result as JSON
+    '''
     timestamp = time.time()
 
     arq = request.files["file"]
@@ -255,8 +354,8 @@ def analisar():
         app.config["TEMP_FOLDER"], filename_local)
     arq.save(path_processamento_arq)
 
-    """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
-    arq_stream = arq.stream"""
+    '''se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
+    arq_stream = arq.stream'''
 
     EXT_OUT = "mp4"
     nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
@@ -289,11 +388,11 @@ def analisar():
     # TODO: NAO REMOVER ARQUIVO DE INPUT!!!!!!!!!!!!!!!!!
     os.remove(path_out_pre)
     os.remove(path_convert)
-    """ with open(path_out, "rb") as file:
+    ''' with open(path_out, "rb") as file:
         video_base64 = base64.b64encode(file.read()).decode('utf-8')
 
     with open(path_graf, "rb") as file:
-        grafico_base64 = base64.b64encode(file.read()).decode('utf-8') """
+        grafico_base64 = base64.b64encode(file.read()).decode('utf-8') '''
 
     resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
     path_graf = resposta_json["file_url"]
@@ -306,10 +405,11 @@ def analisar():
     # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
 
     return jsonify(result)
+ """
 
 
-@app.route("/pega_diags", methods=["GET"])
-def pega_diags():
+@app.route("/pega_perfil", methods=["GET"])
+def pega_perfil():
     dados_diag = [
         "nomePaciente",
         "diagMedico",
@@ -319,8 +419,51 @@ def pega_diags():
         "ultimaModif",
         "linkRelatorio",
     ]
-    medicos = mongo.db.get_collection('Medicos')
+    medicos = mongo.db.get_collection(MEDICOS)
     usuario = find_user_with_session_mongo(session, medicos)
+
+
+@app.route("/envia_diag", methods=["POST"])
+def reg_diag():
+    video = request.files.get("video", None)
+    nomePaciente = request.form.get("nomePaciente", None)
+    stringOlhos = request.form.get("stringOlhos", None)
+
+    desc = request.form.get("desc", None)
+    a = [video, nomePaciente]
+    if any(elem for elem in a is None):
+        return make_response("INPUT NULO!", BAD_REQUEST)
+    filename = video.filename
+
+    diagnosticoMedico = stringOlhos
+
+    response = requests.get(
+        url_for('val_login', _external=True),
+        cookies=request.cookies
+    )
+    if response.text == 'True':
+        # caso pra usuario logado
+        id_medico = session['user_id']
+        medicos = mongo.db.get_collection(MEDICOS)
+        medico_atual = medicos.find_one({"_id": ObjectId(id_medico)})
+        nomeMedico = medico_atual.get("nome") if medico_atual else None
+        if nomeMedico is None:
+            return make_response("MEDICO LOGADO NAO ENCONTRADO", INTERNAL_SERVER_ERROR)
+    else:
+        nomeMedico = None
+    diags = mongo.db.get_collection(DIAGS)
+    dados = {"videoLabel": video, "nomePaciente": nomePaciente, "nomeMedico": nomeMedico,
+             "diagnosticoMedico": diagnosticoMedico, "desc": desc}
+    for key, value in dados.items():
+        if value is None:
+            dados[key] = "None"
+
+    result = diags.insert_one(dados)
+    id_diag = str(result.inserted_id)
+    if result.acknowledged:
+        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag, "filename": filename}, OK)
+    else:
+        return make_response("Erro ao registrar diagnostico", INTERNAL_SERVER_ERROR)
 
 
 @app.route("/auth", methods=["POST"])
@@ -350,7 +493,7 @@ def autenticar():
         print("EMAIL OU SENHA INVALIDOS")
         return make_response('SEM EMAIL OU SENHA', BAD_REQUEST)
 
-    medicos = mongo.db.get_collection("Medicos")
+    medicos = mongo.db.get_collection(MEDICOS)
     usuario = medicos.find_one({"email": email})
     senha = alg_hash(senha.encode('utf-8')).hexdigest()
     tipo = request.args['tipo']
@@ -424,7 +567,7 @@ def val_login():
         return make_response("False", UNAUTHORIZED)
     else:
         # Check if user exists in database
-        medicos = mongo.db.get_collection("Medicos")
+        medicos = mongo.db.get_collection(MEDICOS)
         usuario = find_user_with_session_mongo(session, medicos)
         if usuario != None:
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME

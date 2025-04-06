@@ -26,7 +26,7 @@ const routes = [
         props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }),
     }, // pagina de exibição da demonstração
     {
-        name: 'PaginaCarregando', path: '/loading', component: Loading,
+        name: 'PaginaCarregando', path: '/loading', props: true, component: Loading,
     },
     {
         name: 'PaginaAcesso', path: '/acesso', component: Acesso,
