@@ -159,16 +159,13 @@ export default {
       //envia dados pro banco de dados e comeca logica de processamento
       const formData = new FormData();
       formData.append("video", this.videoObj);
-      formData.append("nome", this.videoObj);
-      formData.append("paralisia", this.paralisia);
+      formData.append("nomePaciente", this.nomePac);
       formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
       formData.append("desc", this.desc);
       const res = await axios.post(this.$store.getters.getDiag, form, {
         withCredentials: true,
       });
-      if (res.status === 200) {
-        return this.$router.push({ name: "PaginaCarregando" });
-      }
+      this.$router.push({ name: "PaginaCarregando", params: { responseData: res.data } });
     },
     getVideo($evt) {
       //checagem por tipos de video
