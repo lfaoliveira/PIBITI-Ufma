@@ -5,14 +5,26 @@ if ($mongoService.Status -eq "Stopped") {
 
 Get-Service -Name "MongoDB"
 
-#Start Node+Vite+Vue server
-Start-Process -FilePath "npm" -ArgumentList "run dev" -WorkingDirectory "vite-project"
-
-# Activate conda environment if it doesnt exist
-if (-not (Test-Path "./.conda/")) {
-    conda env create --prefix env-pibiti --file conda.yml
+#Check if node packages are installed
+if (-not (Test-Path "./vite-project/node_modules/")) {
+    Write-Host "Installing packages into $PWD"
+    Set-Location -Path "vite-project"
+    npm install
+    npm install -g vite
+    Set-Location -Path ".."
 }
-conda activate ./env-pibiti
+Write-Host "Starting Node Frontend Server"
+#Start Node+Vite+Vue server
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location 'vite-project'; npm run dev"
+
+$nomeConda = "env-pibiti"
+# Activate conda environment if it doesnt exist
+if (-not (Test-Path "./$nomeConda")) {
+    conda env create --prefix "./$nomeConda" --file ./conda.yml
+}
+<# conda init#>
+Write-Host "Starting Flask Backend"
+conda activate "./$nomeConda"
 if (-not (Test-Path "./env.csv")) {
     Write-Error "env.csv file not found"
     exit 1

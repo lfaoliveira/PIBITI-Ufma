@@ -158,12 +158,13 @@ export default {
     async enviaDiag() {
       //envia dados pro banco de dados e comeca logica de processamento
       const formData = new FormData();
+      console.log(`${this.videoObj}, TYPE: ${typeof this.videoObj}`);
       formData.append("video", this.videoObj);
       formData.append("nome", this.videoObj);
       formData.append("paralisia", this.paralisia);
       formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
       formData.append("desc", this.desc);
-      const res = await axios.post(this.$store.getters.getDiag, form, {
+      const res = await axios.post(this.$store.getters.getDiag, formData, {
         withCredentials: true,
       });
       if (res.status === 200) {

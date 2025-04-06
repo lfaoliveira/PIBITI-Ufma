@@ -181,6 +181,7 @@ print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
+    print(" NÃO REINICIE O SERVIDOR!!!!!!!\nBaixando pesos do modelo YOLOv3...")
     download_peso(app.config["WKDIR"])
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
@@ -325,7 +326,6 @@ def pega_diags():
 @app.route("/auth", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def autenticar():
-    print(f"SID {session.sid}\n")
     """
     Handles user authentication for login and registration.
         Data received through request.form 
