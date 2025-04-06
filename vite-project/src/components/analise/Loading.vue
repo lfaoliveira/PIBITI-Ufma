@@ -19,6 +19,7 @@
 
 <script>
 import Rodape from "../auxiliares/Rodape.vue";
+import axios from "axios";
 
 export default {
   name: "Test",
@@ -34,48 +35,49 @@ export default {
     };
   },
   props: {
-    idAnalise: "",
     responseData: {
-      type: Object,
       required: true,
     },
     //estimativa em milisegundos
-    estimativaTotal: 20 * 1000,
+    estimativaTotal: 30 * 1000,
   },
   watch: {
     responseData: {
       async handler(newVal) {
         if (newVal) {
-          if (cont === 2) {
+          if (this.cont === 2) {
             this.percent = 50;
             document.dispatchEvent(new Event("update"));
             const formData = new FormData();
             formData.append("id_diag", newVal.id_diag);
             formData.append("filename", String(newVal.filename));
 
-            this.responseData = await axios.post(
+            console.log(`RES: ${this.responseData} CONT: ${this.cont}`)
+            
+            const res = await axios.post(
               this.$store.getters.getAnalise,
               formData,
               {
                 withCredentials: true,
               }
             );
-          } else if (cont === 3) {
+            this.responseData = res.data;
+            this.cont += 1;
+        } else if (this.cont === 3) {
             let startTime = Date.now();
             let interval = setInterval(() => {
-              document.dispatchEvent(new Event("update"));
-              let elapsedTime = Date.now() - startTime;
-              this.percent = Math.min(
-                (elapsedTime / estimativaTotal) * 100,
-                99.9
-              ).toFixed(2);
-
+                document.dispatchEvent(new Event("update"));
+                let elapsedTime = Date.now() - startTime;
+                this.percent = Math.min(
+                    (elapsedTime / estimativaTotal) * 100,
+                    99.9
+                ).toFixed(2);
               if (elapsedTime >= estimativaTotal) {
                 clearInterval(interval);
               }
             }, 15);
           }
-          cont += 1;
+          
         }
       },
       immediate: true,
@@ -88,6 +90,7 @@ export default {
     },
   },
   async mounted() {
+    console.log("MOUNTED RESPONSE: ", this.responseData)
     document.addEventListener("update", this.moverBarra);
   },
 };

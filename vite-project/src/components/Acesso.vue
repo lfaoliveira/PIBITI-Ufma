@@ -16,6 +16,7 @@
         :subtexto="'Nosso time está verificando seu CRM e enviará um email de confirmação assim que possível.'"
         :opcional="'Antes disso não será possível salvar seus diagnósticos'"
         :srcImg="'src/assets/check_circle.png'"
+        :rota="'/analise'"
       ></OverlayAviso>
 
       <!-- PARTE DO LOGIN -->
@@ -230,7 +231,7 @@ export default {
           this.boolErros.senha.login = false;
           console.log("Sucesso no LOGIN");
           this.$store.commit("setLogado", true);
-          // this.$router.push("/perfil");
+          this.$router.push("/perfil");
         } else {
           //erro no login
           this.boolErros.senha.login = true;

@@ -238,6 +238,7 @@ def get_pdf() -> str:
 
 
 @app.route("/analise", methods=["POST"])
+@cross_origin(supports_credentials=True)
 def analisar():
     """
     Takes video  input, executa the model e and returns result as JSON
@@ -409,6 +410,7 @@ def analisar():
 
 
 @app.route("/pega_perfil", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def pega_perfil():
     dados_diag = [
         "nomePaciente",
@@ -424,23 +426,29 @@ def pega_perfil():
 
 
 @app.route("/envia_diag", methods=["POST"])
-def reg_diag():
+@cross_origin(supports_credentials=True)
+def envia_diag():
     video = request.files.get("video", None)
+    # Convert video to base64
+    # TODO: MONGO TEM LIMITE DE ARMAZENAMENTO DE 16MB. PRA ARQUIVOS MAIORES USAR GOOGLE DRIVE
+    import base64
+    video_data = video.read()
+    video_b64 = base64.b64encode(video_data)
     nomePaciente = request.form.get("nomePaciente", None)
     stringOlhos = request.form.get("stringOlhos", None)
 
     desc = request.form.get("desc", None)
     a = [video, nomePaciente]
-    if any(elem for elem in a is None):
+    if any(elem is None for elem in a):
         return make_response("INPUT NULO!", BAD_REQUEST)
+
     filename = video.filename
-
     diagnosticoMedico = stringOlhos
-
     response = requests.get(
         url_for('val_login', _external=True),
         cookies=request.cookies
     )
+
     if response.text == 'True':
         # caso pra usuario logado
         id_medico = session['user_id']
@@ -452,7 +460,7 @@ def reg_diag():
     else:
         nomeMedico = None
     diags = mongo.db.get_collection(DIAGS)
-    dados = {"videoLabel": video, "nomePaciente": nomePaciente, "nomeMedico": nomeMedico,
+    dados = {"videoLabel": video_b64, "nomePaciente": nomePaciente, "nomeMedico": nomeMedico,
              "diagnosticoMedico": diagnosticoMedico, "desc": desc}
     for key, value in dados.items():
         if value is None:

@@ -158,7 +158,6 @@ export default {
     async enviaDiag() {
       //envia dados pro banco de dados e comeca logica de processamento
       const formData = new FormData();
-      console.log(`${this.videoObj}, TYPE: ${typeof this.videoObj}`);
       formData.append("video", this.videoObj);
       formData.append("nomePaciente", this.nomePac);
       formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
@@ -166,7 +165,7 @@ export default {
       const res = await axios.post(this.$store.getters.getDiag, formData, {
         withCredentials: true,
       });
-      this.$router.push({ name: "PaginaCarregando", params: { responseData: res.data } });
+      this.$router.push({ name: "PaginaCarregando", query:{ responseData: res.data } });
     },
     getVideo($evt) {
       //checagem por tipos de video
