@@ -1,7 +1,12 @@
 <template>
-  <HeaderAnal></HeaderAnal>
+  <HeaderSistema :activeIndex="4" />
   <h1 class="page-title">Etapa {{ this.cont }} de 3: {{ this.tituloAtual }}</h1>
-
+  <OverlayAviso
+    :eventoAviso="erroOverlay"
+    :titulo="msgErro"
+    :subtexto="'Tente novamente!'"
+    :srcImg="'src/assets/alert_circle.png'"
+  />
   <main class="secao-main">
     <figure class="overlay">
       <section class="progresso">
@@ -11,7 +16,6 @@
         <div class="progresso-texto">{{ parseInt(this.percent) }}% Completo</div>
       </section>
     </figure>
-    <p>{{ responseData }}</p>
   </main>
 
   <Rodape class="rodape"></Rodape>
@@ -20,11 +24,19 @@
 <script>
 import Rodape from "../auxiliares/Rodape.vue";
 import axios from "axios";
+import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+import OverlayAviso from "../auxiliares/OverlayAviso.vue";
+
+import emitter from "../../eventBus";
+
+const erroOverlay = "erroServidor";
 
 export default {
-  name: "Test",
+  name: "loading",
   components: {
     Rodape,
+    HeaderSistema,
+    OverlayAviso,
   },
   created() {},
   data() {
@@ -32,66 +44,57 @@ export default {
       percent: 0,
       cont: 2,
       tituloAtual: "Carregando Vídeo",
+      objResposta: null,
+      msgErro: "",
     };
   },
   props: {
-    responseData: {
-      required: true,
-    },
     //estimativa em milisegundos
     estimativaTotal: 30 * 1000,
-  },
-  watch: {
-    responseData: {
-      async handler(newVal) {
-        if (newVal) {
-          if (this.cont === 2) {
-            this.percent = 50;
-            document.dispatchEvent(new Event("update"));
-            const formData = new FormData();
-            formData.append("id_diag", newVal.id_diag);
-            formData.append("filename", String(newVal.filename));
-
-            console.log(`RES: ${this.responseData} CONT: ${this.cont}`)
-            
-            const res = await axios.post(
-              this.$store.getters.getAnalise,
-              formData,
-              {
-                withCredentials: true,
-              }
-            );
-            this.responseData = res.data;
-            this.cont += 1;
-        } else if (this.cont === 3) {
-            let startTime = Date.now();
-            let interval = setInterval(() => {
-                document.dispatchEvent(new Event("update"));
-                let elapsedTime = Date.now() - startTime;
-                this.percent = Math.min(
-                    (elapsedTime / estimativaTotal) * 100,
-                    99.9
-                ).toFixed(2);
-              if (elapsedTime >= estimativaTotal) {
-                clearInterval(interval);
-              }
-            }, 15);
-          }
-          
-        }
-      },
-      immediate: true,
-    },
   },
   methods: {
     moverBarra() {
       const barraAtual = document.querySelector(".barra-menor");
       if (barraAtual) barraAtual.style.width = `${this.percent}%`;
     },
+    async mudarLoading() {
+      this.cont += 1;
+      this.tituloAtual = "Processando Vídeo";
+      this.percent = 50;
+      document.dispatchEvent(new Event("update"));
+      const formData = new FormData();
+      formData.append("id_diag", this.objResposta.id_diag);
+      formData.append("filename", String(this.objResposta.filename));
+
+      console.log(`RES: ${this.objResposta} CONT: ${this.cont}`);
+      try {
+        const res = await axios.post(this.$store.getters.getAnalise, formData, {
+          withCredentials: true,
+        });
+        this.objResposta = res.data;
+        let startTime = Date.now();
+        let interval = setInterval(() => {
+          document.dispatchEvent(new Event("update"));
+          let elapsedTime = Date.now() - startTime;
+          this.percent = Math.min(
+            (elapsedTime / this.estimativaTotal) * 100,
+            99.9
+          ).toFixed(2);
+          if (elapsedTime >= this.estimativaTotal) {
+            clearInterval(interval);
+          }
+        }, 15);
+      } catch {
+        emitter.emit(erroOverlay);
+      }
+    },
   },
   async mounted() {
-    console.log("MOUNTED RESPONSE: ", this.responseData)
+    this.objResposta = this.$store.getters.getAnalResponseData;
+
+    console.log("MOUNTED RESPONSE: ", this.objResposta);
     document.addEventListener("update", this.moverBarra);
+    const a = await this.mudarLoading();
   },
 };
 </script>

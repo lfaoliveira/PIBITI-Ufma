@@ -61,7 +61,7 @@ def allowed_file(filename: str):
     ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm",
                           "mkv", "ogv", "ogg", "mp4", "avi"]
     for ext in ALLOWED_EXTENSIONS:
-        if filename.endswith(ext):
+        if filename.lower().endswith(ext):
             return ext
     return None
 
@@ -70,13 +70,20 @@ def converter_arq(input: str, output: str):
     """
     Converte video de input em .mp4 
     """
+    if not os.path.exists(input):
+        raise FileNotFoundError(f"Input file not found: {input}")
+
     print(f"Converting {input} to {output}")
     stream = ffmpeg.input(input)
     stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
     print(stream, "\n\n")
-    # Execute the conversion
-    ffmpeg.run(stream)
-    return output
+    try:
+        # Execute the conversion
+        ffmpeg.run(stream, cmd='ffmpeg')
+        return output
+    except ffmpeg.Error as e:
+        print('stdout:', e.stdout.decode('utf8'))
+        print('stderr:', e.stderr.decode('utf8'))
 
 
 def get_modelo():
@@ -240,16 +247,18 @@ def get_pdf() -> str:
 @app.route("/analise", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def analisar():
+    import base64
+
     """
     Takes video  input, executa the model e and returns result as JSON
     """
     timestamp = time.time()
     id_diag = request.form.get("id_diag", None)
     filename = request.form.get("filename", None)
-    arq = None
     diag = None
     if id_diag != None:
-        diag = mongo.db.get_collection(DIAGS).find({"_id": ObjectId(id_diag)})
+        diag = mongo.db.get_collection(
+            DIAGS).find_one({"_id": ObjectId(id_diag)})
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
 
@@ -270,10 +279,11 @@ def analisar():
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
     path_arq_input = os.path.join(
         app.config["TEMP_FOLDER"], filename_arq_input)
-    arq.save(path_arq_input)
 
     with open(path_arq_input, 'wb') as f:
-        f.write(diag["videoLabel"])
+        video_base64 = diag["videoLabel"]
+        video_bin = base64.b64decode(video_base64, validate=True)
+        f.write(video_bin)
 
     """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
     arq_stream = arq.stream"""
@@ -286,7 +296,7 @@ def analisar():
 
     path_arq_input_conv = converter_arq(
         path_arq_input, path_aux_conv)
-
+    print("\nDEPOIS PRIMEIRA CONV\n")
     nome_local = f"{nome_video}.{EXT_OUT}"
     path_out_antes_conv = os.path.join(
         app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
@@ -295,15 +305,18 @@ def analisar():
     res_tensor, graf_tensor = predict(
         analisador, path_arq_input_conv, path_out_antes_conv, timestamp
     )
+
     with tf.compat.v1.Session() as sess:
         # Run the session to get the tensor's value
         res_np = sess.run(res_tensor)
+        if "ERRO" in res_np.decode('utf-8'):
+            return make_response(res_np, BAD_REQUEST)
         graf_np = sess.run(graf_tensor)
     # Decode bytes to string since predict returns all output as tensor
     str_res, path_graf = res_np.decode('utf-8'), graf_np.decode('utf-8')
 
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
-
+    print("ULTIMA CONVERSAO")
     path_out = converter_arq(
         path_out_antes_conv, path_out)
 
@@ -318,95 +331,19 @@ def analisar():
 
     url_pdf = get_pdf()
 
+    print("PEGANDO URLS")
+
     resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
     url_graf = resposta_json["file_url"]
 
     resposta_json = get_file(os.path.basename(path_out))[0].get_json()
     url_video_out = resposta_json["file_url"]
 
-    result = {"string": str_res, "grafico": url_graf, "pdf": url_pdf,
+    result = {"erro": False, "string": str_res, "grafico": url_graf, "pdf": url_pdf,
               "video": url_video_out, "extVideo": EXT_OUT}
     # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
 
     return jsonify(result)
-
-
-""" @app.route("/analise", methods=["POST"])
-def analisar():
-    '''
-    Takes video  input, executa the model e and returns result as JSON
-    '''
-    timestamp = time.time()
-
-    arq = request.files["file"]
-
-    # user = request.args.get("user")
-    user = "TESTE"
-    ext = allowed_file(str(arq.filename))
-    if ext is None:
-        print("Incorrect file type!\n\n")
-        return SystemError
-
-    nome_local = f"{user}_{str(round(timestamp, 4))}.{ext}"
-    filename_local = secure_filename(f"INPUT_{nome_local}")
-
-    # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
-    path_processamento_arq = os.path.join(
-        app.config["TEMP_FOLDER"], filename_local)
-    arq.save(path_processamento_arq)
-
-    '''se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
-    arq_stream = arq.stream'''
-
-    EXT_OUT = "mp4"
-    nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
-    path_convert = os.path.join(
-        app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
-
-    path_processamento_arq = converter_arq(
-        path_processamento_arq, path_convert)
-
-    nome_local = f"{user}_{str(round(timestamp, 4))}.{EXT_OUT}"
-    path_out_pre = os.path.join(
-        app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
-
-    # executando predicao
-    res_tensor, graf_tensor = predict(
-        analisador, path_processamento_arq, path_out_pre, timestamp
-    )
-    with tf.compat.v1.Session() as sess:
-        # Run the session to get the tensor's value
-        res_np = sess.run(res_tensor)
-        graf_np = sess.run(graf_tensor)
-    # Decode bytes to string since predict returns all output as tensor
-    str_res, path_graf = res_np.decode('utf-8'), graf_np.decode('utf-8')
-
-    path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
-
-    path_out = converter_arq(
-        path_out_pre, path_out)
-
-    # TODO: NAO REMOVER ARQUIVO DE INPUT!!!!!!!!!!!!!!!!!
-    os.remove(path_out_pre)
-    os.remove(path_convert)
-    ''' with open(path_out, "rb") as file:
-        video_base64 = base64.b64encode(file.read()).decode('utf-8')
-
-    with open(path_graf, "rb") as file:
-        grafico_base64 = base64.b64encode(file.read()).decode('utf-8') '''
-
-    resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
-    path_graf = resposta_json["file_url"]
-
-    resposta_json = get_file(os.path.basename(path_out))[0].get_json()
-    path_out = resposta_json["file_url"]
-
-    result = {"string": str_res, "grafico": path_graf,
-              "video": path_out, "extVideo": EXT_OUT}
-    # servidor DEVE retorna JSON com string contendo as métricas, VIDEO DE SAIDA e grafico
-
-    return jsonify(result)
- """
 
 
 @app.route("/pega_perfil", methods=["GET"])

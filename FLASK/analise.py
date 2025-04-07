@@ -23,60 +23,72 @@ class AnaliseParalisia:
     def funcao_metodo(self, videoEntrada, videoSaida, timestamp):
         # olhoEsquerdo e  olhoDireito são listas de pontos com as posições (x,y) dos respectivos olhos em cada frame
         # frames é uma lista com os indices dos frames que foram usados
-        olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(
-            videoEntrada, videoSaida)
-
+        try:
+            olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(
+                videoEntrada, videoSaida)
+            print("DETECCAO DOS OLHOS OK")
+        except Exception as e:
+            print("ERRO:FALHA NA DETECÇÃO DOS OLHOS: ", e)
+            return "ERRO:FALHA NA DETECÇÃO DOS OLHOS", "None"
         # self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
+        try:
+            leftEye = np.array(olhoEsquerdo)
+            rightEye = np.array(olhoDireito)
+            xE = leftEye[:, 0] - min(leftEye[:, 0])
+            xD = rightEye[:, 0] - min(rightEye[:, 0])
+            xEsquerdo, xDireito = self.getHampel(xE, xD)
+            xEsquerdoFinal, xDireitaFinal = self.removeOutliers(
+                xEsquerdo, xDireito)
+            # print("\n\nXESQUERDO: ", xEsquerdoFinal, "\n\n")
+            print("FILTRAGEM DE PONTOS OK")
+        except Exception as e:
+            print("ERRO:FALHA NA MANIPULAÇÃO DO GRÁFICO DE POSIÇÃO: ", e)
+            return "ERRO:FALHA NA MANIPULAÇÃO DO GRÁFICO DE POSIÇÃO", "None"
 
-        leftEye = np.array(olhoEsquerdo)
-        rightEye = np.array(olhoDireito)
-        xE = leftEye[:, 0] - min(leftEye[:, 0])
-        xD = rightEye[:, 0] - min(rightEye[:, 0])
-        xEsquerdo, xDireito = self.getHampel(xE, xD)
-        xEsquerdoFinal, xDireitaFinal = self.removeOutliers(
-            xEsquerdo, xDireito)
-        print("\n\nXESQUERDO: ", xEsquerdoFinal, "\n\n")
-
-        path_graf = self.plotHampelFinal(
-            xE,
-            xD,
-            xEsquerdo,
-            xEsquerdoFinal,
-            xDireito,
-            xDireitaFinal,
-            "Remocao de Ruido",
-            timestamp,
-        )
-
-        velE, velD = self.calculaVelocidadeEspacoPercorrido(
-            xEsquerdoFinal, xDireitaFinal
-        )
-        (
-            velE2,
-            velD2,
-        ) = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal, frames, timestamp)
-        print(
-            f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
-        )
-
-        percentDif = 1 - min(velE, velD) / max(velE, velD)
-        threshold = 0.1965  # 19.65%, ver artigo
-        olho_doente = ""
-
-        if velE < velD:
-            print(
-                f"O olho esquerdo se move {percentDif*100:.2f}% mais devagar que o olho direito."
+        try:
+            path_graf = self.plotHampelFinal(
+                xE,
+                xD,
+                xEsquerdo,
+                xEsquerdoFinal,
+                xDireito,
+                xDireitaFinal,
+                "Remocao de Ruido",
+                timestamp,
             )
-            olho_doente = "Esquerdo"
-        else:
-            print(
-                f"O olho direito se move {percentDif*100:.2f}% mais devagar que o olho esquerdo."
-            )
-            olho_doente = "Direito"
 
-        if percentDif < threshold:
-            olho_doente = "None"
-        return f"{velE},{velD},{percentDif},{olho_doente}", path_graf
+            velE, velD = self.calculaVelocidadeEspacoPercorrido(
+                xEsquerdoFinal, xDireitaFinal
+            )
+            (
+                velE2,
+                velD2,
+            ) = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal, frames, timestamp)
+            print(
+                f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
+            )
+
+            percentDif = 1 - min(velE, velD) / max(velE, velD)
+            threshold = 0.1965  # 19.65%, ver artigo
+            olho_doente = ""
+
+            if velE < velD:
+                print(
+                    f"O olho esquerdo se move {percentDif*100:.2f}% mais devagar que o olho direito."
+                )
+                olho_doente = "Esquerdo"
+            else:
+                print(
+                    f"O olho direito se move {percentDif*100:.2f}% mais devagar que o olho esquerdo."
+                )
+                olho_doente = "Direito"
+
+            if percentDif < threshold:
+                olho_doente = "None"
+            return f"{velE},{velD},{percentDif},{olho_doente}", path_graf
+        except Exception as e:
+            print("ERRO:FALHA NO CALCULO DA VELOCIDADE: ", e)
+            return "ERRO:FALHA NO CALCULO DA VELOCIDADE", "None"
 
     def detectaOlhos(self, path_inputVideo, path_outputVideo):
         vid = cv2.VideoCapture(path_inputVideo)
@@ -286,7 +298,7 @@ class AnaliseParalisia:
         olhoEsquerdoFinal, olhoDireitoFinal = self.removeOutliers(
             esquerdaHampel, direitaHampel
         )
-        self.plotHampelFinal(
+        """ self.plotHampelFinal(
             posicaoOlhoEsquerdo,
             posicaoOlhoDireito,
             esquerdaHampel,
@@ -295,7 +307,7 @@ class AnaliseParalisia:
             olhoDireitoFinal,
             "Posição em relacao aos frames",
             timestamp,
-        )
+        ) """
         velEsquerda, velDireita = self.calculaVelocidadeEspacoPercorrido(
             olhoEsquerdoFinal, olhoDireitoFinal
         )

@@ -9,46 +9,54 @@ import { useCookies } from 'vue3-cookies';
 //gerência de estados do vuex
 
 const store = createStore({
-  state:{
-    urlBackend: "http://127.0.0.1:5000",
-    sharedData: null,
-    logado: false,
+    state:{
+        urlBackend: "http://127.0.0.1:5000",
+        sharedData: null,
+        logado: false,
+        analResponseData: null,
 },
-  mutations: {
-    setSharedData(state, data) {
-      state.sharedData = data;
+    mutations: {
+        setSharedData(state, data) {
+            state.sharedData = data;
+        },
+        setUrlBackend(state, data) {
+            state.urlBackend = data;
+        },
+        setCookie(state, data){
+                state.cookies.set(data.cookieName, data.cookieValue, data.timeString);
+        },
+        setLogado(state, data){
+                state.logado = data;
+        },
+        setAnalResponseData(state, data) {
+            state.analResponseData = data;
+        }
     },
-    setUrlBackend(state, data) {
-      state.urlBackend = data;
+    actions: {
+        updateUrlBackend({ commit }, data) {
+            commit('setUrlBackend', data);
+        },
+        updateCookie({ commit }, data) {
+                commit('setCookie', data);
+        },
+        updateLogado({ commit }, data) {
+                commit('setLoado', data);
+        },
+        updateAnalResponseData({ commit }, data) {
+            commit('setAnalResponseData', data);
+        }
     },
-    setCookie(state, data){
-        state.cookies.set(data.cookieName, data.cookieValue, data.timeString);
-    },
-    setLogado(state, data){
-        state.logado = data;
-    },
-  },
-  actions: {
-    updateUrlBackend({ commit }, data) {
-      commit('setUrlBackend', data);
-    },
-    updateCookie({ commit }, data) {
-        commit('setCookie', data);
-    },
-    updateLogado({ commit }, data) {
-        commit('setLoado', data);
-    },
-  },
-  getters: {
-    getUrlCadastro: (state) => (state.urlBackend + "/auth?tipo=cadastro"),
-    getUrlLogin: (state) => (state.urlBackend + "/auth?tipo=login"),
-    getUrlChecklogin: (state) => (state.urlBackend + "/val_login"),
-    getUrlEsqueciSenha: (state) => (state.urlBackend + "/esqueci_senha"),
-    getDiag: (state) => (state.urlBackend + "/envia_diag"),
-    getPerfil:  (state) => (state.urlBackend + "/pega_perfil"),
-    getAnalise: (state) => (state.urlBackend + "/analise"),
-    getLogado: (state) => (state.logado)
-  }
+    getters: {
+        getUrlCadastro: (state) => (state.urlBackend + "/auth?tipo=cadastro"),
+        getUrlLogin: (state) => (state.urlBackend + "/auth?tipo=login"),
+        getUrlChecklogin: (state) => (state.urlBackend + "/val_login"),
+        getUrlEsqueciSenha: (state) => (state.urlBackend + "/esqueci_senha"),
+        getDiag: (state) => (state.urlBackend + "/envia_diag"),
+        getPerfil:  (state) => (state.urlBackend + "/pega_perfil"),
+        getAnalise: (state) => (state.urlBackend + "/analise"),
+        getLogado: (state) => (state.logado),
+        getAnalResponseData: (state) => (state.analResponseData)
+    }
 });
 
 store.subscribe((_mutation, state) => {

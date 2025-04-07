@@ -2,6 +2,12 @@ $mongoService = Get-Service -Name "MongoDB"
 if ($mongoService.Status -eq "Stopped") {
     Restart-Service -Name "MongoDB"
 }
+# checando se ffmpeg esta instalado
+if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing ffmpeg..."
+    winget install ffmpeg
+    Restart-Computer
+}
 
 Get-Service -Name "MongoDB"
 

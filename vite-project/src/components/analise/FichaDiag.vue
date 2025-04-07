@@ -140,7 +140,8 @@ export default {
       olhoDireito: "",
       desc: "",
       videoObj: null,
-      extensoes: [".mkv", ".mp4"],
+      extensoes: ["mpg", "mpeg", "webm",
+      "mkv", "ogv", "ogg", "mp4", "avi"],
     };
   },
   props: {},
@@ -165,17 +166,18 @@ export default {
       const res = await axios.post(this.$store.getters.getDiag, formData, {
         withCredentials: true,
       });
-      this.$router.push({ name: "PaginaCarregando", query:{ responseData: res.data } });
+      this.$store.commit('setAnalResponseData', res.data);
+      this.$router.push({ name: "PaginaCarregando"});
     },
     getVideo($evt) {
       //checagem por tipos de video
       const file = $evt.target.files[0];
 
       if (file) {
-        const filename = String(file.name);
+        const filename = String(file.name).toLowerCase();
         const ext = filename.split(".")[1];
 
-        if (this.extensoes.includes(`.${ext}`)) {
+        if (this.extensoes.includes(`${ext}`)) {
           this.videoObj = file;
         } else {
           emitter.emit(eventoVideoErrado);
@@ -238,6 +240,7 @@ export default {
     },
   },
   mounted() {
+    this.$store.commit('setAnalResponseData', null);
     // listener pra quando fileInput recebe mudança
     // document.getElementById("fileInput").onchange = this.handleFileUpload;
   },
