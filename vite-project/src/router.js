@@ -19,7 +19,7 @@ const routes = [
         path: '/analise', // pagina de analise
         name: 'analiseVideo',
         component: AnaliseVideo,
-        props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }),
+        props: (route) => ({ id_diag: route.query.id_diag, responseStringJson: route.query.responseStringJson }),
     },
     {
         name: 'PaginaCarregando', path: '/loading', component: Loading,

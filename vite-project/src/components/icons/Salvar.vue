@@ -1,5 +1,5 @@
 <template>
-  <button class="salvar" @click="fnSalvar" :enabled="butEnabled" :disabled="!butEnabled">
+  <button class="salvar" @click="fnSalvar" :disabled="butDisabled">
     <img class="icone-download" alt="Save icon" src="../../assets/download.png" />
     <p class="texto-salvar">Baixar Resultado</p>
   </button>
@@ -10,24 +10,20 @@ export default {
   name: "salvar",
   created() {},
   data() {
-    return {
-      modo: "off",
-    };
+    return {};
   },
   mounted() {},
-  props: {},
+  props: {
+    modo: "off",
+  },
   methods: {
     fnSalvar() {
       //logica para baixar o pdf dos resultados para a maquina do usuario
     },
   },
   computed: {
-    butEnabled() {
-      if (this.modo == "on") {
-        return "true";
-      } else {
-        return null;
-      }
+    butDisabled() {
+      return this.modo == "off";
     },
   },
 };
@@ -40,10 +36,11 @@ export default {
   justify-content: center;
   gap: 1vmin;
   align-items: center;
-  margin: auto;
+  margin: 0.5vmin auto;
   width: fit-content;
   cursor: pointer;
   @include botao-header;
+  padding: 0px;
   flex-direction: row;
   display: inline-flex;
 }
@@ -58,9 +55,8 @@ export default {
   display: flex;
   text-decoration: underline;
   color: #fff;
-  font-weight: 800;
+  font-weight: 700;
   margin: auto;
   width: fit-content;
-  font-size: $fonte-header;
 }
 </style>

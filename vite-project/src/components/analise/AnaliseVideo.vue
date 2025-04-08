@@ -16,20 +16,19 @@
       </div>
       <div class="div-grafico">
         <!-- Placeholder for your graph (image or canvas) -->
-        <img ref="imgGraf" class="grafico" alt="Analysis graph" />
+        <img ref="imgGraf" class="grafico" alt="Analysis graph" draggable="false" />
       </div>
     </div>
     <VideoPlayer
       v-if="resPronto"
       :videoSource="this.videoSource"
       :mimeVideo="this.mimeVideo"
-    ></VideoPlayer>
+    />
     <Rodape class="rodape"></Rodape>
   </main>
 </template>
 
 <script>
-import seta from "../icons/Voltar.vue";
 import Rodape from "../auxiliares/Rodape.vue";
 import VideoPlayer from "./VideoPlayer.vue";
 import HeaderSistema from "../auxiliares/HeaderSistema.vue";
@@ -47,16 +46,30 @@ export default {
     return {
       videoSource: "",
       graficoURL: "",
-      mimeVideo: "",
+      pdfURL: "",
+      mimeVideo: "video/mp4",
       resPronto: false,
       olho_doente: "",
       percentDif: "",
       velD: "",
       velE: "",
+      responseData: null,
     };
   },
   props: {
-    idVideoAnalise: "",
+    responseStringJson: null,
+    id_diag: "",
+  },
+  async mounted() {
+    this.responseData = JSON.parse(this.responseStringJson);
+
+    this.resPronto = true;
+    this.videoSource = this.responseData.video;
+    this.graficoURL = this.responseData.grafico;
+    this.pdfURL = this.responseData.pdf;
+    this.$refs.imgGraf.src = this.graficoURL;
+    const strResult = this.responseData.diagAutom;
+    this.parseResult(strResult);
   },
   methods: {
     addFocusClass() {
@@ -73,9 +86,9 @@ export default {
     // pegar resultados da análise
     async getAnalysisResults() {
       try {
-        alert(this.idVideoAnalise);
+        alert(this.idVideoAnaliseERRADO);
         // caso seja video de demonstracao
-        if (parseInt(this.idVideoAnalise) === -1) {
+        if (parseInt(this.idVideoAnaliseERRADO) === -1) {
           const mime = "video/mp4";
           const videoURL = VIDEO_DEMO_URL;
           const graficoURL = GRAF_DEMO_url;
@@ -83,7 +96,7 @@ export default {
           return { strResult, graficoURL, mime, videoURL };
         }
         await db.open();
-        const resultData = await db.get(parseInt(this.idVideoAnalise));
+        const resultData = await db.get(parseInt(this.idVideoAnaliseERRADO));
         const mime = resultData.mimeVideo;
         const videoURL = resultData.video;
         const graficoURL = resultData.grafico;
@@ -134,30 +147,15 @@ export default {
       };
     },
   },
-  async mounted() {
-    console.log("MONTADO ANALISE:");
-    const res = await this.getAnalysisResults();
-    this.resPronto = true;
-    this.videoSource = res.videoURL;
-    this.mimeVideo = res.mime;
-    console.log("MIME: ANALI", this.mimeVideo);
-    this.graficoURL = res.graficoURL;
-    this.$refs.imgGraf.src = this.graficoURL;
-    const strResult = res.strResult;
-    this.parseResult(strResult);
-  },
 };
 </script>
 
-<style scoped>
-* {
-  max-width: 100vmax;
-  font-family: Montserrat, "Inter";
-}
+<style lang="scss" scoped>
+$fonte-diag: clamp(14px, 4vmin, 22px);
 
 .texto-diag {
-  --fonte-diag: clamp(10px, 15px, 20px);
-  font-size: var(--fonte-diag);
+  font-weight: 600;
+  font-size: $fonte-diag;
   margin: clamp(3%, 20px, 50px) 4%;
 }
 
@@ -172,6 +170,8 @@ export default {
   display: flex;
   /* Minimum width before breaking */
   width: clamp(100%, 100%, 100%); /* Make the image responsive */
+  aspect-ratio: 464/200;
+
   border-radius: 10px;
   box-shadow: 0 0px 7px rgba(0, 0, 0, 0.5);
 }
@@ -214,9 +214,7 @@ export default {
   border-radius: 13px;
   background-color: #fff;
   box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.21);
-  padding: 22px 32px 37px;
-  color: #6113c6;
-  font-size: clamp(5px, 14px, 20px);
+  color: black;
   width: clamp(200px, 100vmin, 100%);
   flex: 0.3;
   display: flex;
@@ -225,8 +223,7 @@ export default {
 }
 
 .diagnostico {
-  color: #38d200;
-  font-size: calc(var(--fonte-diag) + 15%);
+  color: $sec-color;
 }
 
 .custom-file-upload {
@@ -254,7 +251,9 @@ export default {
   font-size: clamp(3vmin, 5vmin, 7vmin);
 }
 
-CSS ORIGINAL .edicaoVideo {
+// CSS ORIGINAL
+
+.edicaoVideo {
   font-family: "Roboto Serif", serif !important;
 }
 .setaClasse {

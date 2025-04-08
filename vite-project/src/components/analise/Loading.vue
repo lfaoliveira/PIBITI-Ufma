@@ -72,7 +72,7 @@ export default {
             reject();
           }
           this.percent = Number(initialPercent + progress * percentDifference);
-        }, (1 / 100) * tempoTotalms);
+        }, (1 / 200) * tempoTotalms);
         // Listen for the abort event
         signal.addEventListener("abort", () => {
           reject();
@@ -88,14 +88,20 @@ export default {
       formData.append("id_diag", this.objResposta.id_diag);
       formData.append("filename", String(this.objResposta.filename));
 
-      res = axios
+      axios
         .post(this.$store.getters.getAnalise, formData, {
           withCredentials: true,
         })
         .then((res) => {
           this.objResposta = res.data;
-          this.$router.push({ name: "analiseVideo" });
           controller.abort();
+          this.$router.push({
+            name: "analiseVideo",
+            query: {
+              id_diag: this.objResposta.id_diag,
+              responseStringJson: JSON.stringify(res.data), // Add response data to query
+            },
+          });
         })
         .catch((error) => {
           this.msgErro = error.response.data;

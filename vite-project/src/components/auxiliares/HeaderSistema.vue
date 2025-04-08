@@ -21,7 +21,7 @@
         <a :class="{ active: activeIndex === 6 }" @click="setActive('Perfil')">Perfil</a>
       </li>
       <li class="nav-item" v-if="this.logado">
-        <Salvar :modo="this.emAnalise ? 'on' : 'off'"></Salvar>
+        <Salvar :modo="this.modoSalvar"></Salvar>
       </li>
     </ul>
   </nav>
@@ -83,13 +83,20 @@ export default {
       console.log("Resultado salvo");
     },
   },
+  computed: {
+    modoSalvar() {
+      if (this.emAnalise == true) {
+        return "on";
+      } else return "off";
+    },
+  },
 };
 </script>
 
 <style lang="scss" scoped>
 .nav-bar {
   display: flex;
-  width: 100%;
+  width: clamp(100%, 100%, 100%);
   z-index: 1;
   background: #0e0021;
 }
@@ -107,7 +114,7 @@ export default {
 
 .lado-direito {
   list-style: none;
-
+  padding: 0vmin 2vmin;
   display: flex;
   align-items: center;
   gap: 30px;
