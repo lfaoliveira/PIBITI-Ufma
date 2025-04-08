@@ -7,6 +7,7 @@
     :titulo="msgErro"
     :subtexto="'Tente novamente!'"
     :srcImg="'src/assets/alert_circle.png'"
+    :rota="'/ficha'"
   />
   <main class="secao-main">
     <figure class="overlay">
@@ -49,7 +50,7 @@ export default {
       objResposta: null,
       msgErro: "",
       erroOverlay: "erroServidor",
-      estimativaTotal: 35 * 1000, //estimativa em milissegundos
+      estimativaTotal: 30 * 1000, //estimativa em milissegundos
     };
   },
   props: {},
@@ -87,19 +88,19 @@ export default {
       formData.append("id_diag", this.objResposta.id_diag);
       formData.append("filename", String(this.objResposta.filename));
 
-      console.log(`RES: `, this.objResposta, `CONT: ${this.cont}`);
-      axios
+      res = axios
         .post(this.$store.getters.getAnalise, formData, {
           withCredentials: true,
         })
         .then((res) => {
           this.objResposta = res.data;
-          this.$router.push("/termos");
+          this.$router.push({ name: "analiseVideo" });
           controller.abort();
         })
         .catch((error) => {
+          this.msgErro = error.response.data;
           emitter.emit(this.erroOverlay);
-          console.error("Failed to read data");
+          console.error(error, " Requisicao de analise falhou");
         });
     },
   },
@@ -109,20 +110,32 @@ export default {
 
     const controller = new AbortController();
     const signal = controller.signal;
-    const tempoLoad = 2 * 1000;
-    const res = await Promise.all([
-      this.progressoIntervaloMs(tempoLoad, 50, signal),
-      axios.post(this.$store.getters.getDiag, formDiag, {
-        withCredentials: true,
-      }),
-    ]);
-
-    this.objResposta = res[1].data;
+    // 1MB = 0.5s
+    const sizeMB = Number(formDiag.get("video").size) / 1000000;
+    const tempoLoad = (1 / 2) * sizeMB;
+    let res;
+    try {
+      res = await Promise.all([
+        this.progressoIntervaloMs(tempoLoad, 50, signal),
+        axios.post(this.$store.getters.getDiag, formDiag, {
+          withCredentials: true,
+        }),
+      ]);
+      this.objResposta = res[1].data;
+    } catch (error) {
+      this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
+      emitter.emit(this.erroOverlay);
+    }
 
     console.log("MOUNTED RESPONSE: ", this.objResposta);
     //logica de barra de progresso e req de analise
     this.mudarLoading(controller);
-    await this.progressoIntervaloMs(this.estimativaTotal - tempoLoad, 100, signal);
+    //1 MB = 1s
+    await this.progressoIntervaloMs(
+      this.estimativaTotal - tempoLoad + sizeMB,
+      100,
+      signal
+    );
   },
 };
 </script>
@@ -148,6 +161,7 @@ export default {
   justify-content: center;
 }
 .overlay-aviso {
+  margin: 2vmin 0vmin;
   align-self: center;
   background: white;
 }

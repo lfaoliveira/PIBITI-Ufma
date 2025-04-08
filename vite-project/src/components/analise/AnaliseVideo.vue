@@ -1,6 +1,7 @@
 <!-- PARTE GERADA POR IA -->
 
 <template>
+  <HeaderSistema :activeIndex="5" />
   <main class="analysis-view">
     <h1 class="page-title">Análise de Paralisia</h1>
 
@@ -26,6 +27,127 @@
     <Rodape class="rodape"></Rodape>
   </main>
 </template>
+
+<script>
+import seta from "../icons/Voltar.vue";
+import Rodape from "../auxiliares/Rodape.vue";
+import VideoPlayer from "./VideoPlayer.vue";
+import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+
+export default {
+  // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
+  name: "Analise de Video",
+  components: {
+    VideoPlayer,
+    Rodape,
+    HeaderSistema,
+  },
+  created() {},
+  data() {
+    return {
+      videoSource: "",
+      graficoURL: "",
+      mimeVideo: "",
+      resPronto: false,
+      olho_doente: "",
+      percentDif: "",
+      velD: "",
+      velE: "",
+    };
+  },
+  props: {
+    idVideoAnalise: "",
+  },
+  methods: {
+    addFocusClass() {
+      // Manually add the 'focus' class to the label
+      const label = document.querySelector(".custom-file-upload");
+      label.classList.add("focus");
+    },
+    removeFocusClass() {
+      // Manually remove the 'focus' class from the label
+      const label = document.querySelector(".custom-file-upload");
+      label.classList.remove("focus");
+    },
+
+    // pegar resultados da análise
+    async getAnalysisResults() {
+      try {
+        alert(this.idVideoAnalise);
+        // caso seja video de demonstracao
+        if (parseInt(this.idVideoAnalise) === -1) {
+          const mime = "video/mp4";
+          const videoURL = VIDEO_DEMO_URL;
+          const graficoURL = GRAF_DEMO_url;
+          const strResult = STR_RESULT_DEMO;
+          return { strResult, graficoURL, mime, videoURL };
+        }
+        await db.open();
+        const resultData = await db.get(parseInt(this.idVideoAnalise));
+        const mime = resultData.mimeVideo;
+        const videoURL = resultData.video;
+        const graficoURL = resultData.grafico;
+        const strResult = resultData.string;
+
+        return { strResult, graficoURL, mime, videoURL };
+      } catch (error) {
+        console.error("ERRO! " + error);
+      }
+    },
+    parseResult(string) {
+      const split = String(string).split(",");
+      this.velE = parseFloat(split[0]).toFixed(2);
+      this.velD = parseFloat(split[1]).toFixed(2);
+      this.percentDif = parseFloat(split[2]).toFixed(2);
+      const diag = split[3];
+      let texto = "";
+      if (diag === "None") {
+        texto = "Olhos Saudáveis";
+      } else {
+        texto = "Olho " + diag + " Possivelmente Doente";
+      }
+      this.olho_doente = texto;
+    },
+  },
+  computed: {
+    controlStyle() {
+      return {
+        height: `${videoplayer.videoHeight / window.innerHeight}%`,
+        width: `${videoplayer.videoWidth / window.innerWidth}%`,
+      };
+    },
+    estiloUpload() {
+      return {
+        // COR E FONTE
+        borderRadius: `51px`,
+        border: `none`,
+        color: `black`,
+        //TAMANHO
+        position: `relative`,
+        //POSICIONAMENTO
+        whiteSpace: `nowrap`,
+        letterSpacing: `0`,
+        alignItems: `center`,
+        display: `flex`,
+        justifyContent: `center`,
+        textAlign: `center`,
+      };
+    },
+  },
+  async mounted() {
+    console.log("MONTADO ANALISE:");
+    const res = await this.getAnalysisResults();
+    this.resPronto = true;
+    this.videoSource = res.videoURL;
+    this.mimeVideo = res.mime;
+    console.log("MIME: ANALI", this.mimeVideo);
+    this.graficoURL = res.graficoURL;
+    this.$refs.imgGraf.src = this.graficoURL;
+    const strResult = res.strResult;
+    this.parseResult(strResult);
+  },
+};
+</script>
 
 <style scoped>
 * {
@@ -196,133 +318,3 @@ button {
   margin-top: clamp(20px, 6vmin, 5rem);
 }
 </style>
-
-<script>
-import seta from "../icons/Voltar.vue";
-import { mapGetters } from "vuex";
-import Rodape from "../auxiliares/Rodape.vue";
-import VideoPlayer from "./VideoPlayer.vue";
-
-const VIDEO_DEMO_URL = new URL("../../assets/video-demo.mp4", import.meta.url).href;
-const GRAF_DEMO_url = new URL("../../assets/grafico-demo.png", import.meta.url).href;
-const STR_RESULT_DEMO = "Demo text";
-
-export default {
-  // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
-  name: "Analise de Video",
-  components: {
-    VideoPlayer,
-    seta,
-    Rodape,
-  },
-  created() {},
-  data() {
-    return {
-      videoSource: "",
-      graficoURL: "",
-      mimeVideo: "",
-      resPronto: false,
-      olho_doente: "",
-      percentDif: "",
-      velD: "",
-      velE: "",
-    };
-  },
-  props: {
-    idVideoAnalise: "",
-  },
-  methods: {
-    addFocusClass() {
-      // Manually add the 'focus' class to the label
-      const label = document.querySelector(".custom-file-upload");
-      label.classList.add("focus");
-    },
-    removeFocusClass() {
-      // Manually remove the 'focus' class from the label
-      const label = document.querySelector(".custom-file-upload");
-      label.classList.remove("focus");
-    },
-
-    // pegar resultados da análise
-    async getAnalysisResults() {
-      try {
-        alert(this.idVideoAnalise);
-        // caso seja video de demonstracao
-        if (parseInt(this.idVideoAnalise) === -1) {
-          const mime = "video/mp4";
-          const videoURL = VIDEO_DEMO_URL;
-          const graficoURL = GRAF_DEMO_url;
-          const strResult = STR_RESULT_DEMO;
-          return { strResult, graficoURL, mime, videoURL };
-        }
-        await db.open();
-        const resultData = await db.get(parseInt(this.idVideoAnalise));
-        const mime = resultData.mimeVideo;
-        const videoURL = resultData.video;
-        const graficoURL = resultData.grafico;
-        const strResult = resultData.string;
-
-        return { strResult, graficoURL, mime, videoURL };
-      } catch (error) {
-        console.error("ERRO! " + error);
-      }
-    },
-    parseResult(string) {
-      const split = String(string).split(",");
-      this.velE = parseFloat(split[0]).toFixed(2);
-      this.velD = parseFloat(split[1]).toFixed(2);
-      this.percentDif = parseFloat(split[2]).toFixed(2);
-      const diag = split[3];
-      let texto = "";
-      if (diag === "None") {
-        texto = "Olhos Saudáveis";
-      } else {
-        texto = "Olho " + diag + " Possivelmente Doente";
-      }
-      this.olho_doente = texto;
-    },
-  },
-  computed: {
-    controlStyle() {
-      return {
-        height: `${videoplayer.videoHeight / window.innerHeight}%`,
-        width: `${videoplayer.videoWidth / window.innerWidth}%`,
-      };
-    },
-    estiloUpload() {
-      return {
-        // COR E FONTE
-        borderRadius: `51px`,
-        border: `none`,
-        color: `black`,
-        //TAMANHO
-        position: `relative`,
-        //POSICIONAMENTO
-        whiteSpace: `nowrap`,
-        letterSpacing: `0`,
-        alignItems: `center`,
-        display: `flex`,
-        justifyContent: `center`,
-        textAlign: `center`,
-      };
-    },
-
-    ...mapGetters(["getSharedData"]),
-    sharedData() {
-      return this.getSharedData;
-    },
-  },
-  async mounted() {
-    console.log("MONTADO ANALISE:");
-    const res = await this.getAnalysisResults();
-    this.resPronto = true;
-    this.videoSource = res.videoURL;
-    this.mimeVideo = res.mime;
-    console.log("MIME: ANALI", this.mimeVideo);
-    this.graficoURL = res.graficoURL;
-    this.$refs.imgGraf.src = this.graficoURL;
-    const strResult = res.strResult;
-    this.parseResult(strResult);
-  },
-};
-</script>

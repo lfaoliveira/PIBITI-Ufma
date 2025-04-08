@@ -255,13 +255,13 @@ def analisar():
     id_diag = request.form.get("id_diag", None)
     filename = request.form.get("filename", None)
     diag = None
+
     if id_diag != None:
         print(request.form)
         diag = mongo.db.get_collection(
             DIAGS).find_one({"_id": ObjectId(id_diag)})
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
-
     # VERSÃO LOGADO
     if "user_id" in session:
         user = session["user_id"]
@@ -320,7 +320,7 @@ def analisar():
     path_out = converter_arq(
         path_out_antes_conv, path_out)
 
-    # OBS: NAO REMOVER ARQUIVO DE INPUT!!!!!!!!!!!!!!!!!
+    # Remover APENAS arquivos auxiliares
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
     """ with open(path_out, "rb") as file:
@@ -338,11 +338,24 @@ def analisar():
 
     resposta_json = get_file(os.path.basename(path_out))[0].get_json()
     url_video_out = resposta_json["file_url"]
+    olho_doente = str_res.split(",")[3]
 
-    result = {"erro": False, "string": str_res, "grafico": url_graf, "pdf": url_pdf,
-              "video": url_video_out, "extVideo": EXT_OUT}
+    if olho_doente == "Esquerdo":
+        str_diag = "true+false"
+    elif olho_doente == "Direito":
+        str_diag = "false+true"
+    else:
+        str_diag = "false+false"
+
+    result = {"diagAutom": str_diag, "grafico": url_graf, "pdf": url_pdf,
+              "dataDiag": timestamp, "video": url_video_out, "ultimaModif": timestamp}
+    mongo.db.get_collection(DIAGS).update_one(
+        {"_id": ObjectId(id_diag)},
+        {"$set": result}
+    )
+
+    result["diagAutom"] = str_res
     # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
-
     return jsonify(result)
 
 
@@ -395,9 +408,10 @@ def envia_diag():
         if nomeMedico is None:
             return make_response("MEDICO LOGADO NAO ENCONTRADO", INTERNAL_SERVER_ERROR)
     else:
-        nomeMedico = None
+        id_medico = None
+
     diags = mongo.db.get_collection(DIAGS)
-    dados = {"videoLabel": video_b64, "nomePaciente": nomePaciente, "nomeMedico": nomeMedico,
+    dados = {"videoLabel": video_b64, "nomePaciente": nomePaciente, "id_medico": id_medico,
              "diagnosticoMedico": diagnosticoMedico, "desc": desc}
     for key, value in dados.items():
         if value is None:

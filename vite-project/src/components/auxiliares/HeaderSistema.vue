@@ -59,6 +59,7 @@ export default {
   mounted() {
     //executar checagem se esta logado
     this.logado = this.$store.getters.getLogado;
+    this.emAnalise = this.$route.path === "/analise";
   },
   methods: {
     setActive(nome) {
