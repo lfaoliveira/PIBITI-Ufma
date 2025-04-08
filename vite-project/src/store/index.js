@@ -13,7 +13,7 @@ const store = createStore({
         urlBackend: "http://127.0.0.1:5000",
         sharedData: null,
         logado: false,
-        analResponseData: null,
+        formDiag: null,
 },
     mutations: {
         setSharedData(state, data) {
@@ -28,8 +28,8 @@ const store = createStore({
         setLogado(state, data){
                 state.logado = data;
         },
-        setAnalResponseData(state, data) {
-            state.analResponseData = data;
+        setFormDiag(state, data) {
+            state.formDiag = data;
         }
     },
     actions: {
@@ -42,8 +42,8 @@ const store = createStore({
         updateLogado({ commit }, data) {
                 commit('setLoado', data);
         },
-        updateAnalResponseData({ commit }, data) {
-            commit('setAnalResponseData', data);
+        updateFormDiag({ commit }, data) {
+            commit('setformDiag', data);
         }
     },
     getters: {
@@ -55,7 +55,7 @@ const store = createStore({
         getPerfil:  (state) => (state.urlBackend + "/pega_perfil"),
         getAnalise: (state) => (state.urlBackend + "/analise"),
         getLogado: (state) => (state.logado),
-        getAnalResponseData: (state) => (state.analResponseData)
+        getFormDiag: (state) => (state.formDiag),
     }
 });
 

@@ -61,6 +61,7 @@ export default {
 <style lang="scss" scoped>
 .overlay {
   @include overlay;
+  background: white;
 
   gap: 5vmin;
 

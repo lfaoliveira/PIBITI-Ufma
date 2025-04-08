@@ -22,7 +22,7 @@ const routes = [
         props: (route) => ({ idVideoAnalise: route.query.idVideoAnalise }),
     },
     {
-        name: 'PaginaCarregando', path: '/loading', props: (route) => ({ responseData: route.query.res }), component: Loading,
+        name: 'PaginaCarregando', path: '/loading', component: Loading,
     },
     {
         name: 'PaginaAcesso', path: '/acesso', component: Acesso,

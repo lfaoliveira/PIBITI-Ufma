@@ -9,7 +9,6 @@ from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-import numpy as np
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
 from flask_session import Session
 
@@ -257,6 +256,7 @@ def analisar():
     filename = request.form.get("filename", None)
     diag = None
     if id_diag != None:
+        print(request.form)
         diag = mongo.db.get_collection(
             DIAGS).find_one({"_id": ObjectId(id_diag)})
     else:

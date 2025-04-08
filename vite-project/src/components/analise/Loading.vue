@@ -2,6 +2,7 @@
   <HeaderSistema :activeIndex="4" />
   <h1 class="page-title">Etapa {{ this.cont }} de 3: {{ this.tituloAtual }}</h1>
   <OverlayAviso
+    class="overlay-aviso"
     :eventoAviso="erroOverlay"
     :titulo="msgErro"
     :subtexto="'Tente novamente!'"
@@ -11,7 +12,10 @@
     <figure class="overlay">
       <section class="progresso">
         <div class="progresso-barra">
-          <div class="progresso-barra barra-menor"></div>
+          <div
+            class="progresso-barra barra-menor"
+            :style="{ width: `${percent}%` }"
+          ></div>
         </div>
         <div class="progresso-texto">{{ parseInt(this.percent) }}% Completo</div>
       </section>
@@ -29,8 +33,6 @@ import OverlayAviso from "../auxiliares/OverlayAviso.vue";
 
 import emitter from "../../eventBus";
 
-const erroOverlay = "erroServidor";
-
 export default {
   name: "loading",
   components: {
@@ -46,55 +48,81 @@ export default {
       tituloAtual: "Carregando Vídeo",
       objResposta: null,
       msgErro: "",
+      erroOverlay: "erroServidor",
+      estimativaTotal: 35 * 1000, //estimativa em milissegundos
     };
   },
-  props: {
-    //estimativa em milisegundos
-    estimativaTotal: 30 * 1000,
-  },
+  props: {},
   methods: {
-    moverBarra() {
-      const barraAtual = document.querySelector(".barra-menor");
-      if (barraAtual) barraAtual.style.width = `${this.percent}%`;
+    async progressoIntervaloMs(tempoTotalms, targetPercent, signal) {
+      return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        const initialPercent = Number(this.percent);
+        const percentDifference = Number(targetPercent) - initialPercent;
+
+        const interval = setInterval(() => {
+          const elapsedTime = Date.now() - startTime;
+          const progress = Math.min(elapsedTime / Number(tempoTotalms), 1);
+          if (progress >= 1) {
+            clearInterval(interval);
+            resolve();
+          } else if (signal.aborted) {
+            this.percent = targetPercent;
+            reject();
+          }
+          this.percent = Number(initialPercent + progress * percentDifference);
+        }, (1 / 100) * tempoTotalms);
+        // Listen for the abort event
+        signal.addEventListener("abort", () => {
+          reject();
+        });
+      });
     },
-    async mudarLoading() {
+
+    async mudarLoading(controller) {
       this.cont += 1;
       this.tituloAtual = "Processando Vídeo";
-      this.percent = 50;
-      document.dispatchEvent(new Event("update"));
+      // document.dispatchEvent(new Event("update"));
       const formData = new FormData();
       formData.append("id_diag", this.objResposta.id_diag);
       formData.append("filename", String(this.objResposta.filename));
 
-      console.log(`RES: ${this.objResposta} CONT: ${this.cont}`);
-      try {
-        const res = await axios.post(this.$store.getters.getAnalise, formData, {
+      console.log(`RES: `, this.objResposta, `CONT: ${this.cont}`);
+      axios
+        .post(this.$store.getters.getAnalise, formData, {
           withCredentials: true,
+        })
+        .then((res) => {
+          this.objResposta = res.data;
+          this.$router.push("/termos");
+          controller.abort();
+        })
+        .catch((error) => {
+          emitter.emit(this.erroOverlay);
+          console.error("Failed to read data");
         });
-        this.objResposta = res.data;
-        let startTime = Date.now();
-        let interval = setInterval(() => {
-          document.dispatchEvent(new Event("update"));
-          let elapsedTime = Date.now() - startTime;
-          this.percent = Math.min(
-            (elapsedTime / this.estimativaTotal) * 100,
-            99.9
-          ).toFixed(2);
-          if (elapsedTime >= this.estimativaTotal) {
-            clearInterval(interval);
-          }
-        }, 15);
-      } catch {
-        emitter.emit(erroOverlay);
-      }
     },
   },
   async mounted() {
-    this.objResposta = this.$store.getters.getAnalResponseData;
+    const formDiag = this.$store.getters.getFormDiag;
+    console.log("FORM: ", formDiag, typeof formDiag);
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const tempoLoad = 2 * 1000;
+    const res = await Promise.all([
+      this.progressoIntervaloMs(tempoLoad, 50, signal),
+      axios.post(this.$store.getters.getDiag, formDiag, {
+        withCredentials: true,
+      }),
+    ]);
+
+    this.objResposta = res[1].data;
 
     console.log("MOUNTED RESPONSE: ", this.objResposta);
-    document.addEventListener("update", this.moverBarra);
-    const a = await this.mudarLoading();
+    //logica de barra de progresso e req de analise
+    this.mudarLoading(controller);
+    await this.progressoIntervaloMs(this.estimativaTotal - tempoLoad, 100, signal);
   },
 };
 </script>
@@ -119,6 +147,10 @@ export default {
   align-items: center;
   justify-content: center;
 }
+.overlay-aviso {
+  align-self: center;
+  background: white;
+}
 
 .progresso {
   color: white;
@@ -137,6 +169,7 @@ export default {
 .barra-menor {
   margin: 0px;
   padding: 0px;
+  transition: width 0.3s ease-out;
   background-color: #792359;
   height: 100%;
   width: 2%;

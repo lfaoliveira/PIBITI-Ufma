@@ -78,15 +78,18 @@
         </div>
 
         <div class="form-group">
-          <label id="label-upload" for="videoUpload">Enviar Vídeo</label>
-          <input
-            @change="getVideo"
-            type="file"
-            id="videoUpload"
-            name="video"
-            accept="video/*"
-            required
-          />
+          <div id="div-lateral">
+            <label id="label-upload" for="videoUpload">Enviar Vídeo</label>
+            <input
+              @change="getVideo"
+              type="file"
+              id="videoUpload"
+              name="video"
+              accept="video/*"
+              required
+            />
+            <p v-if="this.videoObj != null">Vídeo Carregado</p>
+          </div>
         </div>
 
         <div class="form-group">
@@ -136,12 +139,11 @@ export default {
     return {
       nomePac: "",
       paralisia: "",
-      olhoEsquerdo: "",
-      olhoDireito: "",
+      olhoEsquerdo: "false",
+      olhoDireito: "false",
       desc: "",
       videoObj: null,
-      extensoes: ["mpg", "mpeg", "webm",
-      "mkv", "ogv", "ogg", "mp4", "avi"],
+      extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"],
     };
   },
   props: {},
@@ -163,11 +165,8 @@ export default {
       formData.append("nomePaciente", this.nomePac);
       formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
       formData.append("desc", this.desc);
-      const res = await axios.post(this.$store.getters.getDiag, formData, {
-        withCredentials: true,
-      });
-      this.$store.commit('setAnalResponseData', res.data);
-      this.$router.push({ name: "PaginaCarregando"});
+      this.$store.commit("setFormDiag", formData);
+      this.$router.push({ name: "PaginaCarregando" });
     },
     getVideo($evt) {
       //checagem por tipos de video
@@ -185,53 +184,6 @@ export default {
         }
       }
     },
-    async handleFileUpload($evt) {
-      const file = $evt.target.files[0];
-
-      if (file) {
-        // AQUI ENTRA LOGICA DE PROCESSAMENTO DE VIDEO
-        const urlServer = "http://localhost:5000/analise"; // Replace with your server URL
-        const formData = new FormData();
-        formData.append("file", file); // 'file' is the key used for the file on the server
-
-        (async () => {
-          try {
-            const result = await axios.post(urlServer, formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            });
-            console.log(`RESULTADO`, result);
-            const resultJSON = result.data;
-            const strResult = resultJSON.string;
-            const grafico_base64 = resultJSON.grafico;
-            const video_base64 = resultJSON.video;
-            console.log("VIDEO RECEBIDO: ", typeof video_base64);
-            const extension = resultJSON.extVideo;
-
-            const mimeVar = mime.lookup(extension);
-            // TODO: MUDAR LOGICA DE ARMAZENAMENTO DE DADOS
-            await db.open();
-            const videoData = {
-              string: strResult,
-              video: video_base64,
-              grafico: grafico_base64,
-              mimeVideo: mimeVar,
-            };
-            console.log(videoData);
-            let constId = await db.add(videoData);
-            console.log(constId + " " + typeof constId);
-
-            alert(constId);
-            console.log("VIDEO PROCESSADO");
-            this.$router.push({
-              name: "analiseVideo",
-              query: { idVideoAnalise: constId },
-            });
-          } catch (error) {
-            console.error(error + "An error occurred while uploading the file.");
-          }
-        })();
-      }
-    },
     estiloCheckBox() {
       return {
         "checkBox--disabled": this.paralisia !== "Sim",
@@ -240,7 +192,6 @@ export default {
     },
   },
   mounted() {
-    this.$store.commit('setAnalResponseData', null);
     // listener pra quando fileInput recebe mudança
     // document.getElementById("fileInput").onchange = this.handleFileUpload;
   },
@@ -309,6 +260,12 @@ form {
         filter: brightness(0.5) opacity(0.5);
         pointer-events: none;
       }
+    }
+
+    #div-lateral {
+      gap: 2vmin;
+      display: flex;
+      align-items: center;
     }
 
     label {
