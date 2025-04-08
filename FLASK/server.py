@@ -362,17 +362,18 @@ def analisar():
 @app.route("/pega_perfil", methods=["GET"])
 @cross_origin(supports_credentials=True)
 def pega_perfil():
+    id_medico = session['user_id']
     dados_diag = [
         "nomePaciente",
-        "diagMedico",
+        "diagnosticoMedico",
         "diagAutom",
         "desc",
         "dataDiag",
         "ultimaModif",
-        "linkRelatorio",
+        "pdf",
     ]
-    medicos = mongo.db.get_collection(MEDICOS)
-    usuario = find_user_with_session_mongo(session, medicos)
+    res = list(mongo.db.get_collection(DIAGS).find({"id_medico": id_medico}))
+    return jsonify({"lista": res})
 
 
 @app.route("/envia_diag", methods=["POST"])

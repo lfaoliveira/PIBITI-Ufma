@@ -84,10 +84,13 @@ export default {
   created() {},
   async mounted() {
     console.log("MONTADO PERFIL");
-    const res = await axios.get(this.$store.getters.getCheckLogin);
-
-    if (res.status != 200) {
-      this.deslogado = true;
+    const res2 = await axios.get(this.$store.getters.getPerfil, {
+      withCredentials: true,
+    });
+    this.entradas = this.ajustarEntradasTabela(res2.data.lista);
+    console.log("ENTRADAS: ", this.entradas);
+    this.maxPags = parseInt(this.entradas.length / this.maxItens_Pag);
+    if (!this.$store.getters.getLogado) {
       emitter.emit("semLogin");
     }
   },
@@ -107,26 +110,45 @@ export default {
     fnFrente() {
       //pegar mais dados do BD
     },
+    ajustarEntradasTabela(list) {
+      let key;
+      let copy = Array(list.length);
+      let novoObj;
+
+      for (let i = 0; i < list.length; ++i) {
+        let obj = list[i];
+        novoObj = new Object();
+        Object.entries(obj).forEach((pair) => {
+          key = pair[0];
+          //se header tem
+          if (Object.hasOwn(this.header, key)) {
+            novoObj[key] = pair[1];
+          }
+        });
+        copy.push(novoObj);
+      }
+      return copy;
+    },
   },
+  computed: {},
   data() {
     return {
       nomeMedico: "Fulano de Siclano",
       crm: "MA-666666",
       temDiags: true,
-      deslogado: false,
       pagAtual: 1,
       maxPags: "-", //esse aqui se pega do BD
       maxItens_Pag: 10,
-      header: [
-        "Paciente",
-        "Diagnóstico",
-        "Diagnóstico Automatizado",
-        "Descrição",
-        "Data de Diagnóstico",
-        "Última Modificação",
-        "Relatório",
-        "Ações",
-      ],
+      header: {
+        nomePaciente: "Paciente",
+        diagMedico: "Diagnóstico Médico",
+        diagAutom: "Diagnóstico Automatizado",
+        desc: "Descrição",
+        dataDiag: "Data de Diagnóstico",
+        ultimaModif: "Última Modificação",
+        linkRelatorio: "Relatório",
+        acoes: "Ações",
+      },
       entradas: [
         {
           nomePaciente: "adawda",
