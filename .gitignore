@@ -28,10 +28,12 @@ dist-ssr
 __pycache__
 .venv
 env.csv
+permalink-googleDrive-pibiti6-nervo.json
 env-pibiti
+**/permalink-modelo
 cache
 #pesos pra execucao da YOLov3
-FLASK/trained_weights_final.zip.*
+# FLASK/trained_weights_final.zip.*
 trained_weights_final.*
 tmp
 db

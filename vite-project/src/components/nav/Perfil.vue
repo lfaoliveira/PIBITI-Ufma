@@ -85,11 +85,14 @@ export default {
   async mounted() {
     console.log("MONTADO PERFIL");
     const res2 = await axios.get(this.$store.getters.getPerfil, {
+      params: { pagAtual: this.pagAtual },
       withCredentials: true,
     });
     this.entradas = this.ajustarEntradasTabela(res2.data.lista);
+    this.nomeMedico = res2.data.nomeMedico;
+    this.crm = res2.data.crm;
     console.log("ENTRADAS: ", this.entradas);
-    this.maxPags = parseInt(this.entradas.length / this.maxItens_Pag);
+    this.maxPags = Math.ceil(this.entradas.length / this.maxItens_Pag);
     if (!this.$store.getters.getLogado) {
       emitter.emit("semLogin");
     }
@@ -112,7 +115,7 @@ export default {
     },
     ajustarEntradasTabela(list) {
       let key;
-      let copy = Array(list.length);
+      let copy = Array();
       let novoObj;
 
       for (let i = 0; i < list.length; ++i) {
@@ -122,51 +125,87 @@ export default {
           key = pair[0];
           //se header tem
           if (Object.hasOwn(this.header, key)) {
+            if (pair[1] == "") pair[1] = "-";
+            if (key === "dataDiag" || key === "ultimaModif") {
+              pair[1] = new Date(pair[1]).toLocaleString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            } else if (key === "diagnosticoMedico" || key === "diagAutom") {
+              let valor = String(pair[1]).split("+");
+              const esq = valor[0];
+              const dir = valor[1];
+              if (esq == "false" && dir == "false") {
+                pair[1] = "Saudável";
+              } else if (esq == "true" && dir === "true") {
+                pair[1] = "Paralisia em Ambos Olhos";
+              } else {
+                if (esq == "true") {
+                  pair[1] = "Paralisia no Olho Esquerdo";
+                } else {
+                  pair[1] = "Paralisia no Olho Direito";
+                }
+              }
+            }
+
             novoObj[key] = pair[1];
           }
         });
+        // Reorder novoObj based on header keys
+        const orderedObj = {};
+        Object.keys(this.header).forEach((key) => {
+          if (novoObj.hasOwnProperty(key)) {
+            orderedObj[key] = novoObj[key];
+          }
+        });
+        novoObj = orderedObj;
         copy.push(novoObj);
       }
-      return copy;
+      //ordena com base na data de diagnostico
+      return copy.sort((a, b) => {
+        return Date.parse(a.dataDiag) - Date.parse(b.dataDiag);
+      });
     },
   },
   computed: {},
   data() {
     return {
-      nomeMedico: "Fulano de Siclano",
-      crm: "MA-666666",
+      nomeMedico: "Médico",
+      crm: "MA-12345",
       temDiags: true,
       pagAtual: 1,
       maxPags: "-", //esse aqui se pega do BD
-      maxItens_Pag: 10,
       header: {
         nomePaciente: "Paciente",
-        diagMedico: "Diagnóstico Médico",
+        diagnosticoMedico: "Diagnóstico Médico",
         diagAutom: "Diagnóstico Automatizado",
         desc: "Descrição",
         dataDiag: "Data de Diagnóstico",
         ultimaModif: "Última Modificação",
-        linkRelatorio: "Relatório",
+        pdf: "Relatório",
         acoes: "Ações",
       },
       entradas: [
         {
-          nomePaciente: "adawda",
-          diagMedico: "adawda",
-          diagAutom: "adawda",
-          desc: "adawda",
-          dataDiag: "adawda",
-          ultimaModif: "adawda",
-          linkRelatorio: "adawda",
+          nomePaciente: "-",
+          diagMedico: "-",
+          diagAutom: "-",
+          desc: "-",
+          dataDiag: "-",
+          ultimaModif: "-",
+          linkRelatorio: "-",
         },
         {
-          nomePaciente: "wewewewe",
-          diagMedico: "wewewewe",
-          diagAutom: "wewewewe",
-          desc: "wewewewe",
-          dataDiag: "wewewewe",
-          ultimaModif: "wewewewe",
-          linkRelatorio: "wewewewe",
+          nomePaciente: "-",
+          diagMedico: "-",
+          diagAutom: "-",
+          desc: "-",
+          dataDiag: "-",
+          ultimaModif: "-",
+          linkRelatorio: "-",
         },
       ],
     };

@@ -11,6 +11,12 @@ if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
 
 Get-Service -Name "MongoDB"
 
+if (-not (Test-Path "./FLASK/permalink-googleDrive-pibiti6-nervo.json")) {
+    Write-Error "permalink-googleDrive-pibiti6-nervo.json file not found in FLASK directory"
+    exit 1
+}
+
+
 #Check if node packages are installed
 if (-not (Test-Path "./vite-project/node_modules/")) {
     Write-Host "Installing packages into $PWD"

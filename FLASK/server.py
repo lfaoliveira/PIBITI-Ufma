@@ -11,6 +11,9 @@ import os
 from werkzeug.utils import secure_filename
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
 from flask_session import Session
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 
 from flask_pymongo import PyMongo
 import hashlib
@@ -27,29 +30,55 @@ import csv
 
 
 def download_peso(PATH_FLASK):
-    from google.oauth2 import service_account
-    from googleapiclient.discovery import build
-    from googleapiclient.http import MediaIoBaseDownload
     import io
-
-    SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
-    PATH_CRED = os.path.join(PATH_FLASK, "permalink-modelo.json")
-    credentials = service_account.Credentials.from_service_account_file(
-        PATH_CRED, scopes=SCOPES
-    )
-
-    service = build("drive", "v3", credentials=credentials)
     file_id = "10hdULWG2n7F8jjUbebcB2lMeiUUnh6rq"
     file_name = "trained_weights_final.h5"
 
     request = service.files().get_media(fileId=file_id)
     fh = io.FileIO(file_name, "wb")
     downloader = MediaIoBaseDownload(fh, request, chunksize=1024 * 1024)
-
     done = False
     while not done:
         status, done = downloader.next_chunk()
         print(f"Download {int(status.progress() * 100)}%.")
+
+
+# Check if google drive folder exists
+def check_folder_exists(folder_name, drive_service):
+    try:
+        query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        results = drive_service.files().list(q=query, fields="files(id)").execute()
+        return (len(results.get('files', [])) > 0)
+    except Exception as e:
+        print(f"Error checking folder: {e}")
+        return False
+
+
+def upload_to_drive(file):
+    medicos = mongo.db.get_collection(MEDICOS)
+    medico = find_one_with_id(medicos, session['user_id'])
+    folder_medico = medico['email']
+    # cria folder se nao existir
+    if (not folder_medico):
+        folder_metadata = {
+            'name': 'MyFolder',
+            # ID of the parent folder (optional)
+            'parents': ['<parent_folder_id>']
+        }
+        folder = drive_service.files().create(
+            body=folder_metadata, fields='id').execute()
+
+    file_metadata = {
+        'name': os.path.basename(file),
+        # ID of the folder where you want to upload
+        'parents': [os.path.join(folder_medico)],
+    }
+    if type(file) == str:
+        # enviar arquivo existente
+        pass
+    elif (type(file) == bytes):
+        # escrever arquivo e enviar
+        pass
 
 
 def count_active_threads():
@@ -109,8 +138,22 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         return str_res, path_graf
 
 
-def find_user_with_session_mongo(session: SessionMixin, collection):
-    return collection.find_one({"_id": ObjectId(session['user_id'])})
+def read_ENV_VARS(arq_config):
+    try:
+        with open(arq_config, 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                if len(row) >= 2:  # Ensure row has key and value
+                    key, value = row[0], row[1]
+                    os.environ[key] = value
+    except FileNotFoundError:
+        print(f"Warning: Config file {arq_config} not found")
+    except Exception as e:
+        print(f"{e}")
+
+
+def find_one_with_id(collection, id_string):
+    return collection.find_one({"_id": ObjectId(id_string)})
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
@@ -119,17 +162,19 @@ MEDICOS = "Medicos"
 
 # Read environment variables from CSV
 arq_config = "../env.csv"
-try:
-    with open(arq_config, 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            if len(row) >= 2:  # Ensure row has key and value
-                key, value = row[0], row[1]
-                os.environ[key] = value
-except FileNotFoundError:
-    print(f"Warning: Config file {arq_config} not found")
-except Exception as e:
-    print(f"{e}")
+read_ENV_VARS(arq_config)
+
+PATH_PIBITI = os.getcwd()
+PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
+
+SCOPES = ["https://www.googleapis.com/auth/drive"]
+PATH_CRED = os.path.join(
+    PATH_FLASK, "permalink-googleDrive-pibiti6-nervo.json")
+
+CREDENTIALS = service_account.Credentials.from_service_account_file(
+    PATH_CRED, scopes=SCOPES
+)
+service = build("drive", "v3", credentials=CREDENTIALS)
 
 
 app = Flask(__name__)
@@ -174,8 +219,6 @@ print("APP INICIADO")
 
 os.makedirs("tmp", exist_ok=True)
 
-PATH_PIBITI = os.getcwd()
-PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
 
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
@@ -362,18 +405,33 @@ def analisar():
 @app.route("/pega_perfil", methods=["GET"])
 @cross_origin(supports_credentials=True)
 def pega_perfil():
-    id_medico = session['user_id']
-    dados_diag = [
-        "nomePaciente",
-        "diagnosticoMedico",
-        "diagAutom",
-        "desc",
-        "dataDiag",
-        "ultimaModif",
-        "pdf",
-    ]
-    res = list(mongo.db.get_collection(DIAGS).find({"id_medico": id_medico}))
-    return jsonify({"lista": res})
+    maxItensPag = 16
+    pagAtual = request.args.get('pagAtual', None)
+    if pagAtual != None:
+        pagAtual = int(pagAtual)
+        id_medico = session['user_id']
+        res = mongo.db.get_collection(DIAGS).aggregate([
+            {
+                '$match': {
+                    "id_medico": id_medico
+                }
+            },
+
+            {
+                '$facet': {
+                    'metadata': [{'$count': 'totalCount'}],
+                    'data': [{'$skip': (pagAtual - 1) * maxItensPag}, {'$limit': maxItensPag}],
+                },
+            },
+        ], allowDiskUse=True)
+        print(f"\n\n{res}\n\n")
+
+        medico = find_one_with_id(mongo.db.get_collection(MEDICOS), id_medico)
+        # res = list(mongo.db.get_collection(DIAGS).find())
+        return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": res})
+
+    else:
+        return make_response("INPUT NULO!", BAD_REQUEST)
 
 
 @app.route("/envia_diag", methods=["POST"])
@@ -527,8 +585,8 @@ def val_login():
         return make_response("False", UNAUTHORIZED)
     else:
         # Check if user exists in database
-        medicos = mongo.db.get_collection(MEDICOS)
-        usuario = find_user_with_session_mongo(session, medicos)
+        usuario = find_one_with_id(
+            mongo.db.get_collection(MEDICOS), session['user_id'])
         if usuario != None:
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
             if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():
