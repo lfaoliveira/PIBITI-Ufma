@@ -38,18 +38,19 @@ class DriveAPI:
         CREDENTIALS = service_account.Credentials.from_service_account_file(
             PATH_CRED, scopes=SCOPES
         )
-        self.drive_service = Resource(
-            build("drive", "v3", credentials=CREDENTIALS))
+        self.email = 'viplab.psno@nca.ufma.br'
+        self.drive_service = build("drive", "v3", credentials=CREDENTIALS)
 
     # Check if google drive folder exists
     def get_folder_id(self, folder_name):
+        print("NO FOLDER: ")
         try:
             # folder igual a folder_name e fora da lixeira
             query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
             results = self.drive_service.files().list(
                 q=query, fields="files(id)").execute()
             files = results.get('files', [])
-            if len(files > 0):
+            if len(files) > 0:
                 return files[0].get('id')
             else:
                 return None
@@ -63,18 +64,18 @@ class DriveAPI:
         Returns: id do arquivo criado
         """
         # cria folder se nao existir
-        id_folder = self.get_folder_id(folder)
+        id_folder = self.get_folder_id(folder) if folder != "root" else "root"
+
         if (not id_folder):
+            print("CRIANDO FOLDER")
             folder_metadata = {
                 'name': folder
-                # ID of the parent folder (optional)
-                # 'parents': ['<parent_folder_id>']
             }
             folder_drive = self.drive_service.files().create(
                 body=folder_metadata, fields='id').execute()
+            print(folder_drive)
             id_folder = folder_drive.get('id')
 
-        res = "resumable" if resumable else "media"
         mime = mimetypes.guess_type(file)
         if mime:
             media = MediaFileUpload(
@@ -88,25 +89,32 @@ class DriveAPI:
                 if not resumable:
                     # upload simples
                     response = self.drive_service.files().create(
-                        body=file_metadata, media_body=media).execute()
+                        body=file_metadata, media_body=media, fields='id').execute()
                     file_id = response.get('id')
 
                 else:
                     # UPLOAD EM PARTES (ARQUIVOS > 5MB)
                     request = self.drive_service.files().create(
-                        body=file_metadata, media_body=media)
+                        body=file_metadata, media_body=media, fields='id')
 
                     response = None
                     while response is None:
                         status, response = request.next_chunk()
                         if status:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
-
-                    file_id = response.get('id')
+                permission = {
+                    'type': 'anyone',
+                    'role': 'owner',  # or 'writer'/'reader'
+                    'emailAddress': self.email
+                }
+                self.drive_service.permissions().create(
+                    fileId=file_id, body=permission).execute()
+                file_id = response.get('id')
                 return file_id
+
             except Exception as e:
                 print("DEU MERDA: \n\n", e)
-                return e
+                return None
         else:
             """ ERRO NO MIME"""
             return Exception("ERRO AO PEGAR MIMETYPE")
@@ -118,7 +126,8 @@ class DriveAPI:
             results = self.drive_service.files().list(
                 q=query, fields="files(id)").execute()
             files = results.get('files', [])
-            if len(files > 0):
+            print(f"FILES: {files}")
+            if len(files) > 0:
                 return files[0].get('id')
             else:
                 return None
@@ -127,7 +136,6 @@ class DriveAPI:
 
     def download_file(self, file_id):
         # file_id = "10hdULWG2n7F8jjUbebcB2lMeiUUnh6rq"
-
         request = self.drive_service.files().get_media(fileId=file_id)
         import io
         file = io.BytesIO()
@@ -306,6 +314,46 @@ video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 modelo = get_modelo()
 # OBS: MODELO DEVE TER FUNCAO detect_image implementada
 analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
+
+
+@app.route("/teste")
+def teste():
+
+    results = drive.drive_service.files().list(
+        fields="files(id, name, parents)").execute()
+    print(results.get('files', []))
+    return make_response("OK", OK)
+
+
+@app.route("/delete_all")
+def delete_all():
+    try:
+        # First, change permissions on all files
+        results = drive.drive_service.files().list(
+            fields="files(id, name)").execute()
+        files = results.get('files', [])
+
+        for file in files:
+            permission = {
+                'type': 'anyone',
+                'role': 'owner',
+                'emailAddress': drive.email
+            }
+            drive.drive_service.permissions().create(
+                fileId=file['id'],
+                body=permission
+            ).execute()
+            print(f"Changed permissions for {file['name']}")
+
+        # Then delete all files
+        for file in files:
+            drive.drive_service.files().delete(fileId=file['id']).execute()
+            print(f"Deleted {file['name']}")
+
+        return make_response(f"Deleted {len(files)} files", OK)
+    except Exception as e:
+        print(f"Error deleting files: {e}")
+        return make_response(str(e), INTERNAL_SERVER_ERROR)
 
 
 @app.route("/")
