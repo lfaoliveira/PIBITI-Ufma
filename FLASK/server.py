@@ -12,8 +12,11 @@ from werkzeug.utils import secure_filename
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
 from flask_session import Session
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient.discovery import build, Resource
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+from googleapiclient.errors import HttpError
+import mimetypes
+
 
 from flask_pymongo import PyMongo
 import hashlib
@@ -29,56 +32,112 @@ import requests
 import csv
 
 
-def download_peso(PATH_FLASK):
-    import io
-    file_id = "10hdULWG2n7F8jjUbebcB2lMeiUUnh6rq"
-    file_name = "trained_weights_final.h5"
+class DriveAPI:
+    def __init__(self, PATH_CRED):
+        SCOPES = ["https://www.googleapis.com/auth/drive"]
+        CREDENTIALS = service_account.Credentials.from_service_account_file(
+            PATH_CRED, scopes=SCOPES
+        )
+        self.drive_service = Resource(
+            build("drive", "v3", credentials=CREDENTIALS))
 
-    request = service.files().get_media(fileId=file_id)
-    fh = io.FileIO(file_name, "wb")
-    downloader = MediaIoBaseDownload(fh, request, chunksize=1024 * 1024)
-    done = False
-    while not done:
-        status, done = downloader.next_chunk()
-        print(f"Download {int(status.progress() * 100)}%.")
+    # Check if google drive folder exists
+    def get_folder_id(self, folder_name):
+        try:
+            # folder igual a folder_name e fora da lixeira
+            query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+            results = self.drive_service.files().list(
+                q=query, fields="files(id)").execute()
+            files = results.get('files', [])
+            if len(files > 0):
+                return files[0].get('id')
+            else:
+                return None
+        except Exception as e:
+            print(f"Error checking folder: {e}")
 
+    def upload_to_drive(self, file, folder, resumable=False):
+        """
+        Faz upload de arquivo para o drive; Crie folder de destino se folder nao existir
+        --------
+        Returns: id do arquivo criado
+        """
+        # cria folder se nao existir
+        id_folder = self.get_folder_id(folder)
+        if (not id_folder):
+            folder_metadata = {
+                'name': folder
+                # ID of the parent folder (optional)
+                # 'parents': ['<parent_folder_id>']
+            }
+            folder_drive = self.drive_service.files().create(
+                body=folder_metadata, fields='id').execute()
+            id_folder = folder_drive.get('id')
 
-# Check if google drive folder exists
-def check_folder_exists(folder_name, drive_service):
-    try:
-        query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-        results = drive_service.files().list(q=query, fields="files(id)").execute()
-        return (len(results.get('files', [])) > 0)
-    except Exception as e:
-        print(f"Error checking folder: {e}")
-        return False
+        res = "resumable" if resumable else "media"
+        mime = mimetypes.guess_type(file)
+        if mime:
+            media = MediaFileUpload(
+                file, mimetype=mime[0], resumable=resumable)
+            file_metadata = {
+                'name': os.path.basename(file),
+                # ID of the folder where you want to upload
+                'parents': [id_folder],
+            }
+            try:
+                if not resumable:
+                    # upload simples
+                    response = self.drive_service.files().create(
+                        body=file_metadata, media_body=media).execute()
+                    file_id = response.get('id')
 
+                else:
+                    # UPLOAD EM PARTES (ARQUIVOS > 5MB)
+                    request = self.drive_service.files().create(
+                        body=file_metadata, media_body=media)
 
-def upload_to_drive(file):
-    medicos = mongo.db.get_collection(MEDICOS)
-    medico = find_one_with_id(medicos, session['user_id'])
-    folder_medico = medico['email']
-    # cria folder se nao existir
-    if (not folder_medico):
-        folder_metadata = {
-            'name': 'MyFolder',
-            # ID of the parent folder (optional)
-            'parents': ['<parent_folder_id>']
-        }
-        folder = drive_service.files().create(
-            body=folder_metadata, fields='id').execute()
+                    response = None
+                    while response is None:
+                        status, response = request.next_chunk()
+                        if status:
+                            print(f"Uploaded {int(status.progress() * 100)}%.")
 
-    file_metadata = {
-        'name': os.path.basename(file),
-        # ID of the folder where you want to upload
-        'parents': [os.path.join(folder_medico)],
-    }
-    if type(file) == str:
-        # enviar arquivo existente
-        pass
-    elif (type(file) == bytes):
-        # escrever arquivo e enviar
-        pass
+                    file_id = response.get('id')
+                return file_id
+            except Exception as e:
+                print("DEU MERDA: \n\n", e)
+                return e
+        else:
+            """ ERRO NO MIME"""
+            return Exception("ERRO AO PEGAR MIMETYPE")
+
+    def get_file_id(self, file_name):
+        try:
+            # folder igual a folder_name e fora da lixeira
+            query = f"name = '{file_name}' and trashed = false"
+            results = self.drive_service.files().list(
+                q=query, fields="files(id)").execute()
+            files = results.get('files', [])
+            if len(files > 0):
+                return files[0].get('id')
+            else:
+                return None
+        except Exception as e:
+            print(f"Error getting file: {e}")
+
+    def download_file(self, file_id):
+        # file_id = "10hdULWG2n7F8jjUbebcB2lMeiUUnh6rq"
+
+        request = self.drive_service.files().get_media(fileId=file_id)
+        import io
+        file = io.BytesIO()
+        downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+            print(f"Download {int(status.progress() * 100)}%.")
+
+        return file.getvalue()
 
 
 def count_active_threads():
@@ -156,6 +215,15 @@ def find_one_with_id(collection, id_string):
     return collection.find_one({"_id": ObjectId(id_string)})
 
 
+def get_peso(api: DriveAPI):
+    file_name = "trained_weights_final.h5"
+    id = api.get_file_id(file_name)
+    bytes_file = api.download_file(id)
+    # TODO: TESTAR PRA VER SE PRECISA MESMO ESCREVER ESSES BYTES OU SE O DONWLOAD JA FAZ ISSO
+    with open(file_name, 'wb') as f:
+        f.write(bytes_file)
+
+
 # ------------- VARIAVEIS GLOBAIS--------------#
 DIAGS = "Diagnosticos"
 MEDICOS = "Medicos"
@@ -163,18 +231,6 @@ MEDICOS = "Medicos"
 # Read environment variables from CSV
 arq_config = "../env.csv"
 read_ENV_VARS(arq_config)
-
-PATH_PIBITI = os.getcwd()
-PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
-
-SCOPES = ["https://www.googleapis.com/auth/drive"]
-PATH_CRED = os.path.join(
-    PATH_FLASK, "permalink-googleDrive-pibiti6-nervo.json")
-
-CREDENTIALS = service_account.Credentials.from_service_account_file(
-    PATH_CRED, scopes=SCOPES
-)
-service = build("drive", "v3", credentials=CREDENTIALS)
 
 
 app = Flask(__name__)
@@ -219,20 +275,28 @@ print("APP INICIADO")
 
 os.makedirs("tmp", exist_ok=True)
 
+PATH_PIBITI = os.getcwd()
+PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
+
 
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
 if "PIBITI" == os.path.basename(PATH_PIBITI):
     os.chdir(app.config["WKDIR"])
-
-
 app.config["WKDIR"] = os.getcwd()
+
+PATH_CRED = os.path.join(
+    app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json")
+
+drive = DriveAPI(PATH_CRED)
+
+
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
     print(" NÃO REINICIE O SERVIDOR!!!!!!!\nBaixando pesos do modelo YOLOv3...")
-    download_peso(app.config["WKDIR"])
+    get_peso(app.config["WKDIR"])
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
 video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")

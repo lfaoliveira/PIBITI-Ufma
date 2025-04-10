@@ -28,6 +28,10 @@ if (-not (Test-Path "./vite-project/node_modules/")) {
 Write-Host "Starting Node Frontend Server"
 #Start Node+Vite+Vue server
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location 'vite-project'; npm run dev"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Flask server failed to start with exit code: $LASTEXITCODE"
+}
+
 
 $nomeConda = "env-pibiti"
 # Activate conda environment if it doesnt exist
@@ -43,4 +47,5 @@ if (-not (Test-Path "./env.csv")) {
 }
 # Start Flask server
 Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK"
+
 
