@@ -48,38 +48,6 @@ class GoogleDrive:
         self.file_state = {}
         self.fetch_drive_files()
 
-    def delete_file(self, file_id, folder_id):
-        """
-        Delete a file from a specific folder in Google Drive
-
-        Args:
-            file_id: ID of the file to delete
-            folder_id: ID of the folder containing the file
-
-        Returns:
-            bool: True if deletion successful, False otherwise
-        """
-        print("\n")
-        try:
-            # Verify file exists in specified folder
-            if folder_id == None or folder_id == 'root':
-                folder_id = ROOT_DRIVE
-            if isinstance(folder_id, list):
-                folder_id = folder_id[0]
-            print(f"FOLDER_ID: {folder_id}")
-
-            # Delete the file
-            self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
-
-            """ # Remove from local state
-            if file_id in self.file_state:
-                del self.file_state[file_id] """
-            return True
-
-        except Exception as e:
-            print(f"Error deleting file: {e}")
-            return False
-
     def initial_fetch(self):
         # Get initial state and start page token
         results = self.drive_service.files().list(
@@ -146,6 +114,7 @@ class GoogleDrive:
                         "modified": file.get('modifiedTime'),
                         "name": file.get('name'),
                         "parents": file.get('parents'),
+                        "mimeType": file.get('mimeType'),
                     }
 
             if 'newStartPageToken' in response.keys():
@@ -156,18 +125,19 @@ class GoogleDrive:
         return self.file_state
 
     def get_folder_id(self, folder_name):
-        try:
-            # folder igual a folder_name e fora da lixeira
-            query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
-            results = self.drive_service.files().list(
-                q=query, fields="files(id)").execute()
-            files = results.get('files', [])
-            if len(files) > 0:
-                return files[0].get('id')
-            else:
-                return None
-        except Exception as e:
-            print(f"Error checking folder: {e}")
+        for id, file in self.file_state.items():
+            mime = file.get('mimeType')
+            name = file.get('name')
+            if mime == 'application/vnd.google-apps.folder' and name == folder_name:
+                return id
+        return None
+
+    def get_file_id(self, file_name):
+        for id, file in self.file_state.items():
+            name = file.get('name')
+            if name == file_name:
+                return id
+        return None
 
     def upload_to_drive(self, file, folder, resumable=False):
         """
@@ -175,13 +145,13 @@ class GoogleDrive:
         --------
         Returns: id do arquivo criado
         """
-        # cria folder se nao existir
-
+        self.fetch_drive_files()
         # id_folder = self.get_folder_id(folder) if folder != "root" else "root"
         if folder == "root":
             raise Exception("NAO EH POSSIVEL INSERIR NO ROOT!!!!")
         id_folder = self.get_folder_id(folder)
 
+        # cria folder se nao existir
         if (not id_folder):
             print("CRIANDO FOLDER ", folder)
             folder_metadata = {
@@ -226,7 +196,6 @@ class GoogleDrive:
                     fileId=file_id, body=permission).execute()
                 file_id = response.get('id')
                 return file_id
-
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)
                 return None
@@ -235,48 +204,41 @@ class GoogleDrive:
             print(Exception("ERRO AO PEGAR MIMETYPE"))
             return None
 
-    def check_for_changes(self):
-        copia_page_token = self.page_token
-        while copia_page_token:
-            response = self.drive_service.changes().list(pageToken=copia_page_token,
-                                                         spaces='drive',
-                                                         fields='nextPageToken, newStartPageToken, changes(fileId, file(trashed))').execute()
+    def delete_file(self, file_id, folder_id):
+        """
+        Delete a file from a specific folder in Google Drive
 
-            for change in response.get('changes', []):
-                file_id = change['fileId']
-                file_info = change.get('file', {})
+        Args:
+            file_id: ID of the file to delete
+            folder_id: ID of the folder containing the file
 
-                if file_id in initial_file_ids:
-                    if file_info.get('trashed', False):
-                        print(
-                            f"File with ID {file_id} has been moved to trash")
-                    elif 'file' not in change:
-                        print(
-                            f"File with ID {file_id} has been permanently deleted")
-
-            if 'newStartPageToken' in response:
-                # Save this token for the next round
-                save_start_page_token(response.get('newStartPageToken'))
-
-            copia_page_token = response.get('nextPageToken')
-
-    def get_file_id(self, file_name):
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        print("\n")
         try:
-            # folder igual a folder_name e fora da lixeira
-            query = f"name = '{file_name}' and trashed = false"
-            results = self.drive_service.files().list(
-                q=query, fields="files(id)").execute()
-            files = results.get('files', [])
-            print(f"FILES: {files}")
-            if len(files) > 0:
-                return files[0].get('id')
-            else:
-                return None
+            # Verify file exists in specified folder
+            if folder_id == None or folder_id == 'root':
+                folder_id = ROOT_DRIVE
+            elif isinstance(folder_id, list):
+                folder_id = folder_id[0]
+            print(f"FOLDER_ID: {folder_id}")
+
+            # Delete the file
+            self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
+
+            """ # Remove from local state
+            if file_id in self.file_state:
+                del self.file_state[file_id] """
+            return True
+
         except Exception as e:
-            print(f"Error getting file: {e}")
+            print(f"Error deleting file: {e}")
+            return False
 
     def download_file(self, file_id):
-        # file_id = "10hdULWG2n7F8jjUbebcB2lMeiUUnh6rq"
+        self.fetch_drive_files()
+
         request = self.drive_service.files().get_media(fileId=file_id)
         import io
         file = io.BytesIO()
@@ -285,7 +247,6 @@ class GoogleDrive:
         while not done:
             status, done = downloader.next_chunk()
             print(f"Download {int(status.progress() * 100)}%.")
-
         return file.getvalue()
 
 
