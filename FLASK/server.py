@@ -1,3 +1,4 @@
+import datetime
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
 from typing import Collection
@@ -11,12 +12,14 @@ import os
 from werkzeug.utils import secure_filename
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
 from flask_session import Session
+from celery import Celery
+from celery.schedules import crontab
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build, Resource
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 import mimetypes
-
 
 from flask_pymongo import PyMongo
 import hashlib
@@ -32,7 +35,7 @@ import requests
 import csv
 
 
-class DriveAPI:
+class GoogleDrive:
     def __init__(self, PATH_CRED):
         SCOPES = ["https://www.googleapis.com/auth/drive"]
         CREDENTIALS = service_account.Credentials.from_service_account_file(
@@ -40,10 +43,119 @@ class DriveAPI:
         )
         self.email = 'viplab.psno@nca.ufma.br'
         self.drive_service = build("drive", "v3", credentials=CREDENTIALS)
+        self.first_fetch = True
+        self.startPageToken = None
+        self.file_state = {}
+        self.fetch_drive_files()
 
-    # Check if google drive folder exists
+    def delete_file(self, file_id, folder_id):
+        """
+        Delete a file from a specific folder in Google Drive
+
+        Args:
+            file_id: ID of the file to delete
+            folder_id: ID of the folder containing the file
+
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        print("\n")
+        try:
+            # Verify file exists in specified folder
+            if folder_id == None or folder_id == 'root':
+                folder_id = ROOT_DRIVE
+            if isinstance(folder_id, list):
+                folder_id = folder_id[0]
+            print(f"FOLDER_ID: {folder_id}")
+
+            # Delete the file
+            self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
+
+            """ # Remove from local state
+            if file_id in self.file_state:
+                del self.file_state[file_id] """
+            return True
+
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+            return False
+
+    def initial_fetch(self):
+        # Get initial state and start page token
+        results = self.drive_service.files().list(
+            pageSize=1000,
+            fields="nextPageToken, files(id, name, modifiedTime, parents, trashed)"
+        ).execute()
+
+        page_token = None
+        files = []
+        while True:
+            response = self.drive_service.files().list(
+                pageSize=100,
+                fields="nextPageToken, files(id, name, mimeType, modifiedTime, parents)",
+                pageToken=page_token,
+                q="trashed=false"
+            ).execute()
+
+            files.extend(response.get('files', []))
+            page_token = response.get('nextPageToken', None)
+            if page_token is None:
+                break
+
+        for file in files:
+            self.file_state[file['id']] = {
+                "modified": file.get('modifiedTime'),
+                "name": file.get('name'),
+                "parents": file.get('parents'),
+                "mimeType": file.get('mimeType')
+            }
+        self.first_fetch = False
+        return
+
+    def fetch_drive_files(self):
+        """
+        Query Google Drive to fetch a list of all files (INCLUDES FOLDERS).
+        Returns:
+            A dictionary mapping file IDs to their modified times (or any other metadata you want).
+        """
+        if self.first_fetch:
+            self.initial_fetch()
+            return self.file_state
+
+        page_token = self.startPageToken
+        while page_token is not None:
+            response = self.drive_service.changes().list(
+                pageToken=page_token,
+                spaces='drive',
+                includeRemoved=True,
+                includeItemsFromAllDrives=True,
+                supportsAllDrives=True,
+                pageSize=50
+            ).execute()
+
+            for change in response.get('changes', []):
+                file_id = change.get('fileId')
+                trashed = change.get('file', {}).get('trashed', False)
+                if change.get('removed', False) or trashed:
+                    # tira arquivo do registro
+                    self.file_state.pop(file_id, None)
+                else:
+                    # atualiza arquivo no registro
+                    file = change.get('file')
+                    self.file_state[file_id] = {
+                        "modified": file.get('modifiedTime'),
+                        "name": file.get('name'),
+                        "parents": file.get('parents'),
+                    }
+
+            if 'newStartPageToken' in response.keys():
+                # Save this token for the next polling interval
+                self.startPageToken = response.get('newStartPageToken')
+            page_token = response.get('nextPageToken')
+
+        return self.file_state
+
     def get_folder_id(self, folder_name):
-        print("NO FOLDER: ")
         try:
             # folder igual a folder_name e fora da lixeira
             query = f"name = '{folder_name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false"
@@ -64,10 +176,14 @@ class DriveAPI:
         Returns: id do arquivo criado
         """
         # cria folder se nao existir
-        id_folder = self.get_folder_id(folder) if folder != "root" else "root"
+
+        # id_folder = self.get_folder_id(folder) if folder != "root" else "root"
+        if folder == "root":
+            raise Exception("NAO EH POSSIVEL INSERIR NO ROOT!!!!")
+        id_folder = self.get_folder_id(folder)
 
         if (not id_folder):
-            print("CRIANDO FOLDER")
+            print("CRIANDO FOLDER ", folder)
             folder_metadata = {
                 'name': folder
             }
@@ -104,8 +220,7 @@ class DriveAPI:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
                 permission = {
                     'type': 'anyone',
-                    'role': 'owner',  # or 'writer'/'reader'
-                    'emailAddress': self.email
+                    'role': 'writer',
                 }
                 self.drive_service.permissions().create(
                     fileId=file_id, body=permission).execute()
@@ -113,11 +228,37 @@ class DriveAPI:
                 return file_id
 
             except Exception as e:
-                print("DEU MERDA: \n\n", e)
+                print("PROBLEMA NO UPLOAD: \n\n", e)
                 return None
         else:
             """ ERRO NO MIME"""
-            return Exception("ERRO AO PEGAR MIMETYPE")
+            print(Exception("ERRO AO PEGAR MIMETYPE"))
+            return None
+
+    def check_for_changes(self):
+        copia_page_token = self.page_token
+        while copia_page_token:
+            response = self.drive_service.changes().list(pageToken=copia_page_token,
+                                                         spaces='drive',
+                                                         fields='nextPageToken, newStartPageToken, changes(fileId, file(trashed))').execute()
+
+            for change in response.get('changes', []):
+                file_id = change['fileId']
+                file_info = change.get('file', {})
+
+                if file_id in initial_file_ids:
+                    if file_info.get('trashed', False):
+                        print(
+                            f"File with ID {file_id} has been moved to trash")
+                    elif 'file' not in change:
+                        print(
+                            f"File with ID {file_id} has been permanently deleted")
+
+            if 'newStartPageToken' in response:
+                # Save this token for the next round
+                save_start_page_token(response.get('newStartPageToken'))
+
+            copia_page_token = response.get('nextPageToken')
 
     def get_file_id(self, file_name):
         try:
@@ -223,11 +364,10 @@ def find_one_with_id(collection, id_string):
     return collection.find_one({"_id": ObjectId(id_string)})
 
 
-def get_peso(api: DriveAPI):
+def get_peso(api: GoogleDrive):
     file_name = "trained_weights_final.h5"
     id = api.get_file_id(file_name)
     bytes_file = api.download_file(id)
-    # TODO: TESTAR PRA VER SE PRECISA MESMO ESCREVER ESSES BYTES OU SE O DONWLOAD JA FAZ ISSO
     with open(file_name, 'wb') as f:
         f.write(bytes_file)
 
@@ -278,8 +418,8 @@ app.config.update(
 
 mail = Mail(app)
 CORS(app, supports_credentials=True)
-print("APP INICIADO")
 # path para arquivos temporarios
+print("APP INICIADO")
 
 os.makedirs("tmp", exist_ok=True)
 
@@ -296,7 +436,11 @@ app.config["WKDIR"] = os.getcwd()
 PATH_CRED = os.path.join(
     app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json")
 
-drive = DriveAPI(PATH_CRED)
+drive = GoogleDrive(PATH_CRED)
+ROOT_DRIVE = "ROOT_DADOS"  # PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE MEDICOS
+
+print(
+    f"Initial drive state captured with {len(drive.file_state.keys())} files.")
 
 
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
@@ -310,50 +454,20 @@ app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
 video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
 # --------------------- MODELO --------------------------#
-
 modelo = get_modelo()
-# OBS: MODELO DEVE TER FUNCAO detect_image implementada
+# NOTE: MODELO DEVE TER FUNCAO detect_image implementada
 analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 
 @app.route("/teste")
 def teste():
-
-    results = drive.drive_service.files().list(
-        fields="files(id, name, parents)").execute()
-    print(results.get('files', []))
+    # drive.upload_to_drive("requirements.txt", ROOT_DRIVE)
+    files = drive.fetch_drive_files()
+    for id, file in files.items():
+        print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
+        """ if drive.delete_file(id, file["parents"]):
+            print(f"{file.get('name')} deleted in folder {file.get('parents')}\n") """
     return make_response("OK", OK)
-
-
-@app.route("/delete_all")
-def delete_all():
-    try:
-        # First, change permissions on all files
-        results = drive.drive_service.files().list(
-            fields="files(id, name)").execute()
-        files = results.get('files', [])
-
-        for file in files:
-            permission = {
-                'type': 'anyone',
-                'role': 'owner',
-                'emailAddress': drive.email
-            }
-            drive.drive_service.permissions().create(
-                fileId=file['id'],
-                body=permission
-            ).execute()
-            print(f"Changed permissions for {file['name']}")
-
-        # Then delete all files
-        for file in files:
-            drive.drive_service.files().delete(fileId=file['id']).execute()
-            print(f"Deleted {file['name']}")
-
-        return make_response(f"Deleted {len(files)} files", OK)
-    except Exception as e:
-        print(f"Error deleting files: {e}")
-        return make_response(str(e), INTERNAL_SERVER_ERROR)
 
 
 @app.route("/")
@@ -553,6 +667,7 @@ def envia_diag():
     # Convert video to base64
     # TODO: MONGO TEM LIMITE DE ARMAZENAMENTO DE 16MB. PRA ARQUIVOS MAIORES USAR GOOGLE DRIVE
     import base64
+
     video_data = video.read()
     video_b64 = base64.b64encode(video_data)
     nomePaciente = request.form.get("nomePaciente", None)
