@@ -41,22 +41,25 @@ class GoogleDrive:
         CREDENTIALS = service_account.Credentials.from_service_account_file(
             PATH_CRED, scopes=SCOPES
         )
-        self.email = 'viplab.psno@nca.ufma.br'
+        self.emailOwner = 'viplab.psno@nca.ufma.br'
+        self.emailService = 'armazenamento@pibiti6-nervo.iam.gserviceaccount.com'
         self.drive_service = build("drive", "v3", credentials=CREDENTIALS)
         self.first_fetch = True
         self.startPageToken = None
+        """ self.file_state: dict[str, dict[str, str]] """
         self.file_state = {}
         self.fetch_drive_files()
 
     def initial_fetch(self):
         # Get initial state and start page token
-        results = self.drive_service.files().list(
-            pageSize=1000,
-            fields="nextPageToken, files(id, name, modifiedTime, parents, trashed)"
-        ).execute()
 
         page_token = None
         files = []
+
+        # First, get the starting page token for future changes
+        response = self.drive_service.changes().getStartPageToken().execute()
+        self.startPageToken = response.get('startPageToken')
+
         while True:
             response = self.drive_service.files().list(
                 pageSize=100,
@@ -70,6 +73,8 @@ class GoogleDrive:
             if page_token is None:
                 break
 
+        # Clear existing state before updating
+        self.file_state.clear()
         for file in files:
             self.file_state[file['id']] = {
                 "modified": file.get('modifiedTime'),
@@ -78,7 +83,7 @@ class GoogleDrive:
                 "mimeType": file.get('mimeType')
             }
         self.first_fetch = False
-        return
+        return self.file_state
 
     def fetch_drive_files(self):
         """
@@ -89,7 +94,7 @@ class GoogleDrive:
         if self.first_fetch:
             self.initial_fetch()
             return self.file_state
-
+        # OBS:
         page_token = self.startPageToken
         while page_token is not None:
             response = self.drive_service.changes().list(
@@ -98,10 +103,12 @@ class GoogleDrive:
                 includeRemoved=True,
                 includeItemsFromAllDrives=True,
                 supportsAllDrives=True,
-                pageSize=50
+                pageSize=50,
+                fields="nextPageToken, newStartPageToken, changes(fileId, file(trashed, modifiedTime, name, parents, mimeType), removed)"
             ).execute()
 
             for change in response.get('changes', []):
+                print("CHANGE: ", change)
                 file_id = change.get('fileId')
                 trashed = change.get('file', {}).get('trashed', False)
                 if change.get('removed', False) or trashed:
@@ -146,7 +153,6 @@ class GoogleDrive:
         Returns: id do arquivo criado
         """
         self.fetch_drive_files()
-        # id_folder = self.get_folder_id(folder) if folder != "root" else "root"
         if folder == "root":
             raise Exception("NAO EH POSSIVEL INSERIR NO ROOT!!!!")
         id_folder = self.get_folder_id(folder)
@@ -168,8 +174,14 @@ class GoogleDrive:
                 file, mimetype=mime[0], resumable=resumable)
             file_metadata = {
                 'name': os.path.basename(file),
-                # ID of the folder where you want to upload
                 'parents': [id_folder],
+                'permissionIds': ['anyone'],
+                'permissions': [{'type': 'user',
+                                 'role': 'owner',
+                                 'emailAddress': self.emailOwner},
+                                {'type': 'user',
+                                'role': 'editor',
+                                 'emailAddress': self.emailService}]
             }
             try:
                 if not resumable:
@@ -188,13 +200,7 @@ class GoogleDrive:
                         status, response = request.next_chunk()
                         if status:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
-                permission = {
-                    'type': 'anyone',
-                    'role': 'writer',
-                }
-                self.drive_service.permissions().create(
-                    fileId=file_id, body=permission).execute()
-                file_id = response.get('id')
+                    file_id = response.get('id')
                 return file_id
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)
@@ -226,10 +232,8 @@ class GoogleDrive:
 
             # Delete the file
             self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
-
-            """ # Remove from local state
-            if file_id in self.file_state:
-                del self.file_state[file_id] """
+            time.sleep(1)
+            self.fetch_drive_files()
             return True
 
         except Exception as e:
@@ -399,7 +403,9 @@ PATH_CRED = os.path.join(
 
 drive = GoogleDrive(PATH_CRED)
 ROOT_DRIVE = "ROOT_DADOS"  # PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE MEDICOS
-
+print("\nGOOGLE DRIVE:", end=" ")
+for file in drive.file_state.values():
+    print(f"{file['name']},", end=" ")
 print(
     f"Initial drive state captured with {len(drive.file_state.keys())} files.")
 
@@ -424,10 +430,14 @@ analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 def teste():
     # drive.upload_to_drive("requirements.txt", ROOT_DRIVE)
     files = drive.fetch_drive_files()
+    # print(f"{file.get('name')} deleted in folder {file.get('parents')}\n")
+    print("ARQUIVOS DO FETCH")
     for id, file in files.items():
         print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
-        """ if drive.delete_file(id, file["parents"]):
-            print(f"{file.get('name')} deleted in folder {file.get('parents')}\n") """
+        if file.get('name') == "requirements.txt":
+            drive.delete_file(drive.get_file_id("requirements.txt"), 'root')
+            print("DELETOU REQUIREMENTS")
+
     return make_response("OK", OK)
 
 
