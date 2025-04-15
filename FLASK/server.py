@@ -481,6 +481,29 @@ def get_peso(api: GoogleDrive):
         f.write(bytes_file)
 
 
+def get_pdf(dict_dados, output_path):
+    """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR URL EXTERNA DO PDF"""
+    # mapeamento input da funcao -> tag no HTML
+    mapeamento = {'logoApp': 'logo', 'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
+                  'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
+                  'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
+                  'logoVip': "logo-vip", 'logoUfma': "logo-ufma", 'logoNca': "logo-nca", 'difVel': "dif-vel"}
+
+    dict_input_weasy = {}
+    for key_dado in dict_dados.keys():
+        nomeTag = mapeamento[key_dado]
+        dict_input_weasy[nomeTag] = dict_dados[key_dado]
+    from pdf import Converter
+    try:
+        html_content = Converter.insert_text_by_class(dict_input_weasy)
+        if Converter.convert_html_to_pdf(html_content, output_path):
+            print("PDF created successfully!")
+            return True
+    except Exception as e:
+        print("An error occurred during PDF creation.")
+        raise e
+
+
 # ------------- VARIAVEIS GLOBAIS--------------#
 DIAGS = "Diagnosticos"
 MEDICOS = "Medicos"
@@ -493,9 +516,6 @@ read_ENV_VARS(arq_config)
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-"""ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
-Possível risco de segurança!
-"""
 
 app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
 app.config["SESSION_TYPE"] = "filesystem"
@@ -526,6 +546,9 @@ app.config.update(
 )
 
 mail = Mail(app)
+"""ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
+Possível risco de segurança!
+"""
 CORS(app, supports_credentials=True)
 # path para arquivos temporarios
 print("APP INICIADO")
@@ -603,11 +626,6 @@ def get_file(id_file):
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
-
-
-def get_pdf() -> str:
-    # FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR URL EXTERNA DO PDF
-    pass
 
 
 @app.route("/analise", methods=["POST"])
