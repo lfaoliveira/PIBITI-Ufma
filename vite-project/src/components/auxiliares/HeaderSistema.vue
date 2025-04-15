@@ -28,14 +28,12 @@
 </template>
 
 <script>
-import HeaderInicio from "../inicio/HeaderInicio.vue";
 import Salvar from "../icons/Salvar.vue";
 import Voltar from "../icons/Voltar.vue";
 
 export default {
   name: "HeaderSistema",
   components: {
-    HeaderInicio,
     Salvar,
     Voltar,
   },

@@ -27,6 +27,9 @@ export default {
     // Listen for the 'cadastroRepetido' event
     emitter.on(this.eventoAviso, this.openOverlay);
   },
+  mounted() {
+    console.log("MONTADO AVISO");
+  },
   beforeUnmount() {
     // Clean up the event listener
     emitter.off(this.eventoAviso, this.openOverlay);

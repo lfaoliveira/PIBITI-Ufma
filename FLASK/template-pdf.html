@@ -1,0 +1,51 @@
+<head>
+    <meta charset="utf-8">
+    <title>Relatorio de diagnostico</title>
+  </head>
+<section class="frame-pagina">
+<img class="logo" >
+<main>
+    <h1 class="titulo-pdf">Análise de Paralisia do Sexto Nervo Óptico</h1>
+    <section class="dados">
+        <div class="info-medico">
+            <slot class="nome+crm">
+                <h2></h2>
+                <h2></h2>
+            </slot>
+            <h2 class="data"></h2>
+
+        </div>
+        <h3 class="nome-paciente"></h3>
+        <table class="dados-diag">
+            <tr>
+                <td class="entrada-diag">Diagnóstico Automatizado:</td>
+                <td class="diag-auto">Paralisia no Olho X</td>
+            </tr>
+            <tr>
+                <td class="entrada-diag">Diagnóstico Médico:</td>
+                <td class="diag-medico">Paralisia no Olho X</td>
+            </tr>
+            <tr>
+                <td class="entrada-diag">Velocidades</td>
+                <td>
+                    <ul class="lista-vel">
+                        <li class="vel-esq"></li>
+                        <li class="vel-dir"></li>
+                        <li class="dif-vel"></li>
+                    </ul>
+                </td>
+            </tr>
+        </table>
+        <div class="div-grafico">
+            <img class="img-grafico">
+        </div>
+    </section>
+</main>
+<footer class="rodape">
+    <div class="div-imgs">
+        <img alt="logo viplab" src="..\vite-project\src\assets\logo_VIP_Lab.png">
+        <img alt="logo ufma" src="..\vite-project\src\assets\logo ufma.png">
+        <img alt="logo nca" src="..\vite-project\src\assets\Foto-NCA.png">
+    </div>
+</footer>
+</section>

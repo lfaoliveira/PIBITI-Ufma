@@ -153,6 +153,7 @@ export default {
         this.nomePac !== "" &&
         this.paralisia !== "" &&
         this.videoObj !== null &&
+        this.videoObj != undefined &&
         (Boolean(this.olhoEsquerdo) != false || Boolean(this.olhoDireito) != false)
       );
     },

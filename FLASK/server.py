@@ -10,7 +10,7 @@ from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort
+from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file
 from flask_session import Session
 from celery import Celery
 from celery.schedules import crontab
@@ -48,6 +48,8 @@ class GoogleDrive:
         self.startPageToken = None
         """ self.file_state: dict[str, dict[str, str]] """
         self.file_state = {}
+        # dict que vai mapear nomes de arquivos a listas de id's
+        self.hash_nomes = {}
         self.fetch_drive_files()
 
     def initial_fetch(self):
@@ -76,6 +78,10 @@ class GoogleDrive:
         # Clear existing state before updating
         self.file_state.clear()
         for file in files:
+            if file.get('name') not in self.hash_nomes.keys():
+                self.hash_nomes[file.get('name')] = []
+            self.hash_nomes[file.get('name')].append(file['id'])
+
             self.file_state[file['id']] = {
                 "modified": file.get('modifiedTime'),
                 "name": file.get('name'),
@@ -94,7 +100,7 @@ class GoogleDrive:
         if self.first_fetch:
             self.initial_fetch()
             return self.file_state
-        # OBS:
+        # NOTE!!!! TEM DELAY ENTRE MUDANCAS FEITAS PELO USUARIO E REGISTRO NO BACKEND. CUIDADO AO REMOVER ARQUIVOS MANUALMENTE!!!!!
         page_token = self.startPageToken
         while page_token is not None:
             response = self.drive_service.changes().list(
@@ -117,6 +123,9 @@ class GoogleDrive:
                 else:
                     # atualiza arquivo no registro
                     file = change.get('file')
+                    if file.get('name') not in self.hash_nomes.keys():
+                        self.hash_nomes[file.get('name')] = []
+                    self.hash_nomes[file.get('name')].append(file['id'])
                     self.file_state[file_id] = {
                         "modified": file.get('modifiedTime'),
                         "name": file.get('name'),
@@ -131,13 +140,106 @@ class GoogleDrive:
 
         return self.file_state
 
-    def get_folder_id(self, folder_name):
-        for id, file in self.file_state.items():
+    def get_folder_id(self, folder_name, parents=[]):
+        lista_ids = self.hash_nomes.get(folder_name, None)
+
+        if lista_ids == None:
+            return None
+
+        for id in lista_ids:
+            file = self.file_state[id]
             mime = file.get('mimeType')
             name = file.get('name')
-            if mime == 'application/vnd.google-apps.folder' and name == folder_name:
+            parents_arq = file.get('parents', [])
+            print(
+                f"NAME: {name} PARENTS_ARQ: {parents_arq} PARENTS_ARG: {parents}\n")
+            if parents_arq == None:
+                parents_arq = [None]
+            if (parents != None and parents_arq != None):
+
+                if (len(parents) == 0 and len(parents_arq) == 0):
+                    igualdade_parents = True
+                elif len(parents) > 0 and len(parents_arq) > 0:
+                    igualdade_parents = all(
+                        p_arq == p_arg for p_arq, p_arg in zip(parents_arq, parents))
+            else:
+                igualdade_parents = False
+            cond = (mime == 'application/vnd.google-apps.folder' and name ==
+                    folder_name and igualdade_parents)
+            if cond:
                 return id
         return None
+
+    def _create_parents(self, parents=[]):
+        # TODO:USAR SEGUINTE LOGICA: VAI CHECANDO PARENTS SUCESSIVAMENTE. SE NAO EXISTIR, CRIA.
+        print("FN AUX PRA CRIAR FOLDERS")
+        id_parents = []
+        for i in range(1, len(parents)):
+            self.fetch_drive_files()
+            print(f"PARENTS ARG {i}: {parents[0:i]}\n")
+            id = self.get_folder_id(parents[i], parents=parents[:i])
+
+            if (id == None):
+                folder_metadata = {
+                    'name': parents[i],
+                    'parents': id_parents[:i],
+                    'mimeType': 'application/vnd.google-apps.folder'
+                }
+                print(
+                    f"CRIANDO FOLDER {parents[i]}, FOLDER METADATA: {folder_metadata}")
+                folder_drive = self.drive_service.files().create(
+                    body=folder_metadata, fields='id').execute()
+
+                folder_id = folder_drive.get('id')
+                id_parents.append(folder_id)
+
+                # Set permissions after folder creation
+                permissions = [
+                    {'type': 'user', 'role': 'owner',
+                        'emailAddress': self.emailOwner},
+                    {'type': 'user', 'role': 'editor',
+                        'emailAddress': self.emailService}
+                ]
+                for permission in permissions:
+                    self.drive_service.permissions().create(
+                        fileId=folder_id,
+                        body=permission,
+                        supportsAllDrives=True,
+
+                        transferOwnership=permission['role'] == 'owner'
+                    ).execute()
+
+        return id_parents
+
+    def create_folder(self, folder_name, parents=[]):
+        """
+        Obs: parents eh lista de nomes de parentes
+        """
+        print(f"\nFOLDER_NAME: {folder_name}")
+        print(f"\PARENTS: {parents}")
+
+        id_parents = self._create_parents(parents)
+
+        folder_metadata = {
+            'name': folder_name,
+            'parents': id_parents,
+            'mimeType': 'application/vnd.google-apps.folder',
+
+        }
+        folder_drive = self.drive_service.files().create(
+            body=folder_metadata, fields='id').execute()
+        print(folder_drive)
+        permissions = [
+            {'type': 'user',
+             'role': 'writer',
+             'emailAddress': self.emailService}]
+        id_folder = folder_drive.get('id')
+        for permission in permissions:
+            self.drive_service.permissions().create(
+                fileId=id_folder,
+                body=permission,
+            ).execute()
+        return id_folder
 
     def get_file_id(self, file_name):
         for id, file in self.file_state.items():
@@ -146,32 +248,29 @@ class GoogleDrive:
                 return id
         return None
 
-    def upload_to_drive(self, file, folder, resumable=False):
+    def upload_to_drive(self, file, folder, parents=[], resumable=False):
         """
-        Faz upload de arquivo para o drive; Crie folder de destino se folder nao existir
+        Faz upload de arquivo para o drive; Cria folder de destino se folder nao existir
         --------
         Returns: id do arquivo criado
         """
         self.fetch_drive_files()
         if folder == "root":
             raise Exception("NAO EH POSSIVEL INSERIR NO ROOT!!!!")
-        id_folder = self.get_folder_id(folder)
+        print(
+            f"NO UPLOAD: FILE: {file} FOLDER: {folder} PARENTS: {parents}\n\n")
+        id_folder = self.get_folder_id(folder, parents)
 
         # cria folder se nao existir
-        if (not id_folder):
-            print("CRIANDO FOLDER ", folder)
-            folder_metadata = {
-                'name': folder
-            }
-            folder_drive = self.drive_service.files().create(
-                body=folder_metadata, fields='id').execute()
-            print(folder_drive)
-            id_folder = folder_drive.get('id')
+        if (id_folder == None):
+            id_folder = self.create_folder(folder, parents)
 
         mime = mimetypes.guess_type(file)
         if mime:
             media = MediaFileUpload(
                 file, mimetype=mime[0], resumable=resumable)
+            if id_folder == 0:
+                id_folder = None
             file_metadata = {
                 'name': os.path.basename(file),
                 'parents': [id_folder],
@@ -189,7 +288,6 @@ class GoogleDrive:
                     response = self.drive_service.files().create(
                         body=file_metadata, media_body=media, fields='id').execute()
                     file_id = response.get('id')
-
                 else:
                     # UPLOAD EM PARTES (ARQUIVOS > 5MB)
                     request = self.drive_service.files().create(
@@ -204,13 +302,57 @@ class GoogleDrive:
                 return file_id
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)
-                return None
+                raise e
         else:
             """ ERRO NO MIME"""
             print(Exception("ERRO AO PEGAR MIMETYPE"))
             return None
 
-    def delete_file(self, file_id, folder_id):
+    def update_file(self, new_data, filename, folder, parents):
+        """
+        Updates a file in Google Drive with new data
+
+        Args:
+            new_data: Path to the new file data
+            filename: Name of the file to update
+            folder: Name of the folder containing the file
+
+        Returns:
+            str: ID of updated file or None if update fails
+        """
+        try:
+            # Get folder and file IDs
+            folder_id = self.get_folder_id(folder, parents)
+            file_id = self.get_file_id(filename)
+
+            if not folder_id:
+                print("Folder not found")
+                return None
+            elif not file_id:
+                print("File not found")
+                return None
+
+            # Create media object for new file
+            mime = mimetypes.guess_type(new_data)
+            if mime:
+                media = MediaFileUpload(new_data, mimetype=mime[0])
+
+                # Update the file
+                updated_file = self.drive_service.files().update(
+                    fileId=file_id,
+                    media_body=media
+                ).execute()
+
+                self.fetch_drive_files()  # Update local state
+                return updated_file.get('id')
+
+            return None
+
+        except Exception as e:
+            print(f"Error updating file: {e}")
+            return None
+
+    def delete_file(self, file_id, folder_id=None):
         """
         Delete a file from a specific folder in Google Drive
 
@@ -223,12 +365,12 @@ class GoogleDrive:
         """
         print("\n")
         try:
-            # Verify file exists in specified folder
+            """             # Verify file exists in specified folder
             if folder_id == None or folder_id == 'root':
                 folder_id = ROOT_DRIVE
             elif isinstance(folder_id, list):
                 folder_id = folder_id[0]
-            print(f"FOLDER_ID: {folder_id}")
+            print(f"FOLDER_ID: {folder_id}") """
 
             # Delete the file
             self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
@@ -243,7 +385,8 @@ class GoogleDrive:
     def download_file(self, file_id):
         self.fetch_drive_files()
 
-        request = self.drive_service.files().get_media(fileId=file_id)
+        request = self.drive_service.files(
+            fields="file(name)").get_media(fileId=file_id)
         import io
         file = io.BytesIO()
         downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
@@ -251,7 +394,7 @@ class GoogleDrive:
         while not done:
             status, done = downloader.next_chunk()
             print(f"Download {int(status.progress() * 100)}%.")
-        return file.getvalue()
+        return file.getvalue(), request.get('file').get('name', None)
 
 
 def count_active_threads():
@@ -429,14 +572,13 @@ analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 @app.route("/teste")
 def teste():
     # drive.upload_to_drive("requirements.txt", ROOT_DRIVE)
-    files = drive.fetch_drive_files()
+    files = drive.fetch_drive_files().copy()
     # print(f"{file.get('name')} deleted in folder {file.get('parents')}\n")
     print("ARQUIVOS DO FETCH")
     for id, file in files.items():
         print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
-        if file.get('name') == "requirements.txt":
-            drive.delete_file(drive.get_file_id("requirements.txt"), 'root')
-            print("DELETOU REQUIREMENTS")
+        if drive.delete_file(id):
+            print(f"DELETOU {file.get('name')}")
 
     return make_response("OK", OK)
 
@@ -446,34 +588,18 @@ def index():
     return "Hello World"
 
 
-@app.route('/get-file/<filename>', methods=['GET'])
-def get_file(filename):
+@app.route('/get-file/<id_file>', methods=['GET'])
+def get_file(id_file):
+    import io
     """
-    Serves files from the /tmp directory.
+    Serves files from the database using file_id from Google Drive.
     """
-    print("filename: ", filename)
+    print("filename: ", id_file)
     try:
-        file_path = os.path.join(app.config["TEMP_FOLDER"], filename)
-        if not os.path.exists(file_path):
-            return jsonify({"error": "File not found"}), 404
-
-        # Generate the URL for the file
-        file_url = url_for('serve_file', filename=filename, _external=True)
-
-        return jsonify({"file_url": file_url}), 200
+        file_bytes, filename = drive.download_file(id_file)
+        return send_file(io.BytesIO(file_bytes), attachment_filename=filename, mimetype=mimetypes.guess_type(filename))
     except Exception as e:
-        return f"Error: {str(e)}", 500
-
-
-@app.route('/serve-file/<filename>', methods=['GET'])
-def serve_file(filename):
-    """
-    Serves the file when the generated URL is accessed.
-    """
-    try:
-        return send_from_directory(app.config["TEMP_FOLDER"], filename, as_attachment=True)
-    except FileNotFoundError:
-        return jsonify({"error": "File not found"}), 404
+        return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
 
@@ -486,13 +612,12 @@ def get_pdf() -> str:
 @app.route("/analise", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def analisar():
-    import base64
-
     """
     Takes video  input, executa the model e and returns result as JSON
     """
     timestamp = time.time()
     id_diag = request.form.get("id_diag", None)
+    id_folder_drive = request.form.get("id_folder_drive", None)
     filename = request.form.get("filename", None)
     diag = None
 
@@ -520,10 +645,10 @@ def analisar():
     path_arq_input = os.path.join(
         app.config["TEMP_FOLDER"], filename_arq_input)
 
+    id_drive_videoLabel = diag.get('videoLabel')
+    bytes_videoLabel = drive.download_file(id_drive_videoLabel)
     with open(path_arq_input, 'wb') as f:
-        video_base64 = diag["videoLabel"]
-        video_bin = base64.b64decode(video_base64, validate=True)
-        f.write(video_bin)
+        f.write(bytes_videoLabel)
 
     """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
     arq_stream = arq.stream"""
@@ -563,21 +688,19 @@ def analisar():
     # Remover APENAS arquivos auxiliares
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
-    """ with open(path_out, "rb") as file:
-        video_base64 = base64.b64encode(file.read()).decode('utf-8')
-
-    with open(path_graf, "rb") as file:
-        grafico_base64 = base64.b64encode(file.read()).decode('utf-8') """
-
-    url_pdf = get_pdf()
+    path_pdf = get_pdf()
 
     print("PEGANDO URLS")
-
-    resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
+    drive.upload_to_drive(path_graf, id_folder_drive)
+    drive.upload_to_drive(path_pdf, id_folder_drive)
+    drive.upload_to_drive(path_out, id_folder_drive, resumable=True)
+    """     resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
     url_graf = resposta_json["file_url"]
 
     resposta_json = get_file(os.path.basename(path_out))[0].get_json()
-    url_video_out = resposta_json["file_url"]
+    url_video_out = resposta_json["file_url"] """
+
+    # str_res no formato "velE,velD,percentDif,olho_doente"
     olho_doente = str_res.split(",")[3]
 
     if olho_doente == "Esquerdo":
@@ -634,13 +757,10 @@ def pega_perfil():
 @app.route("/envia_diag", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def envia_diag():
-    video = request.files.get("video", None)
-    # Convert video to base64
-    # TODO: MONGO TEM LIMITE DE ARMAZENAMENTO DE 16MB. PRA ARQUIVOS MAIORES USAR GOOGLE DRIVE
-    import base64
+    timestamp = time.time()
 
-    video_data = video.read()
-    video_b64 = base64.b64encode(video_data)
+    video = request.files.get("video", None)
+
     nomePaciente = request.form.get("nomePaciente", None)
     stringOlhos = request.form.get("stringOlhos", None)
 
@@ -649,7 +769,6 @@ def envia_diag():
     if any(elem is None for elem in a):
         return make_response("INPUT NULO!", BAD_REQUEST)
 
-    filename = video.filename
     diagnosticoMedico = stringOlhos
     response = requests.get(
         url_for('val_login', _external=True),
@@ -668,16 +787,38 @@ def envia_diag():
         id_medico = None
 
     diags = mongo.db.get_collection(DIAGS)
-    dados = {"videoLabel": video_b64, "nomePaciente": nomePaciente, "id_medico": id_medico,
+    dados = {"nomePaciente": nomePaciente, "id_medico": id_medico,
              "diagnosticoMedico": diagnosticoMedico, "desc": desc}
+
     for key, value in dados.items():
         if value is None:
             dados[key] = "None"
 
     result = diags.insert_one(dados)
-    id_diag = str(result.inserted_id)
+    id_diag_mongo = str(result.inserted_id)
+    print(result)
+    # escreve dados no video no \tmp
+    filename = video.filename
+    nome_local = f"{str(round(timestamp, 4))}_{filename}"
+    video_data = video.read()
+    path_temp_videoLabel = os.path.join(app.config["TEMP_FOLDER"], nome_local)
+    with open(path_temp_videoLabel, "wb") as f:
+        f.write(video_data)
+
+    email_medico = find_one_with_id(mongo.db.get_collection(
+        MEDICOS), session['user_id']).get('email', None)
+
+    id_videoLabel = drive.upload_to_drive(path_temp_videoLabel, id_diag_mongo, [ROOT_DRIVE,
+                                          email_medico], resumable=True)
+    result = {"videoLabel": id_videoLabel}
+    mongo.db.get_collection(DIAGS).update_one(
+        {"_id": ObjectId(id_diag_mongo)},
+        {"$set": result}
+    )
+    os.remove(path_temp_videoLabel)
+
     if result.acknowledged:
-        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag, "filename": filename}, OK)
+        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "id_folder_drive": drive.get_folder_id(id_diag_mongo), "filename": filename}, OK)
     else:
         return make_response("Erro ao registrar diagnostico", INTERNAL_SERVER_ERROR)
 
@@ -813,6 +954,5 @@ def logout():
 
 
 if __name__ == "__main__":
-    # para poder adicionar um sheduler de tasks de background,
-    # adicionar use_reloader=False
+    # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
     app.run(debug=True)

@@ -119,8 +119,9 @@ export default {
     // 1MB = 0.5s
     const sizeMB = Number(formDiag.get("video").size) / 1000000;
     const tempoLoad = (1 / 2) * sizeMB;
-    let res;
+    let res = 0;
     try {
+      console.log(res);
       res = await Promise.all([
         this.progressoIntervaloMs(tempoLoad, 50, signal),
         axios.post(this.$store.getters.getDiag, formDiag, {
