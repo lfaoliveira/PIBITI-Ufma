@@ -27,14 +27,42 @@ if (-not (Test-Path "C:\msys64")) {
     Write-Host "Installing MSYS2 with default options..."
     Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
 }
-checking Pango
-& pango-view --version
+# checking Pango
+& "C:\msys64\usr\bin\bash.exe" -l -c "pango-view --version"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "MSYS packages not found. Installing with MSYS2..."
+    
+    & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-toolchain"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Error installing mingw-w64-ucrt-x86_64-toolchain"
+        exit 1
+    }
+    
+    & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gtk3"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Error installing mingw-w64-ucrt-x86_64-gtk3"
+        exit 1
+    }
+    
+    & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-x86_64-pango"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Error installing mingw-w64-x86_64-pango"
+        exit 1
+    }
+
+} else {
+    Write-Host "MSYS packages already installed. Skipping installation."
+}
+
+<# & pango-view --version
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Installing Pango..."
-    & "C:\msys64\usr\bin\bash.exe" -c "pacman -Q mingw-w64-x86_64-pango" > $null 2>&1
+    
+    & "C:\msys64\usr\bin\bash.exe" -c "pacman -S mingw-w64-ucrt-x86_64-gtk3"
+
 } else {
     Write-Host "Pango is already installed. Skipping installation."
-}
+} #>
 
 #Check if node packages are installed
 if (-not (Test-Path "./vite-project/node_modules/")) {
@@ -64,6 +92,6 @@ if (-not (Test-Path "./env.csv")) {
     exit 1
 }
 # Start Flask server
-Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" -NoNewWindow
+Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" 
 
 

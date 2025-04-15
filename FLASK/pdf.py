@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from weasyprint import HTML, CSS
+import os
 
 
 class Converter:
@@ -39,32 +40,30 @@ class Converter:
                 # Clear existing contents.
                 element.clear()
                 # Insert the given text value.
-                element.append(value)
+                element.append(str(value))
 
         # Return the modified HTML as a string.
         return str(soup)
 
 
 # Example HTML string
-html_content = """
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>xhtml2pdf Example</title>
-  </head>
-  <body>
-    <h1>Hello, World!</h1>
-    <p>This PDF was generated from an HTML string using xhtml2pdf.</p>
-  </body>
-</html>
-"""
-
+print("HOME: ", os.getcwd())
 # Create an instance of Converter.
-converter = Converter()
 
 # Convert the HTML to PDF.
 # Note: A CSS file is expected. Replace 'style.css' with the appropriate CSS file.
-if converter.convert_html_to_pdf(html_content, "template-pdf.css", "output.pdf"):
-    print("PDF created successfully!")
-else:
+try:
+    converter = Converter()
+    mapeamento = {'logo': "../vite-project/src/assets/logo ufma.png", "nome-medico": "AB do Caralho D", "crm": 12345,
+                  "data": "11/09/2001", "nome-paciente": "Arrombado da Silva", "diag-auto": "Paralisia", "diag-medico": "Paralisia",
+                  "vel-esq": "3mm/s", "vel-dir": "3mm/s", "dif-vel": "3%",
+                  "img-grafico": "../vite-project/src/assets/sexto-nervo.png", "logo-vip": "../vite-project/src/assets/logo_VIP_Lab.png",
+                  "logo-ufma": "../vite-project/src/assets/logo ufma.png",
+                  "logo-nca": "../vite-project/src/assets/LogoNCAFundBranco2000_2021.png"}
+
+    html_content = converter.insert_text_by_class(
+        './FLASK/template-pdf.html', mapeamento)
+    if converter.convert_html_to_pdf(html_content, "./FLASK/template-pdf.css", "./output.pdf"):
+        print("PDF created successfully!")
+except:
     print("An error occurred during PDF creation.")
