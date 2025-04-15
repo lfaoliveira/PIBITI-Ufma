@@ -6,5 +6,6 @@ channels:
   - conda-forge
 dependencies:
   - tensorflow<=2.8.0
+  - weasyprint
   - pip:
     - -r ./FLASK/requirements.txt

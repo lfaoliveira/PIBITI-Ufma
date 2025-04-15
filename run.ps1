@@ -16,6 +16,25 @@ if (-not (Test-Path "./FLASK/permalink-googleDrive-pibiti6-nervo.json")) {
     exit 1
 }
 
+<# This part is for pdf generation #>
+# Install MSYS2 if not already installed
+if (-not (Test-Path "C:\msys64")) {
+    Write-Host "MSYS2 not found. Downloading installer..."
+    $msys2InstallerUrl = "https://github.com/msys2/msys2-installer/releases/download/2025-02-21/msys2-x86_64-20250221.exe"
+    $installerPath = "$env:TEMP\msys2-installer.exe"
+    Invoke-WebRequest -Uri $msys2InstallerUrl -OutFile $installerPath
+
+    Write-Host "Installing MSYS2 with default options..."
+    Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
+}
+checking Pango
+& pango-view --version
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Installing Pango..."
+    & "C:\msys64\usr\bin\bash.exe" -c "pacman -Q mingw-w64-x86_64-pango" > $null 2>&1
+} else {
+    Write-Host "Pango is already installed. Skipping installation."
+}
 
 #Check if node packages are installed
 if (-not (Test-Path "./vite-project/node_modules/")) {
@@ -29,9 +48,8 @@ Write-Host "Starting Node Frontend Server"
 #Start Node+Vite+Vue server
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location 'vite-project'; npm run dev"
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "Flask server failed to start with exit code: $LASTEXITCODE"
+    Write-Host "Node server failed to start with exit code: $LASTEXITCODE"
 }
-
 
 $nomeConda = "env-pibiti"
 # Activate conda environment if it doesnt exist
@@ -46,6 +64,6 @@ if (-not (Test-Path "./env.csv")) {
     exit 1
 }
 # Start Flask server
-Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK"
+Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" -NoNewWindow
 
 

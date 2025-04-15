@@ -27,8 +27,7 @@
           alt="Logo footer"
           id="logo-nca"
           href="/"
-          c
-          lass="footer-logo"
+          class="footer-logo"
         />
       </a>
     </ul>
