@@ -63,7 +63,7 @@ try:
 
     html_content = converter.insert_text_by_class(
         './FLASK/template-pdf.html', mapeamento)
-    if converter.convert_html_to_pdf(html_content, "./FLASK/template-pdf.css", "./output.pdf"):
+    if converter.convert_html_to_pdf(html_content, "./FLASK/template-pdf.css", "./FLASK/output.pdf"):
         print("PDF created successfully!")
 except:
     print("An error occurred during PDF creation.")

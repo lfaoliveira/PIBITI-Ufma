@@ -1,3 +1,5 @@
+$profile
+
 $mongoService = Get-Service -Name "MongoDB"
 if ($mongoService.Status -eq "Stopped") {
     Restart-Service -Name "MongoDB"
@@ -27,8 +29,13 @@ if (-not (Test-Path "C:\msys64")) {
     Write-Host "Installing MSYS2 with default options..."
     Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
 }
+if (-not ($env:Path -like "*C:\msys64\mingw64\bin*")) {
+    Write-Error "C:\msys64\mingw64\bin was not added to PATH on Windows. Exiting."
+    exit 1
+}
+
 # checking Pango
-& "C:\msys64\usr\bin\bash.exe" -l -c "pango-view --version"
+&  "C:\msys64\usr\bin\bash.exe" -l -c "pacman -Qs pango"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "MSYS packages not found. Installing with MSYS2..."
     
@@ -38,31 +45,28 @@ if ($LASTEXITCODE -ne 0) {
         exit 1
     }
     
-    & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-gtk3"
+    & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-ucrt-x86_64-python-gobject"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Error installing mingw-w64-ucrt-x86_64-gtk3"
         exit 1
     }
-    
     & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-x86_64-pango"
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Error installing mingw-w64-x86_64-pango"
         exit 1
     }
 
+    <# & "C:\msys64\usr\bin\bash.exe" -l -c "pacman -S --noconfirm mingw-w64-x86_64-fontconfig"
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Error installing mingw-w64-x86_64-fontconfig"
+        exit 1
+    } #>
+    
+
 } else {
     Write-Host "MSYS packages already installed. Skipping installation."
 }
 
-<# & pango-view --version
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Installing Pango..."
-    
-    & "C:\msys64\usr\bin\bash.exe" -c "pacman -S mingw-w64-ucrt-x86_64-gtk3"
-
-} else {
-    Write-Host "Pango is already installed. Skipping installation."
-} #>
 
 #Check if node packages are installed
 if (-not (Test-Path "./vite-project/node_modules/")) {
@@ -93,5 +97,4 @@ if (-not (Test-Path "./env.csv")) {
 }
 # Start Flask server
 Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" 
-
 
