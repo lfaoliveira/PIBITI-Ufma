@@ -1,5 +1,3 @@
-$profile
-
 $mongoService = Get-Service -Name "MongoDB"
 if ($mongoService.Status -eq "Stopped") {
     Restart-Service -Name "MongoDB"
@@ -88,7 +86,7 @@ $nomeConda = "env-pibiti"
 if (-not (Test-Path "./$nomeConda")) {
     conda env create --prefix "./$nomeConda" --file ./conda.yml
 }
-<# conda init#>
+
 Write-Host "Starting Flask Backend"
 conda activate "./$nomeConda"
 if (-not (Test-Path "./env.csv")) {
@@ -96,5 +94,4 @@ if (-not (Test-Path "./env.csv")) {
     exit 1
 }
 # Start Flask server
-Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" 
-
+Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK"
