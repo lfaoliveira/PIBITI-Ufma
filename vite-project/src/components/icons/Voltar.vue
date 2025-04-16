@@ -37,7 +37,7 @@ export default {
 
 .texto {
   position: relative;
-  font-size: $fonte-header;
+  //   font-size: $fonte-header;
   color: #fff;
   font-weight: normal;
 }

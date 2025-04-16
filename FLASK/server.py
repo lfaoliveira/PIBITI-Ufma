@@ -605,18 +605,21 @@ modelo = get_modelo()
 analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 
-@app.route("/teste_email")
-def teste_email():
+@app.route("/enviar_email")
+def enviar_email():
+    str_msg = request.form.get("mensagem")
+    destino = request.form.get("destino")
+    assunto = request.form.get("assunto")
     msg = Message(
-        subject="Hello from Flask",
-        recipients=["luisfelipearaujo503@gmail.com"],  # List of recipients
-        body="This is a test email sent from a Flask app!"
+        subject=assunto,
+        recipients=[destino],  # List of recipients
+        body=str_msg
     )
     try:
         mail.send(msg)
-        return "Email sent successfully!"
+        return make_response("Email sent successfully!", OK)
     except Exception as e:
-        return str(e)
+        return make_response(str(e), INTERNAL_SERVER_ERROR)
 
 
 @app.route("/deletar_tudo")
