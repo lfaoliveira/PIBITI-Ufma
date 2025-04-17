@@ -1,7 +1,7 @@
 <template>
   <button class="salvar" @click="fnSalvar" :disabled="butDisabled">
     <img class="icone-download" alt="Save icon" src="../../assets/download.png" />
-    <p class="texto-salvar">Baixar Resultado</p>
+    <div class="texto-salvar">Baixar Resultado</div>
   </button>
 </template>
 
@@ -46,7 +46,7 @@ export default {
 }
 
 .icone-download {
-  width: 5.5vmin;
+  width: 3em;
   aspect-ratio: 1;
   padding: 0.5vmin;
 }

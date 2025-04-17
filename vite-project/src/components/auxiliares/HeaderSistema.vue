@@ -9,41 +9,38 @@
         </a>
       </li>
     </ul>
-    <ul class="lado-direito">
+    <ul ref="ladoDireito" class="lado-direito">
       <template v-if="this.logado && this.telaPequena">
         <li class="div-hamburguer">
           <button class="button-hamburguer" @click="this.clickMenu">
-            <img class="img-hamburguer" src="../../assets/menu-sanduiche.png" />
+            <img
+              class="img-hamburguer"
+              :src="
+                this.isOpen ? 'src/assets/close.png' : 'src/assets/menu-sanduiche.png'
+              "
+            />
           </button>
-          <div ref="opcoes" class="lista-opcoes" v-if="this.isOpen">
-            <div class="nav-item" v-if="this.logado">
-              <a :class="{ active: activeIndex === 6 }" @click="setActive('Perfil')"
-                >Perfil</a
-              >
-            </div>
-            <div class="nav-item" v-if="this.logado">
-              <Salvar :modo="this.modoSalvar"></Salvar>
-            </div>
+        </li>
+      </template>
+      <transition name="slide">
+        <li ref="opcoes" class="lista-opcoes" v-show="this.isOpen || !this.telaPequena">
+          <div v-if="!this.logado" class="nav-item">
+            <a
+              :class="{ active: activeIndex === itensEsquerdo.length }"
+              @click="setActive('Acessar Sistema')"
+              >Acessar Sistema</a
+            >
+          </div>
+          <div class="nav-item" v-if="this.logado">
+            <a :class="{ active: activeIndex === 6 }" @click="setActive('Perfil')"
+              >Perfil</a
+            >
+          </div>
+          <div class="nav-item" v-if="this.logado">
+            <Salvar :modo="this.modoSalvar"></Salvar>
           </div>
         </li>
-      </template>
-      <template v-else>
-        <li v-if="!this.logado" class="nav-item">
-          <a
-            :class="{ active: activeIndex === itensEsquerdo.length }"
-            @click="setActive('Acessar Sistema')"
-            >Acessar Sistema</a
-          >
-        </li>
-        <li class="nav-item" v-if="this.logado">
-          <a :class="{ active: activeIndex === 6 }" @click="setActive('Perfil')"
-            >Perfil</a
-          >
-        </li>
-        <li class="nav-item" v-if="this.logado">
-          <Salvar :modo="this.modoSalvar"></Salvar>
-        </li>
-      </template>
+      </transition>
     </ul>
   </nav>
 </template>
@@ -64,7 +61,7 @@ export default {
       emAnalise: false,
       logado: false,
       telaPequena: false,
-      isOpen: true,
+      isOpen: false,
     };
   },
   props: {
@@ -82,7 +79,7 @@ export default {
     this.logado = this.$store.getters.getLogado;
     this.emAnalise = this.$route.path === "/analise";
     this.mostrarHamburguer();
-    this.clickMenu();
+    // this.clickMenu();
 
     window.addEventListener("resize", () => {
       this.mostrarHamburguer();
@@ -112,17 +109,28 @@ export default {
     },
     mostrarHamburguer() {
       this.telaPequena = window.innerWidth < 940 || window.innerHeight < 940;
+      // TODO: CRIAR CLASSES DE CSS QUE TENHAM ESSES ESTILOS:
+      if (this.telaPequena) {
+        // tem menu
+        this.$refs.ladoDireito.style.flexDirection = "column";
+        this.$refs.ladoDireito.style.width = "fit-content";
+        this.$refs.opcoes.style.flexDirection = "column";
+        this.$refs.opcoes.style.alignItems = "flex-end";
+      } else {
+        // nao tem menu
+        this.$refs.ladoDireito.style.flexDirection = "row";
+        this.$refs.opcoes.style.flexDirection = "row";
+        this.$refs.opcoes.style.alignItems = "center";
+        this.$refs.opcoes.style.gap = "3vmin";
+      }
     },
     clickMenu() {
-      if (this.$refs.opcoes) {
-        if (this.isOpen) {
-          this.isOpen = false;
-          this.$refs.opcoes.style.display = "none";
-          this.$refs.opcoes.style.marginLeft = "8vmin";
-        } else {
-          this.isOpen = true;
-          this.$refs.opcoes.style.display = flex;
-        }
+      const opcoes = document.querySelector(".lista-opcoes");
+      if (this.isOpen) {
+        this.isOpen = false;
+      } else {
+        this.isOpen = true;
+        this.$refs.ladoDireito.style.alignItems = "flex-end";
       }
     },
   },
@@ -147,31 +155,55 @@ export default {
     height: 100%;
   }
   &:has(.div-hamburguer) {
-    max-height: 10vmin;
+    // max-height: 8vmin;
 
     .button-hamburguer {
-      background: red;
+      background: none;
       cursor: pointer;
-    }
-
-    .lista-opcoes {
-      display: flex;
-      flex-direction: column;
     }
 
     .div-hamburguer {
       display: flex;
-      position: absolute;
-      right: 0%;
+
       flex-direction: column;
       align-items: flex-start;
-      background: red;
+      background: none;
       .img-hamburguer {
         width: 5vmin;
         aspect-ratio: 219/200;
       }
     }
   }
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease-out 0s;
+}
+
+.slide-enter-from {
+  transform: translateX(-100%);
+}
+.slide-enter-to {
+  transform: translateX(0);
+}
+.slide-leave-from {
+  transform: translateX(0);
+}
+.slide-leave-to {
+  transform: translateX(-200%);
+}
+
+/* .slide-enter-from,
+  .slide-leave-to {
+  transition: all 0.2s ease-in-out 0s;
+} */
+
+.lista-opcoes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s, opacity 0.1s;
 }
 
 .header {
@@ -188,11 +220,13 @@ export default {
 
 .lado-direito {
   list-style: none;
-  margin: 0vmin 7vmin;
+  margin: 0vmin 0vmin 0vmin 1vmin;
+  background: #0e0021;
+  height: max-content;
   padding: 0px;
   width: clamp(200px, 36vmin, 320px);
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 3vmin;
 }
 
