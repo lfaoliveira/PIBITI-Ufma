@@ -10,8 +10,10 @@ from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file
+from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file, Response
+
 from flask_session import Session
+from weasyprint import HTML
 from celery import Celery
 from celery.schedules import crontab
 
@@ -488,27 +490,20 @@ def get_peso(api: GoogleDrive):
         f.write(bytes_file)
 
 
-def get_pdf(dict_dados, output_path):
-    """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR URL EXTERNA DO PDF"""
-    # mapeamento input da funcao -> tag no HTML
-    mapeamento = {'logoApp': 'logo', 'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
-                  'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
-                  'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
-                  'logoVip': "logo-vip", 'logoUfma': "logo-ufma", 'logoNca': "logo-nca", 'difVel': "dif-vel"}
-
-    dict_input_weasy = {}
-    for key_dado in dict_dados.keys():
-        nomeTag = mapeamento[key_dado]
-        dict_input_weasy[nomeTag] = dict_dados[key_dado]
-    from pdf import Converter
+def enviar_email(mensagem, destino, assunto):
+    msg = Message(
+        subject=assunto,
+        recipients=[destino],  # List of recipients
+        body=mensagem
+    )
     try:
-        html_content = Converter.insert_text_by_class(dict_input_weasy)
-        if Converter.convert_html_to_pdf(html_content, output_path):
-            print("PDF created successfully!")
-            return True
+        mail.send(msg)
+        return OK
     except Exception as e:
-        print("An error occurred during PDF creation.")
-        raise e
+        return INTERNAL_SERVER_ERROR
+
+
+# def get_pdf(dict_dados, output_path):
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
@@ -605,21 +600,45 @@ modelo = get_modelo()
 analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 
-@app.route("/enviar_email")
-def enviar_email():
-    str_msg = request.form.get("mensagem")
-    destino = request.form.get("destino")
-    assunto = request.form.get("assunto")
-    msg = Message(
-        subject=assunto,
-        recipients=[destino],  # List of recipients
-        body=str_msg
-    )
+@app.route("/teste_pdf")
+def teste_pdf():
+    """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF renderizado
+
+    dict_dados: keys: `
+    [logoApp, velEsq, nomeMedico, dataAgora, nomePaciente, diagAutom, 
+    velDir, diagnosticoMedico, urlGrafico, logoVip, logoUfma, logoNca, difVel]
+    `
+    """
+    # mapeamento input da funcao -> tag no HTML
+    mapeamento = {'logoApp': 'logo', 'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
+                  'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
+                  'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
+                  'logoVip': "logo-vip", 'logoUfma': "logo-ufma", 'logoNca': "logo-nca", 'difVel': "dif-vel"}
+
+    dict_dados = {'logoApp': "../vite-project/src/assets/LOGOS.png", 'velEsq': '2 mm/s', 'crm': "1234", 'nomeMedico': "Fulano Corno", 'dataAgora': "11/01/2001", 'nomePaciente': "Doente", 'diagAutom': "Tem sim",
+                  'velDir': '2 mm/s', 'diagnosticoMedico': "Tem não", 'urlGrafico': "../vite-project/src/assets/grafico.png", 'logoVip': "../vite-project/src/assets/logo_VIP_Lab.png",
+                  'logoUfma': "../vite-project/src/assets/logo ufma.png", 'logoNca': "../vite-project/src/assets/LogoNCAFundBranco2000_2021.png", 'difVel': '20 %'}
+
+    dict_input_weasy = {}
+    for key_dado in dict_dados.keys():
+        nomeTag = mapeamento[key_dado]
+        dict_input_weasy[nomeTag] = dict_dados[key_dado]
+    from pdf import Converter
+    conv = Converter()
     try:
-        mail.send(msg)
-        return make_response("Email sent successfully!", OK)
+        pdf_bytes = HTML(string=conv.insert_text_by_class(
+            dict_input_weasy), base_url='file://' + app.static_folder).write_pdf()
+        print("PDF created successfully!")
+        return Response(
+            pdf_bytes,
+            mimetype="application/pdf",
+            headers={
+                "Content-Disposition": "inline; filename=diagnostico.pdf"
+            }
+        )
     except Exception as e:
-        return make_response(str(e), INTERNAL_SERVER_ERROR)
+        print(e)
+        return make_response("An error occurred during PDF creation.", INTERNAL_SERVER_ERROR)
 
 
 @app.route("/deletar_tudo")
@@ -775,7 +794,7 @@ def analisar():
     # Remover APENAS arquivos auxiliares
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
-    path_pdf = get_pdf()
+    # path_pdf = get_pdf()
 
     print("PEGANDO URLS")
     drive.upload_to_drive(path_graf, id_folder_drive)
