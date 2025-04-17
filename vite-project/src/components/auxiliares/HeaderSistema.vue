@@ -109,23 +109,21 @@ export default {
     },
     mostrarHamburguer() {
       this.telaPequena = window.innerWidth < 940 || window.innerHeight < 940;
-      // TODO: CRIAR CLASSES DE CSS QUE TENHAM ESSES ESTILOS:
       if (this.telaPequena) {
         // tem menu
-        this.$refs.ladoDireito.style.flexDirection = "column";
-        this.$refs.ladoDireito.style.width = "fit-content";
-        this.$refs.opcoes.style.flexDirection = "column";
-        this.$refs.opcoes.style.alignItems = "flex-end";
+        this.$refs.ladoDireito.classList.add("dir-peq");
+        this.$refs.ladoDireito.classList.remove("dir-grande");
+        this.$refs.ladoDireito.classList.add("opcoes-peq");
+        this.$refs.ladoDireito.classList.remove("opcoes-grande");
       } else {
         // nao tem menu
-        this.$refs.ladoDireito.style.flexDirection = "row";
-        this.$refs.opcoes.style.flexDirection = "row";
-        this.$refs.opcoes.style.alignItems = "center";
-        this.$refs.opcoes.style.gap = "3vmin";
+        this.$refs.ladoDireito.classList.add("dir-grande");
+        this.$refs.ladoDireito.classList.remove("dir-peq");
+        this.$refs.ladoDireito.classList.add("opcoes-grande");
+        this.$refs.ladoDireito.classList.remove("opcoes-peq");
       }
     },
     clickMenu() {
-      const opcoes = document.querySelector(".lista-opcoes");
       if (this.isOpen) {
         this.isOpen = false;
       } else {
@@ -155,7 +153,7 @@ export default {
     height: 100%;
   }
   &:has(.div-hamburguer) {
-    // max-height: 8vmin;
+    max-height: 8vmin;
 
     .button-hamburguer {
       background: none;
@@ -164,7 +162,6 @@ export default {
 
     .div-hamburguer {
       display: flex;
-
       flex-direction: column;
       align-items: flex-start;
       background: none;
@@ -206,6 +203,16 @@ export default {
   transition: transform 0.3s, opacity 0.1s;
 }
 
+.opcoes-peq {
+  flex-direction: column;
+  align-items: flex-end;
+}
+.opcoes-grande {
+  flex-direction: row;
+  align-items: center;
+  gap: 3vmin;
+}
+
 .header {
   list-style: none;
   display: flex;
@@ -228,6 +235,14 @@ export default {
   display: flex;
   align-items: flex-end;
   gap: 3vmin;
+}
+
+.dir-grande {
+  flex-direction: row;
+}
+.dir-peq {
+  flex-direction: column;
+  width: fit-content;
 }
 
 .nav-item a {
