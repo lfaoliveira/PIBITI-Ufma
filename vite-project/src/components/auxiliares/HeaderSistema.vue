@@ -213,6 +213,16 @@ export default {
   gap: 3vmin;
 }
 
+.opcoes-peq {
+  flex-direction: column;
+  align-items: flex-end;
+}
+.opcoes-grande {
+  flex-direction: row;
+  align-items: center;
+  gap: 3vmin;
+}
+
 .header {
   list-style: none;
   display: flex;
@@ -235,6 +245,14 @@ export default {
   display: flex;
   align-items: flex-end;
   gap: 3vmin;
+}
+
+.dir-grande {
+  flex-direction: row;
+}
+.dir-peq {
+  flex-direction: column;
+  width: fit-content;
 }
 
 .dir-grande {
