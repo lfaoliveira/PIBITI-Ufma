@@ -27,7 +27,7 @@ if (-not (Test-Path "C:\msys64")) {
     Write-Host "Installing MSYS2 with default options..."
     Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
 }
-if (-not ($env:Path -like "*C:\msys64\mingw64\bin*")) {
+if (-not ($env:Path -like "*path*")) {
     Write-Error "C:\msys64\mingw64\bin was not added to PATH on Windows. Exiting."
     exit 1
 }

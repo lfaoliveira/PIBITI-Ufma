@@ -10,18 +10,19 @@ class Converter:
     def __init__(self):
         pass
 
-    def convert_html_to_pdf(self, source_html, output_filename):
+    def convert_html_to_pdf(self, source_html, output_filename, base_url):
         try:
             # Create HTML and CSS objects from the input strings
-            html = HTML(string=source_html)
+            html = HTML(string=source_html, base_url=base_url)
             css = CSS(filename=CSS_FILEPATH)
             # Write PDF to the specified output file using the CSS stylesheet
             print("Escrevendo pdf...")
             html.write_pdf(output_filename, stylesheets=[css])
-            return True
+            return True, None
+
         except Exception as e:
             print("Error creating PDF:", e)
-            return False
+            return False, e
 
     def insert_text_by_class(self, class_value_mapping):
         """

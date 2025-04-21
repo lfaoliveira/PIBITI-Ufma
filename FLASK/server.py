@@ -4,6 +4,7 @@ import time
 from typing import Collection
 
 from bson import ObjectId
+import shutil
 from flask.sessions import SessionMixin
 from flask_mail import Mail, Message
 from analise import AnaliseParalisia
@@ -626,16 +627,19 @@ def teste_pdf():
     from pdf import Converter
     conv = Converter()
     try:
-        pdf_bytes = HTML(string=conv.insert_text_by_class(
-            dict_input_weasy), base_url='file://' + app.static_folder).write_pdf()
-        print("PDF created successfully!")
-        return Response(
-            pdf_bytes,
-            mimetype="application/pdf",
-            headers={
-                "Content-Disposition": "inline; filename=diagnostico.pdf"
-            }
-        )
+        filename = "diagnostico.pdf"
+        # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
+        string_html = conv.insert_text_by_class(dict_input_weasy)
+
+        pdfOK, erro = conv.convert_html_to_pdf(
+            string_html, filename, base_url='file://' + app.static_folder)
+        if pdfOK:
+            shutil.move(filename, os.path.join(
+                app.config["TEMP_FOLDER"], filename))
+            print("PDF created successfully!")
+        else:
+            raise erro
+        return make_response("PDF created successfully!", OK)
     except Exception as e:
         print(e)
         return make_response("An error occurred during PDF creation.", INTERNAL_SERVER_ERROR)
