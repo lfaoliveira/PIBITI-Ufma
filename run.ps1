@@ -27,10 +27,14 @@ if (-not (Test-Path "C:\msys64")) {
     Write-Host "Installing MSYS2 with default options..."
     Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
 }
-if (-not ($env:Path -like "*path*")) {
+
+# Check if C:\msys64\mingw64\bin is in the PATH environment variable
+if (-not ($env:Path -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ -eq "C:\msys64\mingw64\bin" })) {
     Write-Error "C:\msys64\mingw64\bin was not added to PATH on Windows. Exiting."
     exit 1
 }
+
+
 
 # checking Pango
 &  "C:\msys64\usr\bin\bash.exe" -l -c "pacman -Qs pango"
@@ -94,4 +98,4 @@ if (-not (Test-Path "./env.csv")) {
     exit 1
 }
 # Start Flask server
-Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" -NoNewWindow
+Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" 

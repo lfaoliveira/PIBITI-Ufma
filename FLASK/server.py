@@ -58,29 +58,11 @@ class GoogleDrive:
         self.ROOT_DRIVE = ROOT_DRIVE
         # self.ID_ROOT = self.get_folder_id(ROOT_DRIVE)
 
-        drive_metadata = {"name": "RECURSOS"}
-        request_id = str(uuid.uuid4())
-        # pylint: disable=maybe-no-member
-        """ self.ID_ROOT = (
-            self.drive_service.drives()
-            .create(body=drive_metadata, requestId=request_id, fields="id")
-            .execute()
-        ) """
-        self.ID_ROOT = 2
+        """         drive_metadata = {"name": "RECURSOS"}
+        request_id = str(uuid.uuid4()) """
 
-        """ self.drive_service.permissions().create(
-            fileId=self.ID_ROOT,
-            body=permission,
-            supportsAllDrives=True
-        ).execute() """
+        self.ID_ROOT = "139pvb772KBxxBpR8EJiGvJrN_uw7ap4P"
         print(f"ID DRIVE COMPARTILHADO: {self.ID_ROOT}")
-
-        """ permissions = self.drive_service.permissions().list(
-            fileId=self.ID_ROOT,
-            supportsAllDrives=True,
-            fields="permissions(id, type, role, emailAddress)"
-        ).execute()
-        print("Permissions for self.ID_ROOT:", permissions) """
 
     def initial_fetch(self):
         # Get initial state and start page token
@@ -631,9 +613,18 @@ def teste_pdf():
         # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
         string_html = conv.insert_text_by_class(dict_input_weasy)
 
+        # base_url = 'file://' + app.static_folder
+        base_url = app.static_folder
         pdfOK, erro = conv.convert_html_to_pdf(
-            string_html, filename, base_url='file://' + app.static_folder)
+            string_html, filename, base_url)
+
         if pdfOK:
+            print(base_url)
+            if os.path.exists(os.path.join(
+                    app.config["TEMP_FOLDER"], filename)):
+                os.remove(os.path.join(
+                    app.config["TEMP_FOLDER"], filename))
+
             shutil.move(filename, os.path.join(
                 app.config["TEMP_FOLDER"], filename))
             print("PDF created successfully!")
@@ -659,40 +650,23 @@ def deletar_tudo():
     return make_response("OK", OK)
 
 
-@app.route("/teste_folder")
+@app.route("/teste_arq")
 def teste_folder():
     try:
         # id_novo = drive.create_folder("ROOT_FORA_ROOT_DADOS", [ROOT_DRIVE])
-        files = drive.fetch_drive_files().copy()
-        print("ARQUIVOS DO FETCH")
+        drive
+        file_metadata = {
+            "name": "Invoices",
+            "mimeType": "application/vnd.google-apps.folder",
+            # "parents": [drive.ID_ROOT],
+        }
 
-        for id, file in files.items():
-            print(f"ID:{id} NOME:{file.get('name')}")
-        print("")
-        results = drive.drive_service.files().list(
-            q=f"'{drive.ID_ROOT}' in parents and mimeType='application/vnd.google-apps.folder'",
-            fields="files(id, name)",
-            supportsAllDrives=True,
-            corpora='drive',
-            driveId=drive.ID_ROOT,
-            includeItemsFromAllDrives=True,
-        ).execute()
-        print("PEGANDO FOLDERS")
-        folders = results.get('files', [])
-        # print(f"{file.get('name')} deleted in folder {file.get('parents')}\n")
-        if len(folders) > 0:
+        # pylint: disable=maybe-no-member
+        file = drive.drive_service.files().create(
+            body=file_metadata, fields="id", ).execute()
+        print(f'Folder ID: "{file.get("id")}".')
+        return file.get("id")
 
-            for file in folders:
-                print(f"ID:{file.get('id')} NOME:{file.get('name')}")
-
-        else:
-            print("TEM NADA AQUI\n")
-
-        print("DEPOIS DE PEGAR FOLDERS:")
-        drive_list = drive.drive_service.drives().list(
-            fields="drives(id, name)",  supportsAllDrives=True,).execute()
-        print(f" DRIVES: {drive_list}", "\n")
-        return make_response("TESTE DEU CERTO", OK)
     except Exception as e:
         print(e)
         return make_response("DEU ALGUMA COISA ERRADA", INTERNAL_SERVER_ERROR)
