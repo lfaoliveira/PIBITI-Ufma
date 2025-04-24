@@ -36,7 +36,7 @@ import csv
 
 
 class GoogleDrive:
-    def __init__(self, PATH_CRED, ROOT_DRIVE):
+    def __init__(self, PATH_CRED):
         self.emailOwner = 'viplab.psno@nca.ufma.br'
         self.emailService = 'teste-drive@pibiti6-nervo.iam.gserviceaccount.com'
         SCOPES = ["https://www.googleapis.com/auth/drive"]
@@ -57,8 +57,12 @@ class GoogleDrive:
         """         drive_metadata = {"name": "RECURSOS"}
         request_id = str(uuid.uuid4()) """
 
-        self.ID_ROOT = ""
-        print(f"ID DRIVE COMPARTILHADO: {self.ID_ROOT}")
+        self.ID_ROOT = os.environ.get('ID_ROOT_FOLDER_GDRIVE', None)
+        # TODO: ADAPTAR LOGICA PARA QUE TODO_ E QUALQUER FOLDER E ARQUIVO SEJA CRIADO DENTRO DE ID_ROOT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if not self.ID_ROOT:
+            raise ValueError(
+                "ID ROOT NAO SETADO!!!!!! (POR FAVOR CHECAR SE env.csv ESTA PRESENTE NO FOLDER DO SERVIDOR!!)")
+        print(f"ID ROOT: {self.ID_ROOT}")
 
     def initial_fetch(self):
         # Get initial state and start page token
@@ -555,7 +559,7 @@ PATH_CRED = os.path.join(
 
 # PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE MEDICOS
 ROOT_DRIVE = "ROOT_DADOS"
-drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
+drive = GoogleDrive(PATH_CRED)
 print("\nGOOGLE DRIVE:", end=" ")
 for file in drive.file_state.values():
     print(f"{file['name']},", end=" ")
