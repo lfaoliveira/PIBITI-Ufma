@@ -1,23 +1,23 @@
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" lang="pt">
     <title>Relatorio de diagnostico</title>
-    <!-- <link rel="stylesheet" href="template-pdf.css"> -->
+    <link rel="stylesheet" href="template.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
-
   </head>
 <body>
-    <img class="logo-vip" src="file:///C:/Users/EU SATA/Desktop/PIBITI-Ufma/FLASK/static/logo ufma.png">
+    <!-- OBS: TODOS OS ARQUIVOS ESTATICOS DEVEM ESTAR EM FLASK/static -->
+    <!-- OUTROS ARQUIVOS DEVEM ESTAR PREFERENCIALMENTE EM URL EXTERNA AO SERVIDOR OU ENTAO EM PASTA COMUM!!!!!! -->
     <section class="frame-pagina">
         <img class="logo" src="dummy.png">
         <main>
             <h1 class="titulo-pdf">Análise de Paralisia do Sexto Nervo Óptico</h1>
             <section class="dados">
                 <div class="info-medico">
-                    <slot class="nome-data">
-                        <h2 class="nome-medico">Dr Fulano de Tal</h2>
-                        <h2 class="data">11/09/2001</h2>
+                    <slot class="nome-crm">
+                        <h2 class="nome-medico">Dr Fulano de Tal Silva Araujo de Oliveira Fulano</h2>
+                        <h2 class="crm">MA-6666</h2>
                     </slot>
-                    <h2 class="crm">MA-6666</h2>
+                    <h2 class="data">11/09/2001</h2>
                 </div>
                 <h3 class="nome-paciente">Sei la quem de nao sei das quantas</h3>
                 <table class="dados-diag">
@@ -33,9 +33,9 @@
                         <td class="entrada-diag">Velocidades</td>
                         <td>
                             <ul class="lista-vel">
-                                <li class="vel-esq">1.66 mm/s</li>
-                                <li class="vel-dir">2.66 mm/s</li>
-                                <li class="dif-vel">3.66 %</li>
+                                <li class="vel-esq"></li>
+                                <li class="vel-dir"></li>
+                                <li class="dif-vel"></li>
                             </ul>
                         </td>
                     </tr>
@@ -48,9 +48,9 @@
     </section>
     <footer class="rodape">
         <div class="logos-rodape">
-            <img class="logo-vip" src="file:///logo_VIP_Lab.png">
-            <img class="logo-ufma" src="file:///logo ufma.png">
-            <img class="logo-nca" src="file:///LogoNCAFundBranco2000_2021.png">
+            <img class="logo-vip" src="logo_VIP_Lab.png">
+            <img class="logo-ufma" src="logo ufma.png">
+            <img class="logo-nca" src="LogoNCAFundBranco2000_2021.png">
         </div>
     </footer>
 </body>

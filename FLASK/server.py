@@ -5,18 +5,15 @@ from typing import Collection
 
 from bson import ObjectId
 import shutil
-from flask.sessions import SessionMixin
 from flask_mail import Mail, Message
 from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file, Response
+from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file
 
 from flask_session import Session
 from weasyprint import HTML
-from celery import Celery
-from celery.schedules import crontab
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build, Resource
@@ -29,7 +26,6 @@ import hashlib
 from datetime import timedelta
 
 from flask_cors import CORS, cross_origin
-from tensorflow.python.framework.ops import disable_eager_execution
 import tensorflow as tf
 import threading
 
@@ -41,12 +37,12 @@ import csv
 
 class GoogleDrive:
     def __init__(self, PATH_CRED, ROOT_DRIVE):
+        self.emailOwner = 'viplab.psno@nca.ufma.br'
+        self.emailService = 'teste-drive@pibiti6-nervo.iam.gserviceaccount.com'
         SCOPES = ["https://www.googleapis.com/auth/drive"]
         CREDENTIALS = service_account.Credentials.from_service_account_file(
-            PATH_CRED, scopes=SCOPES
+            PATH_CRED, scopes=SCOPES, subject=self.emailService,
         )
-        self.emailOwner = 'viplab.psno@nca.ufma.br'
-        self.emailService = 'armazenamento@pibiti6-nervo.iam.gserviceaccount.com'
         self.drive_service = build("drive", "v3", credentials=CREDENTIALS)
         self.first_fetch = True
         self.startPageToken = None
@@ -61,7 +57,7 @@ class GoogleDrive:
         """         drive_metadata = {"name": "RECURSOS"}
         request_id = str(uuid.uuid4()) """
 
-        self.ID_ROOT = "139pvb772KBxxBpR8EJiGvJrN_uw7ap4P"
+        self.ID_ROOT = ""
         print(f"ID DRIVE COMPARTILHADO: {self.ID_ROOT}")
 
     def initial_fetch(self):
@@ -593,14 +589,15 @@ def teste_pdf():
     `
     """
     # mapeamento input da funcao -> tag no HTML
-    mapeamento = {'logoApp': 'logo', 'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
+    mapeamento = {'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
                   'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
                   'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
-                  'logoVip': "logo-vip", 'logoUfma': "logo-ufma", 'logoNca': "logo-nca", 'difVel': "dif-vel"}
+                  'difVel': "dif-vel"}
 
-    dict_dados = {'logoApp': "../vite-project/src/assets/LOGOS.png", 'velEsq': '2 mm/s', 'crm': "1234", 'nomeMedico': "Fulano Corno", 'dataAgora': "11/01/2001", 'nomePaciente': "Doente", 'diagAutom': "Tem sim",
-                  'velDir': '2 mm/s', 'diagnosticoMedico': "Tem não", 'urlGrafico': "../vite-project/src/assets/grafico.png", 'logoVip': "../vite-project/src/assets/logo_VIP_Lab.png",
-                  'logoUfma': "../vite-project/src/assets/logo ufma.png", 'logoNca': "../vite-project/src/assets/LogoNCAFundBranco2000_2021.png", 'difVel': '20 %'}
+    dict_dados = {'velEsq': '2 mm/s', 'crm': "MA-1234", 'nomeMedico': "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak", 'dataAgora': "11/01/2001",
+                  'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
+                  'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
+                  'difVel': '20 %'}
 
     dict_input_weasy = {}
     for key_dado in dict_dados.keys():
@@ -656,15 +653,16 @@ def teste_folder():
         # id_novo = drive.create_folder("ROOT_FORA_ROOT_DADOS", [ROOT_DRIVE])
         drive
         file_metadata = {
-            "name": "Invoices",
+            "name": "TESTE",
             "mimeType": "application/vnd.google-apps.folder",
-            # "parents": [drive.ID_ROOT],
+            "parents": ['139pvb772KBxxBpR8EJiGvJrN_uw7ap4P'],
         }
 
         # pylint: disable=maybe-no-member
         file = drive.drive_service.files().create(
             body=file_metadata, fields="id", ).execute()
         print(f'Folder ID: "{file.get("id")}".')
+        print(drive.fetch_drive_files())
         return file.get("id")
 
     except Exception as e:

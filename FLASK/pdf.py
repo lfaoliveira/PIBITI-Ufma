@@ -2,8 +2,8 @@ from bs4 import BeautifulSoup
 from weasyprint import HTML, CSS
 import os
 
-HTML_FILEPATH = './template-pdf.html'
-CSS_FILEPATH = './template-pdf.css'
+HTML_FILEPATH = './template.html'
+CSS_FILEPATH = './template.css'
 
 
 class Converter:
@@ -44,6 +44,15 @@ class Converter:
                 if element.name.lower() == "img":
                     element['src'] = value
                     continue
+                # caso da lista de velocidade
+                elif element.name.lower() == "li":
+                    if class_name == "vel-esq":
+                        value = f"Olho Esquerdo:\t{value}"
+                    if class_name == "vel-dir":
+                        value = f"Olho Direito:\t{value}"
+                    if class_name == "dif-vel":
+                        value = f"Diferença entre os olhos:\t{value}"
+
                 # Remove existing content.
                 element.clear()
                 # Insert the new value.
@@ -52,6 +61,7 @@ class Converter:
         return str(soup)
 
 
+# CODIGO PARA TESTE SE WEASYPRINT ESTA FUNCIONANDO CORRETAMENTE!
 """  if __name__ == '__main__':
      # Create an instance of Converter.
      converter = Converter()
