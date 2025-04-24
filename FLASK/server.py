@@ -1,8 +1,7 @@
 import datetime
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
-from typing import Collection
-
+import itertools
 from bson import ObjectId
 import shutil
 from flask_mail import Mail, Message
@@ -11,16 +10,9 @@ from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file
-
 from flask_session import Session
-from weasyprint import HTML
-
-from google.oauth2 import service_account
-from googleapiclient.discovery import build, Resource
-from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
-from googleapiclient.errors import HttpError
 import mimetypes
-
+from googleapiclient.http import MediaFileUpload
 from flask_pymongo import PyMongo
 import hashlib
 from datetime import timedelta
@@ -33,361 +25,7 @@ import ffmpeg
 import uuid
 import requests
 import csv
-
-
-class GoogleDrive:
-    def __init__(self, PATH_CRED):
-        self.emailOwner = 'viplab.psno@nca.ufma.br'
-        self.emailService = 'teste-drive@pibiti6-nervo.iam.gserviceaccount.com'
-        SCOPES = ["https://www.googleapis.com/auth/drive"]
-        CREDENTIALS = service_account.Credentials.from_service_account_file(
-            PATH_CRED, scopes=SCOPES, subject=self.emailService,
-        )
-        self.drive_service = build("drive", "v3", credentials=CREDENTIALS)
-        self.first_fetch = True
-        self.startPageToken = None
-        """ self.file_state: dict[str, dict[str, str]] """
-        self.file_state = {}
-        # dict que vai mapear nomes de arquivos a listas de id's
-        self.hash_nomes = {}
-        self.fetch_drive_files()
-        self.ROOT_DRIVE = ROOT_DRIVE
-        # self.ID_ROOT = self.get_folder_id(ROOT_DRIVE)
-
-        """         drive_metadata = {"name": "RECURSOS"}
-        request_id = str(uuid.uuid4()) """
-
-        self.ID_ROOT = os.environ.get('ID_ROOT_FOLDER_GDRIVE', None)
-        # TODO: ADAPTAR LOGICA PARA QUE TODO_ E QUALQUER FOLDER E ARQUIVO SEJA CRIADO DENTRO DE ID_ROOT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if not self.ID_ROOT:
-            raise ValueError(
-                "ID ROOT NAO SETADO!!!!!! (POR FAVOR CHECAR SE env.csv ESTA PRESENTE NO FOLDER DO SERVIDOR!!)")
-        print(f"ID ROOT: {self.ID_ROOT}")
-
-    def initial_fetch(self):
-        # Get initial state and start page token
-
-        page_token = None
-        files = []
-
-        # First, get the starting page token for future changes
-        response = self.drive_service.changes().getStartPageToken().execute()
-        self.startPageToken = response.get('startPageToken')
-
-        while True:
-            response = self.drive_service.files().list(
-                pageSize=100,
-                fields="nextPageToken, files(id, name, mimeType, modifiedTime, parents)",
-                pageToken=page_token,
-                supportsAllDrives=True,
-                includeItemsFromAllDrives=True,
-                q="trashed=false",
-            ).execute()
-
-            files.extend(response.get('files', []))
-            page_token = response.get('nextPageToken', None)
-            if page_token is None:
-                break
-
-        # Clear existing state before updating
-        self.file_state.clear()
-        for file in files:
-            if file.get('name') not in self.hash_nomes.keys():
-                self.hash_nomes[file.get('name')] = []
-            self.hash_nomes[file.get('name')].append(file['id'])
-
-            self.file_state[file['id']] = {
-                "modified": file.get('modifiedTime'),
-                "name": file.get('name'),
-                "parents": file.get('parents'),
-                "mimeType": file.get('mimeType')
-            }
-        self.first_fetch = False
-        print(self.file_state)
-        return self.file_state
-
-    def fetch_drive_files(self):
-        """
-        Query Google Drive to fetch a list of all files (INCLUDES FOLDERS).
-        Returns:
-            A dictionary mapping file IDs to their modified times (or any other metadata you want).
-        """
-        if self.first_fetch:
-            self.initial_fetch()
-            return self.file_state
-        # NOTE!!!! TEM DELAY ENTRE MUDANCAS FEITAS PELO USUARIO E REGISTRO NO BACKEND. CUIDADO AO REMOVER ARQUIVOS MANUALMENTE!!!!!
-        page_token = self.startPageToken
-        while page_token is not None:
-            response = self.drive_service.changes().list(
-                pageToken=page_token,
-                includeRemoved=True,
-                includeItemsFromAllDrives=True,
-                supportsAllDrives=True,
-                pageSize=50,
-                fields="nextPageToken, newStartPageToken, changes(fileId, file(trashed, modifiedTime, name, parents, mimeType), removed)"
-            ).execute()
-
-            for change in response.get('changes', []):
-                print("CHANGE: ", change)
-                file_id = change.get('fileId')
-                trashed = change.get('file', {}).get('trashed', False)
-                if change.get('removed', False) or trashed:
-                    # tira arquivo do registro
-                    self.file_state.pop(file_id, None)
-                else:
-                    # atualiza arquivo no registro
-                    file = change.get('file')
-                    if file.get('name') not in self.hash_nomes.keys():
-                        self.hash_nomes[file.get('name')] = []
-                    self.hash_nomes[file.get('name')].append(file['id'])
-                    self.file_state[file_id] = {
-                        "modified": file.get('modifiedTime'),
-                        "name": file.get('name'),
-                        "parents": file.get('parents'),
-                        "mimeType": file.get('mimeType'),
-                    }
-
-            if 'newStartPageToken' in response.keys():
-                # Save this token for the next polling interval
-                self.startPageToken = response.get('newStartPageToken')
-            page_token = response.get('nextPageToken')
-
-        return self.file_state
-
-    def get_folder_id(self, folder_name, parents=[]):
-        print(f"\nHASH NOMES: {self.hash_nomes}")
-        lista_ids = self.hash_nomes.get(folder_name, None)
-
-        if lista_ids == None and folder_name != self.ROOT_DRIVE:
-            return None
-
-        for id in lista_ids:
-            file = self.file_state[id]
-            mime = file.get('mimeType')
-            name = file.get('name')
-            parents_arq = file.get('parents', [])
-            print(
-                f"NAME: {name} PARENTS_ARQ: {parents_arq} PARENTS_ARG: {parents}\n")
-            if parents_arq == None:
-                # caso que folder eh o folder de root
-                return id
-            if (parents != None and parents_arq != None):
-                if (len(parents) == 0 and len(parents_arq) == 0):
-                    igualdade_parents = True
-                else:
-                    igualdade_parents = all(
-                        p_arq == p_arg for p_arq, p_arg in zip(parents_arq, parents))
-            else:
-                igualdade_parents = False
-            cond = (mime == 'application/vnd.google-apps.folder' and name ==
-                    folder_name and igualdade_parents)
-            if cond:
-                return id
-        return None
-
-    def _create_parents(self, parents=[]):
-        print("FN AUX PRA CRIAR FOLDERS")
-        id_parents = []
-        for i in range(1, len(parents)):
-            self.fetch_drive_files()
-            print(f"PARENTS ARG {i}: {parents[0:i]}\n")
-            id = self.get_folder_id(parents[i], parents=parents[:i])
-
-            if (id == None):
-                folder_metadata = {
-                    'name': parents[i],
-                    'parents': id_parents[:i],
-                    'mimeType': 'application/vnd.google-apps.folder'
-                }
-                print(
-                    f"CRIANDO FOLDER {parents[i]}, FOLDER METADATA: {folder_metadata}")
-                folder_drive = self.drive_service.files().create(
-                    body=folder_metadata, fields='id', supportsAllDrives=True,).execute()
-
-                folder_id = folder_drive.get('id')
-                id_parents.append(folder_id)
-
-        return id_parents
-
-    def create_folder(self, folder_name, parents=[]):
-        """
-        Obs: parents eh lista de nomes de parentes
-        """
-        print(f"\nFOLDER_NAME: {folder_name}")
-        print(f"\PARENTS: {parents}")
-
-        id_parents = self._create_parents(parents)
-
-        folder_metadata = {
-            'name': folder_name,
-            'parents': id_parents,
-            'mimeType': 'application/vnd.google-apps.folder',
-        }
-
-        folder_drive = self.drive_service.files().create(
-            body=folder_metadata, fields='id, name', supportsAllDrives=True).execute()
-        print(
-            f"FOLDER CRIADO: NOME: {folder_drive.get('name')} ID:{folder_drive.get('id')}")
-        permissions = []
-        """ {'type': 'user',
-             'role': 'writer',
-             'emailAddress': self.emailService} """
-        id_folder = folder_drive.get('id')
-        return id_folder
-
-    def get_file_id(self, file_name):
-        for id, file in self.file_state.items():
-            name = file.get('name')
-            if name == file_name:
-                return id
-        return None
-
-    def upload_to_drive(self, file, folder, parents=[], resumable=False):
-        """
-        Faz upload de arquivo para o drive; Cria folder de destino se folder nao existir
-        --------
-        Returns: id do arquivo criado
-        """
-        self.fetch_drive_files()
-        if folder == "root":
-            raise Exception("NAO EH POSSIVEL INSERIR NO ROOT!!!!")
-        print(
-            f"NO UPLOAD: FILE: {file} FOLDER: {folder} PARENTS: {parents}\n\n")
-        id_folder = self.get_folder_id(folder, parents)
-
-        # cria folder se nao existir
-        if (id_folder == None):
-            id_folder = self.create_folder(folder, parents)
-
-        mime = mimetypes.guess_type(file)
-        if mime:
-            media = MediaFileUpload(
-                file, mimetype=mime[0], resumable=resumable)
-
-            file_metadata = {
-                'name': os.path.basename(file),
-                'parents': [id_folder],
-                # 'permissionIds': ['anyone'],
-                # 'permissions': [{'type': 'user',
-                #                  'role': 'owner',
-                #                  'emailAddress': self.emailOwner},
-                #                 {'type': 'user',
-                #                 'role': 'editor',
-                #                  'emailAddress': self.emailService}]
-            }
-            try:
-                if not resumable:
-                    # upload simples
-                    response = self.drive_service.files().create(
-                        body=file_metadata, media_body=media, fields='id', supportsAllDrives=True).execute()
-                    file_id = response.get('id')
-                else:
-                    # UPLOAD EM PARTES (NECESSARIO PARA ARQUIVOS > 5MB)
-                    request = self.drive_service.files().create(
-                        body=file_metadata, media_body=media, fields='id', supportsAllDrives=True)
-
-                    response = None
-                    while response is None:
-                        status, response = request.next_chunk()
-                        if status:
-                            print(f"Uploaded {int(status.progress() * 100)}%.")
-                    file_id = response.get('id')
-                return file_id
-            except Exception as e:
-                print("PROBLEMA NO UPLOAD: \n\n", e)
-                raise e
-        else:
-            """ ERRO NO MIME"""
-            print(Exception("ERRO AO PEGAR MIMETYPE"))
-            return None
-
-    def update_file(self, new_data, filename, folder, parents):
-        """
-        Updates a file in Google Drive with new data
-
-        Args:
-            new_data: Path to the new file data
-            filename: Name of the file to update
-            folder: Name of the folder containing the file
-
-        Returns:
-            str: ID of updated file or None if update fails
-        """
-        try:
-            # Get folder and file IDs
-            folder_id = self.get_folder_id(folder, parents)
-            file_id = self.get_file_id(filename)
-
-            if not folder_id:
-                print("Folder not found")
-                return None
-            elif not file_id:
-                print("File not found")
-                return None
-
-            # Create media object for new file
-            mime = mimetypes.guess_type(new_data)
-            if mime:
-                media = MediaFileUpload(new_data, mimetype=mime[0])
-
-                # Update the file
-                updated_file = self.drive_service.files().update(
-                    fileId=file_id,
-                    media_body=media
-                ).execute()
-
-                self.fetch_drive_files()  # Update local state
-                return updated_file.get('id')
-
-            return None
-
-        except Exception as e:
-            print(f"Error updating file: {e}")
-            return None
-
-    def delete_file(self, file_id, folder_id=None):
-        """
-        Delete a file from a specific folder in Google Drive
-
-        Args:
-            file_id: ID of the file to delete
-            folder_id: ID of the folder containing the file
-
-        Returns:
-            bool: True if deletion successful, False otherwise
-        """
-        print("\n")
-        try:
-            """             # Verify file exists in specified folder
-            if folder_id == None or folder_id == 'root':
-                folder_id = ROOT_DRIVE
-            elif isinstance(folder_id, list):
-                folder_id = folder_id[0]
-            print(f"FOLDER_ID: {folder_id}") """
-
-            # Delete the file
-            self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
-            time.sleep(1)
-            self.fetch_drive_files()
-            return True
-
-        except Exception as e:
-            print(f"Error deleting file: {e}")
-            return False
-
-    def download_file(self, file_id):
-        self.fetch_drive_files()
-
-        request = self.drive_service.files(
-            fields="file(name)").get_media(fileId=file_id)
-        import io
-        file = io.BytesIO()
-        downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
-            print(f"Download {int(status.progress() * 100)}%.")
-        return file.getvalue(), request.get('file').get('name', None)
+from drive import GoogleDrive
 
 
 def count_active_threads():
@@ -559,13 +197,13 @@ PATH_CRED = os.path.join(
 
 # PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE MEDICOS
 ROOT_DRIVE = "ROOT_DADOS"
-drive = GoogleDrive(PATH_CRED)
+drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
 print("\nGOOGLE DRIVE:", end=" ")
-for file in drive.file_state.values():
-    print(f"{file['name']},", end=" ")
+if not drive.file_state.empty:
+    for name in drive.file_state.loc[:, "name"]:
+        print(f"{name},", end=" ")
 print(
-    f"Initial drive state captured with {len(drive.file_state.keys())} files.")
-
+    f"Initial drive state captured with {len(drive.file_state.index)} Objects.")
 
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
@@ -643,35 +281,58 @@ def deletar_tudo():
     files = drive.fetch_drive_files().copy()
     # print(f"{file.get('name')} deleted in folder {file.get('parents')}\n")
     print("ARQUIVOS DO FETCH")
-    for id, file in files.items():
+    for id in files.index:
+        if id == drive.ID_ROOT_DADOS:
+            continue
+        file = files.loc[id]
         print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
         if drive.delete_file(id):
             print(f"DELETOU {file.get('name')}")
-
+    print(drive.fetch_drive_files())
     return make_response("OK", OK)
 
 
 @app.route("/teste_arq")
 def teste_folder():
     try:
-        # id_novo = drive.create_folder("ROOT_FORA_ROOT_DADOS", [ROOT_DRIVE])
-        drive
-        file_metadata = {
-            "name": "TESTE",
-            "mimeType": "application/vnd.google-apps.folder",
-            "parents": ['139pvb772KBxxBpR8EJiGvJrN_uw7ap4P'],
-        }
-
-        # pylint: disable=maybe-no-member
-        file = drive.drive_service.files().create(
-            body=file_metadata, fields="id", ).execute()
-        print(f'Folder ID: "{file.get("id")}".')
+        file_path = "requirements.txt"
+        if os.path.exists(file_path):
+            drive.upload_to_drive(file_path, nomes_parents=[
+                                  "TESTE"], resumable=False)
+        else:
+            print(f"File '{file_path}' does not exist.")
         print(drive.fetch_drive_files())
-        return file.get("id")
+        return make_response("OK", OK)
 
     except Exception as e:
-        print(e)
+        raise e
         return make_response("DEU ALGUMA COISA ERRADA", INTERNAL_SERVER_ERROR)
+
+
+@app.route("/teste2")
+def teste2():
+    try:
+        folder_metadata = {
+            'name': "TESTE",
+                    'parents': ['1HGQRjShCSWINVeIjzizpupv9gHmQJi-B'],
+                    'mimeType': 'application/vnd.google-apps.folder'
+        }
+        folder_drive = drive.drive_service.files().create(
+            body=folder_metadata, fields='id').execute()
+        print(folder_drive.get('id'))
+        print(drive.fetch_drive_files())
+        """for id in drive.file_state.index:
+            if id == drive.ID_ROOT_DADOS:
+                continue
+            if drive.delete_file(id):
+                print(f"DELETOU {drive.file_state[id, 'name']}")
+            else:
+                print(f"NAO COSNEGIU DELETAR {drive.file_state[id, 'name']}") """
+
+        return make_response("OK", OK)
+
+    except Exception as e:
+        raise e
 
 
 @app.route("/")
