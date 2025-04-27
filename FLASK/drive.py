@@ -92,7 +92,9 @@ class GoogleDrive:
             }
         self.file_state = pd.DataFrame.from_dict(
             self.file_state, orient='index')
-        print(f"DF FILE STATE: \n{self.file_state}")
+        # more options can be specified also
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            print(f"DF FILE STATE: \n{self.file_state}")
         self.first_fetch = False
 
     def fetch_drive_files(self):
@@ -157,6 +159,9 @@ class GoogleDrive:
         return self.file_state
 
     def get_file_id(self, file_name, folder_name=None, id_parent_folder=None):
+        if self.file_state.empty:
+            return None
+
         if folder_name:
             id_folder = self.get_folder_id(folder_name, id_parent_folder)
 
@@ -183,14 +188,18 @@ class GoogleDrive:
         # sem lista ou nao achou
         if file_id:
             print("ACHOU FILE_ID")
-        return file_id
+        return file_id, name
 
     def get_folder_id(self, folder_name, id_parent):
         # partindo do principio que ROOT_DRIVE sempre existe e ja esta configurado ;)
         if folder_name == self.ROOT_DRIVE:
             return self.ID_ROOT_DADOS
 
+        if self.file_state.empty:
+            return None
+
         existe = folder_name in self.file_state['name'].values
+
         if not existe:
             return None
 
@@ -249,7 +258,6 @@ class GoogleDrive:
                     'parents': [id_parents[i - 1]],
                     'mimeType': 'application/vnd.google-apps.folder'
                 }
-                print(f"ID PARENTS: {id_parents}")
                 print(
                     f"CRIANDO FOLDER {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}")
                 folder_drive = self.drive_service.files().create(
@@ -267,7 +275,6 @@ class GoogleDrive:
         Faz upload de arquivo para o drive; Cria folder de destino se folder nao existir \n
 
         :param list[str] nomes_parents: contem nomes dos folders-pai do arquivo (NUNCA INCLUIR O NOME DO ROOT DENTRO)
-        NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO VAI MANDAR PRO ROOT DA CONTA DE SERVIÇO
         Returns: id do arquivo criado
         """
         self.fetch_drive_files()
@@ -303,6 +310,7 @@ class GoogleDrive:
                 'name': os.path.basename(file_path),
                 'parents': [id_folder],
             }
+            """NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO VAI MANDAR PRO ROOT DA CONTA DE SERVIÇO!!!!!!!"""
             try:
                 print("FAZENDDO UPLOAD")
                 if resumable == False:
@@ -402,8 +410,7 @@ class GoogleDrive:
     def download_file(self, file_id):
         self.fetch_drive_files()
 
-        request = self.drive_service.files(
-            fields="file(name)").get_media(fileId=file_id)
+        request = self.drive_service.files().get_media(fileId=file_id)
         import io
         file = io.BytesIO()
         downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
@@ -411,4 +418,4 @@ class GoogleDrive:
         while not done:
             status, done = downloader.next_chunk()
             print(f"Download {int(status.progress() * 100)}%.")
-        return file.getvalue(), request.get('file').get('name', None)
+        return file.getvalue()

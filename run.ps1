@@ -98,4 +98,4 @@ if (-not (Test-Path "./env.csv")) {
     exit 1
 }
 # Start Flask server
-Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK" -NoNewWindow
+Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK"

@@ -20,6 +20,7 @@ from datetime import timedelta
 from flask_cors import CORS, cross_origin
 import tensorflow as tf
 import threading
+from pdf import Converter
 
 import ffmpeg
 import uuid
@@ -128,8 +129,10 @@ def enviar_email(mensagem, destino, assunto):
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
-DIAGS = "Diagnosticos"
-MEDICOS = "Medicos"
+COLLECTION_DIAGS = "Diagnosticos"
+COLLECTION_MEDICOS = "Medicos"
+
+PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 
 # Read environment variables from CSV
 arq_config = "../env.csv"
@@ -195,7 +198,7 @@ app.config["WKDIR"] = os.getcwd()
 PATH_CRED = os.path.join(
     app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json")
 
-# PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE MEDICOS
+# PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE COLLECTION_MEDICOS
 ROOT_DRIVE = "ROOT_DADOS"
 drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
 print("\nGOOGLE DRIVE:", end=" ")
@@ -213,6 +216,7 @@ if not os.path.exists(path_pesos_yolo):
     get_peso(app.config["WKDIR"])
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
+os.makedirs(app.config["TEMP_FOLDER"], exist_ok=True)
 video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
 # --------------------- MODELO --------------------------#
@@ -245,7 +249,6 @@ def teste_pdf():
     for key_dado in dict_dados.keys():
         nomeTag = mapeamento[key_dado]
         dict_input_weasy[nomeTag] = dict_dados[key_dado]
-    from pdf import Converter
     conv = Converter()
     try:
         filename = "diagnostico.pdf"
@@ -371,7 +374,7 @@ def analisar():
     if id_diag != None:
         print(request.form)
         diag = mongo.db.get_collection(
-            DIAGS).find_one({"_id": ObjectId(id_diag)})
+            COLLECTION_DIAGS).find_one({"_id": ObjectId(id_diag)})
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
     # VERSÃO LOGADO
@@ -408,7 +411,7 @@ def analisar():
 
     path_arq_input_conv = converter_arq(
         path_arq_input, path_aux_conv)
-    print("\nDEPOIS PRIMEIRA CONV\n")
+    print("\nDEPOIS PRIMEIRA CONVER\n")
     nome_local = f"{nome_video}.{EXT_OUT}"
     path_out_antes_conv = os.path.join(
         app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
@@ -435,7 +438,33 @@ def analisar():
     # Remover APENAS arquivos auxiliares
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
-    # path_pdf = get_pdf()
+
+    conv = Converter()
+    path_pdf =
+    try:
+        filename = f"RELATORIO_{}.pdf"
+        # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
+        string_html = conv.insert_text_by_class(dict_input_weasy)
+
+        # base_url = 'file://' + app.static_folder
+        base_url = app.static_folder
+        pdfOK, erro = conv.convert_html_to_pdf(
+            string_html, filename, base_url)
+
+        if pdfOK:
+            print(base_url)
+            if os.path.exists(os.path.join(
+                    app.config["TEMP_FOLDER"], filename)):
+                os.remove(os.path.join(
+                    app.config["TEMP_FOLDER"], filename))
+
+            shutil.move(filename, os.path.join(
+                app.config["TEMP_FOLDER"], filename))
+            print("PDF created successfully!")
+        else:
+            raise erro
+    except Exception as e:
+        raise e
 
     print("PEGANDO URLS")
     drive.upload_to_drive(path_graf, id_folder_drive)
@@ -459,7 +488,7 @@ def analisar():
 
     result = {"diagAutom": str_diag, "grafico": url_graf, "pdf": url_pdf,
               "dataDiag": timestamp, "video": url_video_out, "ultimaModif": timestamp}
-    mongo.db.get_collection(DIAGS).update_one(
+    mongo.db.get_collection(COLLECTION_DIAGS).update_one(
         {"_id": ObjectId(id_diag)},
         {"$set": result}
     )
@@ -477,7 +506,7 @@ def pega_perfil():
     if pagAtual != None:
         pagAtual = int(pagAtual)
         id_medico = session['user_id']
-        res = mongo.db.get_collection(DIAGS).aggregate([
+        res = mongo.db.get_collection(COLLECTION_DIAGS).aggregate([
             {
                 '$match': {
                     "id_medico": id_medico
@@ -493,8 +522,9 @@ def pega_perfil():
         ], allowDiskUse=True)
         print(f"\n\n{res}\n\n")
 
-        medico = find_one_with_id(mongo.db.get_collection(MEDICOS), id_medico)
-        # res = list(mongo.db.get_collection(DIAGS).find())
+        medico = find_one_with_id(
+            mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
+        # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
         return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": res})
 
     else:
@@ -504,8 +534,10 @@ def pega_perfil():
 @app.route("/envia_diag", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def envia_diag():
+    """
+    Rota responsavel por receber formulario com diagnostico do medico e guardar dados no BD e no Drive
+    """
     timestamp = time.time()
-
     video = request.files.get("video", None)
 
     nomePaciente = request.form.get("nomePaciente", None)
@@ -525,26 +557,27 @@ def envia_diag():
     if response.text == 'True':
         # caso pra usuario logado
         id_medico = session['user_id']
-        medicos = mongo.db.get_collection(MEDICOS)
+        medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
         medico_atual = medicos.find_one({"_id": ObjectId(id_medico)})
         nomeMedico = medico_atual.get("nome") if medico_atual else None
         if nomeMedico is None:
             return make_response("MEDICO LOGADO NAO ENCONTRADO", INTERNAL_SERVER_ERROR)
     else:
+        # padronizar dados nulos no BD como None e erros de preenchimento como null
         id_medico = None
 
-    diags = mongo.db.get_collection(DIAGS)
+    diags = mongo.db.get_collection(COLLECTION_DIAGS)
     dados = {"nomePaciente": nomePaciente, "id_medico": id_medico,
              "diagnosticoMedico": diagnosticoMedico, "desc": desc}
 
-    for key, value in dados.items():
-        if value is None:
-            dados[key] = "None"
+    # transforma qualquer valor None em string
+    dados = {dados[key]: "None" if value is None else value for key,
+             value in dados.items()}
 
     result = diags.insert_one(dados)
     id_diag_mongo = str(result.inserted_id)
     print("RESULTADO INSERT: ", result)
-    # escreve dados no video em \tmp
+    # escreve dados no video em \tmp e usa timestamp pra evitar duplicatas
     filename = video.filename
     nome_local = f"{str(round(timestamp, 4))}_{filename}"
     video_data = video.read()
@@ -553,20 +586,22 @@ def envia_diag():
         f.write(video_data)
 
     email_medico = find_one_with_id(mongo.db.get_collection(
-        MEDICOS), session['user_id']).get('email', None)
+        COLLECTION_MEDICOS), session['user_id']).get('email', None)
+    if email_medico is None:
+        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
 
-    id_videoLabel = drive.upload_to_drive(path_temp_videoLabel, id_diag_mongo, [ROOT_DRIVE,
-                                          email_medico], resumable=True)
+    id_videoLabel = drive.upload_to_drive(
+        path_temp_videoLabel, [email_medico, id_diag_mongo], resumable=True)
     dados = {"videoLabel": id_videoLabel}
-    result = mongo.db.get_collection(DIAGS).update_one(
+    result = mongo.db.get_collection(COLLECTION_DIAGS).update_one(
         {"_id": ObjectId(id_diag_mongo)},
         {"$set": dados}
     )
     os.remove(path_temp_videoLabel)
-    print(f"RESULTADO UPDATE MONGO: {result}\n", )
+    print(f"RESULTADO UPDATE MONGO: {result}\n")
 
     if result.acknowledged:
-        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "id_folder_drive": drive.get_folder_id(id_diag_mongo), "filename": filename}, OK)
+        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "id_folder_drive": drive.get_folder_id(id_diag_mongo, id_parent=email_medico), "filename": filename}, OK)
     else:
         return make_response("Erro ao registrar diagnostico", INTERNAL_SERVER_ERROR)
 
@@ -598,7 +633,7 @@ def autenticar():
         print("EMAIL OU SENHA INVALIDOS")
         return make_response('SEM EMAIL OU SENHA', BAD_REQUEST)
 
-    medicos = mongo.db.get_collection(MEDICOS)
+    medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
     usuario = medicos.find_one({"email": email})
     senha = alg_hash(senha.encode('utf-8')).hexdigest()
     tipo = request.args['tipo']
@@ -673,7 +708,7 @@ def val_login():
     else:
         # Check if user exists in database
         usuario = find_one_with_id(
-            mongo.db.get_collection(MEDICOS), session['user_id'])
+            mongo.db.get_collection(COLLECTION_MEDICOS), session['user_id'])
         if usuario != None:
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
             if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():

@@ -3,7 +3,7 @@
   <h1 class="page-title">Etapa {{ this.cont }} de 3: {{ this.tituloAtual }}</h1>
   <OverlayAviso
     class="overlay-aviso"
-    :eventoAviso="erroOverlay"
+    :eventoAviso="this.erroOverlay"
     :titulo="msgErro"
     :subtexto="'Tente novamente!'"
     :srcImg="'src/assets/alert_circle.png'"
@@ -94,6 +94,7 @@ export default {
         })
         .then((res) => {
           this.objResposta = res.data;
+          console.log(this.objResposta);
           controller.abort();
           this.$router.push({
             name: "analiseVideo",
@@ -119,9 +120,8 @@ export default {
     // 1MB = 0.5s
     const sizeMB = Number(formDiag.get("video").size) / 1000000;
     const tempoLoad = (1 / 2) * sizeMB;
-    let res = 0;
+    let res = "None";
     try {
-      console.log(res);
       res = await Promise.all([
         this.progressoIntervaloMs(tempoLoad, 50, signal),
         axios.post(this.$store.getters.getDiag, formDiag, {
@@ -129,6 +129,7 @@ export default {
         }),
       ]);
       this.objResposta = res[1].data;
+      console.log("RESPOSTA BEM SUCEDIDA: ");
     } catch (error) {
       this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
       emitter.emit(this.erroOverlay);
