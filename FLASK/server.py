@@ -125,7 +125,49 @@ def enviar_email(mensagem, destino, assunto):
         return INTERNAL_SERVER_ERROR
 
 
-# def get_pdf(dict_dados, output_path):
+def gerar_pdf(path_output, dict_dados):
+    """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF RENDERIZADO
+
+    :param dict_dados dict[str,Any]: keys: [velEsq, nomeMedico, dataAgora, nomePaciente, diagAutom, velDir, diagnosticoMedico, urlGrafico, difVel]
+    :param path_output str: path pro output do pdf
+    """
+    # mapeamento nome no BD -> tag no HTML
+    mapeamento = {'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
+                  'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
+                  'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
+                  'difVel': "dif-vel"}
+
+    # dados com chaves do banco de dados que devem ser mapeados pro pdf
+    '''dict_dados = {'velEsq': '2 mm/s', 'crm': "MA-1234", 'nomeMedico': "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak", 'dataAgora': "11/01/2001",
+                  'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
+                  'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
+                  'difVel': '20 %'}'''
+
+    dict_input_weasy = {}
+    for key_dado in dict_dados.keys():
+        nomeTag = mapeamento[key_dado]
+        dict_input_weasy[nomeTag] = dict_dados[key_dado]
+    conv = Converter()
+    try:
+        filename = os.path.basename(path_output)
+        string_html = conv.insert_text_by_class(dict_input_weasy)
+
+        # base_url = 'file://' + app.static_folder
+        base_url = app.static_folder
+        pdfOK, erro = conv.convert_html_to_pdf(
+            string_html, filename, base_url)
+
+        if pdfOK:
+            print(base_url)
+            if os.path.exists(path_output):
+                os.remove(path_output)
+
+            shutil.move(filename, path_output)
+            print("PDF created successfully!")
+        else:
+            raise erro
+    except Exception as e:
+        print(e)
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
@@ -312,30 +354,11 @@ def teste_folder():
         return make_response("DEU ALGUMA COISA ERRADA", INTERNAL_SERVER_ERROR)
 
 
-@app.route("/teste2")
+@app.route("/teste_mongo")
 def teste2():
-    try:
-        folder_metadata = {
-            'name': "TESTE",
-                    'parents': ['1HGQRjShCSWINVeIjzizpupv9gHmQJi-B'],
-                    'mimeType': 'application/vnd.google-apps.folder'
-        }
-        folder_drive = drive.drive_service.files().create(
-            body=folder_metadata, fields='id').execute()
-        print(folder_drive.get('id'))
-        print(drive.fetch_drive_files())
-        """for id in drive.file_state.index:
-            if id == drive.ID_ROOT_DADOS:
-                continue
-            if drive.delete_file(id):
-                print(f"DELETOU {drive.file_state[id, 'name']}")
-            else:
-                print(f"NAO COSNEGIU DELETAR {drive.file_state[id, 'name']}") """
-
-        return make_response("OK", OK)
-
-    except Exception as e:
-        raise e
+    diags = mongo.db.get_collection(COLLECTION_DIAGS)
+    for diag in diags.find():
+        print(diag)
 
 
 @app.route("/")
@@ -435,48 +458,14 @@ def analisar():
     path_out = converter_arq(
         path_out_antes_conv, path_out)
 
-    # Remover APENAS arquivos auxiliares
+    '''Removendo APENAS arquivos auxiliares'''
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
 
-    conv = Converter()
-    path_pdf =
-    try:
-        filename = f"RELATORIO_{}.pdf"
-        # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
-        string_html = conv.insert_text_by_class(dict_input_weasy)
-
-        # base_url = 'file://' + app.static_folder
-        base_url = app.static_folder
-        pdfOK, erro = conv.convert_html_to_pdf(
-            string_html, filename, base_url)
-
-        if pdfOK:
-            print(base_url)
-            if os.path.exists(os.path.join(
-                    app.config["TEMP_FOLDER"], filename)):
-                os.remove(os.path.join(
-                    app.config["TEMP_FOLDER"], filename))
-
-            shutil.move(filename, os.path.join(
-                app.config["TEMP_FOLDER"], filename))
-            print("PDF created successfully!")
-        else:
-            raise erro
-    except Exception as e:
-        raise e
-
-    print("PEGANDO URLS")
-    drive.upload_to_drive(path_graf, id_folder_drive)
-    drive.upload_to_drive(path_pdf, id_folder_drive)
-    drive.upload_to_drive(path_out, id_folder_drive, resumable=True)
-    """     resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
-    url_graf = resposta_json["file_url"]
-
-    resposta_json = get_file(os.path.basename(path_out))[0].get_json()
-    url_video_out = resposta_json["file_url"] """
-
-    # str_res no formato "velE,velD,percentDif,olho_doente"
+    # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
+    path_pdf = os.path.join(
+        app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
+    split_res = str_res.split(",")
     olho_doente = str_res.split(",")[3]
 
     if olho_doente == "Esquerdo":
@@ -485,6 +474,30 @@ def analisar():
         str_diag = "false+true"
     else:
         str_diag = "false+false"
+    path_graf_pdf = os.path.join("..", "tmp", os.path.basename(path_graf))
+    dict_dados = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2],
+                  "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": "",
+                  "nomeMedico": "", "diagnosticoMedico": "", "urlGrafico": path_graf, }
+    gerar_pdf(path_pdf, dict_dados)
+
+    print("PEGANDO URLS")
+    id_medico = diag.get('id_medico', None)
+    if id_medico:
+        email_medico = find_one_with_id(mongo.db.get_collection(
+            COLLECTION_MEDICOS), id_medico).get('email')
+    else:
+        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
+
+    drive.upload_to_drive(path_graf, [email_medico, id_diag])
+    drive.upload_to_drive(path_pdf, [email_medico, id_diag], resumable=True)
+    drive.upload_to_drive(path_out, [email_medico, id_diag], resumable=True)
+    """     resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
+    url_graf = resposta_json["file_url"]
+
+    resposta_json = get_file(os.path.basename(path_out))[0].get_json()
+    url_video_out = resposta_json["file_url"] """
+
+    # str_res no formato "velE,velD,percentDif,olho_doente"
 
     result = {"diagAutom": str_diag, "grafico": url_graf, "pdf": url_pdf,
               "dataDiag": timestamp, "video": url_video_out, "ultimaModif": timestamp}
@@ -537,6 +550,7 @@ def envia_diag():
     """
     Rota responsavel por receber formulario com diagnostico do medico e guardar dados no BD e no Drive
     """
+    print("ENVIO DO DIAG")
     timestamp = time.time()
     video = request.files.get("video", None)
 
@@ -571,12 +585,14 @@ def envia_diag():
              "diagnosticoMedico": diagnosticoMedico, "desc": desc}
 
     # transforma qualquer valor None em string
-    dados = {dados[key]: "None" if value is None else value for key,
-             value in dados.items()}
+    for key, value in dados.items():
+        if value is None:
+            dados[key] = "None"
 
     result = diags.insert_one(dados)
     id_diag_mongo = str(result.inserted_id)
     print("RESULTADO INSERT: ", result)
+
     # escreve dados no video em \tmp e usa timestamp pra evitar duplicatas
     filename = video.filename
     nome_local = f"{str(round(timestamp, 4))}_{filename}"
@@ -585,9 +601,10 @@ def envia_diag():
     with open(path_temp_videoLabel, "wb") as f:
         f.write(video_data)
 
-    email_medico = find_one_with_id(mongo.db.get_collection(
-        COLLECTION_MEDICOS), session['user_id']).get('email', None)
-    if email_medico is None:
+    if id_medico:
+        email_medico = find_one_with_id(mongo.db.get_collection(
+            COLLECTION_MEDICOS), session['user_id']).get('email')
+    else:
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
 
     id_videoLabel = drive.upload_to_drive(
