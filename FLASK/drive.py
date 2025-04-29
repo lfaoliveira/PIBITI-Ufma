@@ -9,7 +9,6 @@ import time
 import pandas as pd
 
 # NOTE!!!!!!!!! SE NECESSARIO, CRIAR FORMA DE MANTER ROOT_DRIVE AUTALIZADO, SENAO APLCIACAO PODE QUEBRAR
-# TODO: ADAPTAR LOGICA PARA QUE TODO_ E QUALQUER FOLDER E ARQUIVO SEJA CRIADO DENTRO DE ID_ROOT_DADOS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 class GoogleDrive:
@@ -68,7 +67,6 @@ class GoogleDrive:
             if page_token is None:
                 break
 
-        # TODO: ADPATAR PRA DF: Clear existing state before updating
         self.file_state = {}
         for file in files:
 
@@ -97,14 +95,15 @@ class GoogleDrive:
             print(f"DF FILE STATE: \n{self.file_state}")
         self.first_fetch = False
 
-    def update_state(self, changes):
+    def update_state(self, changes, verbose=False):
         """
         Atualiza dataframe com estado local do drive\n
         :param Any changes: objeto que contera mudanças vindas da change API
         """
         aux_file_state = {}
         for change in changes:
-            print("CHANGE: ", change)
+            if verbose:
+                print("CHANGE: ", change)
             file_id = change.get('fileId')
             trashed = change.get('file', {}).get('trashed', False)
             if change.get('removed', False) or trashed:
@@ -132,8 +131,10 @@ class GoogleDrive:
                     "mimeType": file.get('mimeType'),
                 }
         modificacoes = pd.DataFrame.from_dict(aux_file_state, orient='index')
-        with pd.option_context('display.max_rows', None, 'display.max_columns', 2):
-            print(f"DF MODIFICACOES: \n{modificacoes}")
+        if verbose:
+            with pd.option_context('display.max_rows', None, 'display.max_columns', 2):
+                print(f"DF MODIFICACOES: \n{modificacoes}\n")
+
         if not self.file_state.empty:
             self.file_state.update(modificacoes)
             new_ids = modificacoes.index.difference(self.file_state.index)
@@ -141,20 +142,23 @@ class GoogleDrive:
             self.file_state = pd.concat([self.file_state, to_append], axis=0)
 
             print("update_state: ATUALIZOU")
-            with pd.option_context('display.max_rows', None, 'display.max_columns', 2):
-                print(f"DF FILE STATE DEPOIS DAS MODIF: \n{self.file_state}")
+            if verbose:
+                with pd.option_context('display.max_rows', None, 'display.max_columns', 2):
+                    print(
+                        f"DF FILE STATE DEPOIS DAS MODIF: \n{self.file_state}\n")
         else:
             self.file_state = modificacoes.copy()
 
     def fetch_drive_files(self, changed_file_id=None):
         """
         Query Google Drive to fetch a list of all files (INCLUDES FOLDERS) THAT HAVE BEEN CHANGED.
-        TO WAIT, SPECIFY DELAY!!!!
-        NOTE: if needing sync, specify delay after EACH operation
+        NOTE: if needing sync, specify changed_file_id after EACH operation
         Returns:
             the file_state
         """
-        delay = None
+        # contador para evitar loops infinitos
+        cont = 0
+        delay = 0.5
         if self.first_fetch:
             self.initial_fetch()
             return self.file_state
@@ -172,24 +176,35 @@ class GoogleDrive:
                         pageSize=50,
                         fields="nextPageToken, newStartPageToken, changes(fileId, file(trashed, modifiedTime, name, parents, mimeType), removed)"
                     ).execute()
-                    changes = response.get('changes', [])
-                    if changes:
+                    if 'newStartPageToken' in response.keys():
+                        # Save this token for the next polling interval
+                        a = self.startPageToken
+                        self.startPageToken = response.get('newStartPageToken')
 
+                    changes = response.get('changes', [])
+                    if changed_file_id != None and len(changes) > 0:
                         ids = [change.get('fileId') for change in changes]
                         print("Changes detected.")
                         self.update_state(changes)
 
                         if changed_file_id in ids:
+                            print("ACHOU MUDANÇA!")
                             break
                         else:
-                            print("No changes detected...")
+                            print("NAO ACHOU!")
+                            cont += 1
+
+                    elif changed_file_id != None:
+                        print("No changes detected...")
+                        time.sleep(1)
+                        cont += 1
+                        if cont > 20:
+                            print("PASSOU DO LIMITE!")
+                            break
                     else:
-                        # nao faz nada e continua no while externo
+                        # sem mudança e sem espera nao faz nada e continua no while externo
                         break
 
-                if 'newStartPageToken' in response.keys():
-                    # Save this token for the next polling interval
-                    self.startPageToken = response.get('newStartPageToken')
                 page_token = response.get('nextPageToken', None)
 
             except HttpError as error:
@@ -201,38 +216,27 @@ class GoogleDrive:
 
         return self.file_state
 
-    def get_file_id(self, file_name, folder_name=None, id_parent_folder=None):
-
+    def get_file_id(self, file_name, folder_name=None):
         if self.file_state.empty:
             return None
 
         if folder_name:
             id_folder = self.get_folder_id(folder_name)
 
-        existe = folder_name in self.file_state['name'].values()
-        if not existe:
-            return None
-        lista_ids = self.hash_nomes.get(file_name, None)
+        existe = folder_name in self.file_state['name'].values
 
-        file_id = None
-        if lista_ids:
-            for id in lista_ids.items():
-                file = self.file_state.loc[id]
-                name = file.get('name')
-                parent_id = file.get('parents')[0]
-                if name == file_name:
-                    # se especificar nome do folder, compara com id do folder
-                    if folder_name:
-                        if id_folder == parent_id:
-                            file_id = id
-                            break
-                    else:
-                        file_id = id
-                        break
-        # sem lista ou nao achou
-        if file_id:
-            print("ACHOU FILE_ID")
-        return file_id, name
+        if not existe:
+            # print("ARQUIVO NAO EXISTE!")
+            return None
+
+        matching_files = self.file_state[
+            (self.file_state['mimeType'] != 'application/vnd.google-apps.folder') &
+            (self.file_state['name'] == file_name)
+        ]
+        if not matching_files.empty:
+            return matching_files.index[0]
+
+        return None
 
     def get_folder_id(self, folder_name):
         # partindo do principio que ROOT_DRIVE sempre existe e ja esta configurado ;)
@@ -257,16 +261,6 @@ class GoogleDrive:
             print(f"\nMATCHED FILES FOR {folder_name}:{matching_files}")
             return matching_files.index[0]
 
-        """ for id in self.file_state.index:
-            file = self.file_state[id]
-            mime = file.get('mimeType')
-            name = file.get('name')
-            parent_arq = file.get('parents', None)
-            print(
-                f"NAME: {name} PARENTS_ARQ: {parent_arq} PARENTS_ARG: {id_parent}\n")
-            if (id_parent == parent_arq):
-                return id """
-
         print(f"MATCHED FILES :{matching_files}")
         return None
 
@@ -275,8 +269,8 @@ class GoogleDrive:
         Criacao de Folder. PRECISA SEMPRE GARANTIR QUE NAO HAJAM DUPLICATAS!!!!
         """
         folder_name = nomes_parents[-1]
-        print(f"\nFOLDER_NAME: {folder_name}")
-        print(f"CAMINHO: {nomes_parents}\n")
+        # print(f"\nFOLDER_NAME: {folder_name}")
+        # print(f"CAMINHO: {nomes_parents}\n")
 
         if folder_name == self.ROOT_DRIVE:
             print(
@@ -303,9 +297,6 @@ class GoogleDrive:
         self.fetch_drive_files()
         for i in range(1, len(folder_list)):
             # da fecth para atualizar estado local
-
-            print(
-                f"PARENTS NIVEL {i}: {folder_list[0:i]}\n")
             id = self.get_folder_id(
                 folder_list[i])
             if (id == None):
@@ -315,16 +306,16 @@ class GoogleDrive:
                     'parents': [id_parents[i - 1]],
                     'mimeType': 'application/vnd.google-apps.folder'
                 }
-                print(
-                    f"CRIANDO FOLDER {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}")
                 folder_drive = self.drive_service.files().create(
                     body=folder_metadata, fields='id').execute()
+                print(
+                    f"FOLDER CRIADO: {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}")
                 folder_id = folder_drive.get('id')
                 id_parents.append(folder_id)
-                self.fetch_drive_files(delay=1)
+                self.fetch_drive_files(changed_file_id=folder_id)
             else:
                 folder_id = id
-                print(f"FOLDER {folder_list[i]} JA EXISTE!")
+                # print(f"FOLDER {folder_list[i]} JA EXISTE!")
             id_parents.append(folder_id)
 
         return folder_id
@@ -344,19 +335,24 @@ class GoogleDrive:
         if len(nomes_parents) >= 2:
             # quer inserir em um diretorio mais profundo que ROOT_DRIVE
             parent = nomes_parents[-2]
-            print(f"INSERINDO MAIS FUNDO QUE {self.ROOT_DRIVE}")
 
             # pega id do folder mais profundo
-            print(f"NAME: {nomes_parents[-1]} PARENT: {parent}")
+            print(f"INNER FOLDER: {nomes_parents[-1]} PARENT: {parent}")
             id_folder = self.get_folder_id(nomes_parents[-1])
         else:
             print(f"AVISO!! INSERINDO em {self.ROOT_DRIVE}!")
             # quer inserir no ROOT
             id_folder = self.get_folder_id(nomes_parents[0])
 
+        # checa se ja existe arquivo igual naquele diretorio
+        filename = os.path.basename(file_path)
+        id_file = self.get_file_id(filename, nomes_parents[-1])
+        if id_file != None:
+            return id_file
+
         # cria parentes, se nao existirem, e folder
         if (id_folder == None):
-            print("CRIANDO DIRETORIO")
+            print(f"CRIANDO DIRETORIO {nomes_parents[-1]}")
             id_folder = self.create_folder(nomes_parents)
             if id_folder == None:
                 return None
@@ -367,7 +363,7 @@ class GoogleDrive:
                 file_path, mimetype=mime[0], resumable=resumable)
 
             file_metadata = {
-                'name': os.path.basename(file_path),
+                'name': filename,
                 'parents': [id_folder],
             }
             """NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO API VAI DAR BUG SILENCIOSO!!!!!!!!"""
@@ -378,6 +374,7 @@ class GoogleDrive:
                     response = self.drive_service.files().create(
                         body=file_metadata, media_body=media, fields='id', supportsAllDrives=True).execute()
                     file_id = response.get('id')
+                    self.fetch_drive_files(changed_file_id=file_id)
                 else:
                     # UPLOAD EM PARTES (NECESSARIO PARA ARQUIVOS > 5MB)
                     request = self.drive_service.files().create(
@@ -389,6 +386,8 @@ class GoogleDrive:
                         if status:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
                     file_id = response.get('id')
+
+                    self.fetch_drive_files(changed_file_id=file_id)
                 return file_id
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)
@@ -468,7 +467,7 @@ class GoogleDrive:
 
     def download_file(self, file_id):
         self.fetch_drive_files()
-
+        filename = str(self.file_state.loc[file_id, 'name'])
         request = self.drive_service.files().get_media(fileId=file_id)
         import io
         file = io.BytesIO()
@@ -477,4 +476,4 @@ class GoogleDrive:
         while not done:
             status, done = downloader.next_chunk()
             print(f"Download {int(status.progress() * 100)}%.")
-        return file.getvalue()
+        return file.getvalue(), filename

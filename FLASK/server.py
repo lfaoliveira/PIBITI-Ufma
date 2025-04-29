@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
 import itertools
@@ -107,7 +107,7 @@ def find_one_with_id(collection, id_string):
 def get_peso(api: GoogleDrive):
     file_name = "trained_weights_final.h5"
     id = api.get_file_id(file_name)
-    bytes_file = api.download_file(id)
+    bytes_file, _ = api.download_file(id)
     with open(file_name, 'wb') as f:
         f.write(bytes_file)
 
@@ -125,10 +125,34 @@ def enviar_email(mensagem, destino, assunto):
         return INTERNAL_SERVER_ERROR
 
 
+def traduzir_diag(diag: str, sep='+'):
+    splitado = diag.split(sep)
+
+    esq, dir = splitado
+    if esq == "true" and dir == "false":
+        string = "Esquerdo"
+    elif esq == "false" and dir == "true":
+        string = "Direito"
+    elif esq == "true" and dir == "true":
+        string = "Ambos"
+    elif esq == "false" and dir == "false":
+        string = "Saudável"
+    else:
+        raise ValueError("valores incorretos ao traduzir diagnostico!")
+
+    if string != "Ambos":
+        string = f"Paralisia no Olho {string}"
+    elif string == "Ambos":
+        string = f"Paralisia em Ambos Olhos"
+    else:
+        string = f"Paciente Saudável"
+    return string
+
+
 def gerar_pdf(path_output, dict_dados):
     """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF RENDERIZADO
 
-    :param dict_dados dict[str,Any]: keys: [velEsq, nomeMedico, dataAgora, nomePaciente, diagAutom, velDir, diagnosticoMedico, urlGrafico, difVel]
+    :param dict_dados dict[str,Any]: keys: [velEsq, nomeMedico, crm, dataAgora, nomePaciente, diagAutom, velDir, diagnosticoMedico, urlGrafico, difVel]
     :param path_output str: path pro output do pdf
     """
     # mapeamento nome no BD -> tag no HTML
@@ -142,6 +166,17 @@ def gerar_pdf(path_output, dict_dados):
                   'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
                   'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
                   'difVel': '20 %'}'''
+
+    # ajeita strings de diagnostico
+    str_diag_autom = traduzir_diag(dict_dados['diagAutom'])
+    dict_dados['diagAutom'] = str_diag_autom
+    str_diag_medico = traduzir_diag(dict_dados['diagnosticoMedico'])
+    dict_dados['diagnosticoMedico'] = str_diag_medico
+
+    dt_object = datetime.fromtimestamp(dict_dados['dataAgora'])
+    formatted_time = dt_object.strftime("%d-%m-%Y")
+    dict_dados['dataAgora'] = formatted_time
+    print(dict_dados['dataAgora'])
 
     dict_input_weasy = {}
     for key_dado in dict_dados.keys():
@@ -372,7 +407,7 @@ def index():
 def get_file(id_file):
     import io
     """
-    Serves files from the database using file_id from Google Drive.
+    Serves files using file_id from Google Drive.
     """
     print("filename: ", id_file)
     try:
@@ -421,7 +456,7 @@ def analisar():
         app.config["TEMP_FOLDER"], filename_arq_input)
 
     id_drive_videoLabel = diag.get('videoLabel')
-    bytes_videoLabel = drive.download_file(id_drive_videoLabel)
+    bytes_videoLabel, filename = drive.download_file(id_drive_videoLabel)
     with open(path_arq_input, 'wb') as f:
         f.write(bytes_videoLabel)
 
@@ -467,6 +502,7 @@ def analisar():
     # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
     path_pdf = os.path.join(
         app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
+    # str_res no formato "velE,velD,percentDif,olho_doente"
     split_res = str_res.split(",")
     olho_doente = str_res.split(",")[3]
 
@@ -476,30 +512,41 @@ def analisar():
         str_diag = "false+true"
     else:
         str_diag = "false+false"
-    path_graf_pdf = os.path.join("..", "tmp", os.path.basename(path_graf))
-    dict_dados = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2],
-                  "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": "",
-                  "nomeMedico": "", "diagnosticoMedico": "", "urlGrafico": path_graf, }
-    gerar_pdf(path_pdf, dict_dados)
+
+    id_medico = diag.get('id_medico', None)
+    # NOTE: NAO GERA PDF PRA USUARIOS ANONIMOS!
+    if id_medico:
+        path_graf_pdf = os.path.join("..", "tmp", os.path.basename(path_graf))
+        diag_medico = diag.get('diagnosticoMedico')  # string codificada
+        nome_paciente = diag.get('nomePaciente')
+
+        medico = find_one_with_id(mongo.db.get_collection(
+            COLLECTION_MEDICOS), id_medico)
+        nome_medico = medico.get('nome')
+        crm = medico.get('crm')
+        email_medico = medico.get('email')
+
+        dict_dados = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2], "crm": crm,
+                      "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
+                      "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "urlGrafico": path_graf_pdf, }
+        gerar_pdf(path_pdf, dict_dados)
+        id_pdf = drive.upload_to_drive(
+            path_pdf, [email_medico, id_diag], resumable=True)
+        url_pdf = url_for('get_file', values={
+                          "id_file": id_pdf}, _external=True)
+    else:
+        url_pdf = None
+        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
 
     print("PEGANDO URLS")
-    id_medico = diag.get('id_medico', None)
-    if id_medico:
-        email_medico = find_one_with_id(mongo.db.get_collection(
-            COLLECTION_MEDICOS), id_medico).get('email')
-    else:
-        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
     print(drive.file_state)
-    drive.upload_to_drive(path_graf, [email_medico, id_diag])
-    drive.upload_to_drive(path_pdf, [email_medico, id_diag], resumable=True)
-    drive.upload_to_drive(path_out, [email_medico, id_diag], resumable=True)
-    """     resposta_json = get_file(os.path.basename(path_graf))[0].get_json()
-    url_graf = resposta_json["file_url"]
+    id_graf = drive.upload_to_drive(path_graf, [email_medico, id_diag])
+    url_graf = url_for('get_file', values={"id_file": id_graf}, _external=True)
 
-    resposta_json = get_file(os.path.basename(path_out))[0].get_json()
-    url_video_out = resposta_json["file_url"] """
-
-    # str_res no formato "velE,velD,percentDif,olho_doente"
+    id_video_out = drive.upload_to_drive(
+        path_out, [email_medico, id_diag], resumable=True)
+    url_video_out = url_for(
+        'get_file', values={"id_file": id_video_out}, _external=True)
 
     result = {"diagAutom": str_diag, "grafico": url_graf, "pdf": url_pdf,
               "dataDiag": timestamp, "video": url_video_out, "ultimaModif": timestamp}
@@ -620,7 +667,7 @@ def envia_diag():
     print(f"RESULTADO UPDATE MONGO: {result}\n")
 
     if result.acknowledged:
-        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "id_folder_drive": drive.get_folder_id(id_diag_mongo, id_parent=email_medico), "filename": filename}, OK)
+        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "id_folder_drive": drive.get_folder_id(id_diag_mongo), "filename": filename}, OK)
     else:
         return make_response("Erro ao registrar diagnostico", INTERNAL_SERVER_ERROR)
 
