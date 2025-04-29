@@ -93,7 +93,7 @@ class GoogleDrive:
         self.file_state = pd.DataFrame.from_dict(
             self.file_state, orient='index')
         # more options can be specified also
-        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        with pd.option_context('display.max_rows', None, 'display.max_columns', 3):
             print(f"DF FILE STATE: \n{self.file_state}")
         self.first_fetch = False
 
@@ -114,8 +114,6 @@ class GoogleDrive:
             else:
                 # atualiza arquivo no registro
                 file = change.get('file')
-
-                # tem que botar so id na lista do hash de nomes!!!!!!!!!!!!!!!!!!!!
                 id_parent = file.get('parents')
                 if id_parent != None and len(id_parent) > 1:
                     raise Exception(
@@ -134,15 +132,29 @@ class GoogleDrive:
                     "mimeType": file.get('mimeType'),
                 }
         modificacoes = pd.DataFrame.from_dict(aux_file_state, orient='index')
-        self.file_state.update(modificacoes)
+        with pd.option_context('display.max_rows', None, 'display.max_columns', 2):
+            print(f"DF MODIFICACOES: \n{modificacoes}")
+        if not self.file_state.empty:
+            self.file_state.update(modificacoes)
+            new_ids = modificacoes.index.difference(self.file_state.index)
+            to_append = modificacoes.loc[new_ids]
+            self.file_state = pd.concat([self.file_state, to_append], axis=0)
 
-    def fetch_drive_files(self, delay=None):
+            print("update_state: ATUALIZOU")
+            with pd.option_context('display.max_rows', None, 'display.max_columns', 2):
+                print(f"DF FILE STATE DEPOIS DAS MODIF: \n{self.file_state}")
+        else:
+            self.file_state = modificacoes.copy()
+
+    def fetch_drive_files(self, changed_file_id=None):
         """
         Query Google Drive to fetch a list of all files (INCLUDES FOLDERS) THAT HAVE BEEN CHANGED.
         TO WAIT, SPECIFY DELAY!!!!
+        NOTE: if needing sync, specify delay after EACH operation
         Returns:
             the file_state
         """
+        delay = None
         if self.first_fetch:
             self.initial_fetch()
             return self.file_state
@@ -150,29 +162,35 @@ class GoogleDrive:
         page_token = self.startPageToken
         while page_token is not None:
             try:
-                response = self.drive_service.changes().list(
-                    pageToken=page_token,
-                    includeRemoved=True,
-                    includeItemsFromAllDrives=True,
-                    supportsAllDrives=True,
-                    pageSize=50,
-                    fields="nextPageToken, newStartPageToken, changes(fileId, file(trashed, modifiedTime, name, parents, mimeType), removed)"
-                ).execute()
-                print("")
-                changes = response.get('changes', [])
-                if changes:
-                    print("Changes detected.")
-                    self.update_state(changes)
-                    break
-                else:
-                    if delay:
-                        print("No changes detected. Waiting...")
-                        time.sleep(delay)  # Retry after a delay
+                # se tiver delay, refaz chamadas ate haver mudancas
+                while True:
+                    response = self.drive_service.changes().list(
+                        pageToken=page_token,
+                        includeRemoved=True,
+                        includeItemsFromAllDrives=True,
+                        supportsAllDrives=True,
+                        pageSize=50,
+                        fields="nextPageToken, newStartPageToken, changes(fileId, file(trashed, modifiedTime, name, parents, mimeType), removed)"
+                    ).execute()
+                    changes = response.get('changes', [])
+                    if changes:
+
+                        ids = [change.get('fileId') for change in changes]
+                        print("Changes detected.")
+                        self.update_state(changes)
+
+                        if changed_file_id in ids:
+                            break
+                        else:
+                            print("No changes detected...")
+                    else:
+                        # nao faz nada e continua no while externo
+                        break
 
                 if 'newStartPageToken' in response.keys():
                     # Save this token for the next polling interval
                     self.startPageToken = response.get('newStartPageToken')
-                page_token = response.get('nextPageToken')
+                page_token = response.get('nextPageToken', None)
 
             except HttpError as error:
                 print(f"An error occurred: {error}")
@@ -183,47 +201,13 @@ class GoogleDrive:
 
         return self.file_state
 
-    def wait_for_changes(self, delay):
-        """
-        Espera por mudanças na Change API do Drive e atualiza estado interno
-        """
-
-        # Wait for changes using the Changes API
-        while True:
-            try:
-                response = self.drive_service.changes().list(
-                    pageToken=self.startPageToken,
-                    includeRemoved=True,
-                    includeItemsFromAllDrives=True,
-                    supportsAllDrives=True,
-                    pageSize=50,
-                    fields="nextPageToken, newStartPageToken, changes(fileId, file(trashed, modifiedTime, name, parents, mimeType), removed)"
-                ).execute()
-
-                if 'newStartPageToken' in response:
-                    self.startPageToken = response['newStartPageToken']
-
-                if response.get('changes', []):
-                    print("Changes detected.")
-
-                    page_token = self.startPageToken
-                    self.update_state(response.get('changes', []))
-                    break
-
-                print("No changes detected. Waiting...")
-                time.sleep(delay)  # Wait for 10 seconds before polling again
-
-            except HttpError as error:
-                print(f"An error occurred: {error}")
-                time.sleep(delay)  # Retry after a delay
-
     def get_file_id(self, file_name, folder_name=None, id_parent_folder=None):
 
         if self.file_state.empty:
             return None
 
         if folder_name:
-            id_folder = self.get_folder_id(folder_name, id_parent_folder)
+            id_folder = self.get_folder_id(folder_name)
 
         existe = folder_name in self.file_state['name'].values()
         if not existe:
@@ -250,7 +234,7 @@ class GoogleDrive:
             print("ACHOU FILE_ID")
         return file_id, name
 
-    def get_folder_id(self, folder_name, id_parent):
+    def get_folder_id(self, folder_name):
         # partindo do principio que ROOT_DRIVE sempre existe e ja esta configurado ;)
         if folder_name == self.ROOT_DRIVE:
             return self.ID_ROOT_DADOS
@@ -266,7 +250,6 @@ class GoogleDrive:
             return None
 
         matching_files = self.file_state[
-            (self.file_state['parents'].apply(lambda arr_parents: id_parent in arr_parents)) &
             (self.file_state['mimeType'] == 'application/vnd.google-apps.folder') &
             (self.file_state['name'] == folder_name)
         ]
@@ -289,7 +272,7 @@ class GoogleDrive:
 
     def create_folder(self, nomes_parents: list = []):
         """
-        Criacao de Folder
+        Criacao de Folder. PRECISA SEMPRE GARANTIR QUE NAO HAJAM DUPLICATAS!!!!
         """
         folder_name = nomes_parents[-1]
         print(f"\nFOLDER_NAME: {folder_name}")
@@ -302,6 +285,15 @@ class GoogleDrive:
         if self.ROOT_DRIVE not in nomes_parents:
             # so pra garantir que o primeiro eh o ROOT_DRIVE
             nomes_parents.insert(0, self.ROOT_DRIVE)
+        elif nomes_parents[0] != self.ROOT_DRIVE:
+            nomes_parents.remove(self.ROOT_DRIVE)
+            nomes_parents.insert(0, self.ROOT_DRIVE)
+
+        folder_novo = nomes_parents[-1]
+        id_novo = self.get_folder_id(folder_novo)
+        if id_novo != None:
+            # nome de folder ja existe, logo nao pode criar
+            return id_novo
 
         folder_list = []
         folder_list.extend(nomes_parents)
@@ -315,7 +307,7 @@ class GoogleDrive:
             print(
                 f"PARENTS NIVEL {i}: {folder_list[0:i]}\n")
             id = self.get_folder_id(
-                folder_list[i], id_parent=folder_list[i - 1])
+                folder_list[i])
             if (id == None):
                 # id nulo, cria folder com parents ja criados
                 folder_metadata = {
@@ -356,11 +348,11 @@ class GoogleDrive:
 
             # pega id do folder mais profundo
             print(f"NAME: {nomes_parents[-1]} PARENT: {parent}")
-            id_folder = self.get_folder_id(nomes_parents[-1], parent)
+            id_folder = self.get_folder_id(nomes_parents[-1])
         else:
             print(f"AVISO!! INSERINDO em {self.ROOT_DRIVE}!")
             # quer inserir no ROOT
-            id_folder = self.get_folder_id(nomes_parents[0], None)
+            id_folder = self.get_folder_id(nomes_parents[0])
 
         # cria parentes, se nao existirem, e folder
         if (id_folder == None):
@@ -378,9 +370,9 @@ class GoogleDrive:
                 'name': os.path.basename(file_path),
                 'parents': [id_folder],
             }
-            """NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO VAI MANDAR PRO ROOT DA CONTA DE SERVIÇO!!!!!!!"""
+            """NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO API VAI DAR BUG SILENCIOSO!!!!!!!!"""
             try:
-                print("FAZENDDO UPLOAD")
+                print("FAZENDO UPLOAD")
                 if resumable == False:
                     # upload simples
                     response = self.drive_service.files().create(
@@ -420,7 +412,7 @@ class GoogleDrive:
         """
         try:
             # Get folder and file IDs
-            folder_id = self.get_folder_id(folder, parents)
+            folder_id = self.get_folder_id(folder)
             file_id = self.get_file_id(filename)
 
             if not folder_id:

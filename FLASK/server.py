@@ -333,6 +333,8 @@ def deletar_tudo():
         print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
         if drive.delete_file(id):
             print(f"DELETOU {file.get('name')}")
+        else:
+            print(f"NAO CONSEGUI: {file.get('name')}")
     print(drive.fetch_drive_files())
     return make_response("OK", OK)
 
@@ -343,7 +345,7 @@ def teste_folder():
         file_path = "requirements.txt"
         if os.path.exists(file_path):
             drive.upload_to_drive(file_path, nomes_parents=[
-                                  "TESTE"], resumable=False)
+                                  "TESTE", "DENTRO"], resumable=False)
         else:
             print(f"File '{file_path}' does not exist.")
         print(drive.fetch_drive_files())
@@ -487,7 +489,7 @@ def analisar():
             COLLECTION_MEDICOS), id_medico).get('email')
     else:
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
-
+    print(drive.file_state)
     drive.upload_to_drive(path_graf, [email_medico, id_diag])
     drive.upload_to_drive(path_pdf, [email_medico, id_diag], resumable=True)
     drive.upload_to_drive(path_out, [email_medico, id_diag], resumable=True)
