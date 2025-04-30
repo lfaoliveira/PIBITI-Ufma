@@ -4,7 +4,6 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 import mimetypes
 import os
-import itertools
 import time
 import pandas as pd
 
@@ -223,15 +222,20 @@ class GoogleDrive:
         if folder_name:
             id_folder = self.get_folder_id(folder_name)
 
-        existe = folder_name in self.file_state['name'].values
+        existe = file_name in self.file_state['name'].values
 
         if not existe:
             # print("ARQUIVO NAO EXISTE!")
             return None
-
+        if folder_name:
+            cond_extra = (self.file_state['parents'].apply(
+                lambda x: x == [id_folder]))
+        else:
+            cond_extra = True
         matching_files = self.file_state[
             (self.file_state['mimeType'] != 'application/vnd.google-apps.folder') &
-            (self.file_state['name'] == file_name)
+            (self.file_state['name'] == file_name) &
+            cond_extra
         ]
         if not matching_files.empty:
             return matching_files.index[0]
@@ -258,11 +262,30 @@ class GoogleDrive:
             (self.file_state['name'] == folder_name)
         ]
         if not matching_files.empty:
-            print(f"\nMATCHED FILES FOR {folder_name}:{matching_files}")
+            # print(f"\nMATCHED FILES FOR {folder_name}:{matching_files}")
             return matching_files.index[0]
 
-        print(f"MATCHED FILES :{matching_files}")
+        # print(f"MATCHED FILES :{matching_files}")
         return None
+
+    def operation(self, type: str, **keywords):
+        """
+        Funcao de wrapper que vai fazer caching de mudanças e passar keywords para funcao chamada\n
+        :param str type: operacao a ser feita: 'download', 'upload', 'create_folder', 'delete', 'update'
+        NOTE: TIRANDO self.fetch_drive_files de todas as funcoes!!!!!!!
+        """
+
+        mapeamento_func = {
+            'download': self.download_file,
+            'upload': self.upload_to_drive,
+            'create_folder': self.create_folder,
+            'delete': self.delete_file,
+            'update': self.update_file,
+        }
+        if type not in mapeamento_func.keys():
+            raise ValueError(f"OPERACAO: {type} NAO EXISTE!")
+        func = mapeamento_func[type]
+        return func(**keywords)
 
     def create_folder(self, nomes_parents: list = []):
         """
@@ -294,7 +317,7 @@ class GoogleDrive:
 
         id_parents = [self.ID_ROOT_DADOS]
         # pula primeiro ja que eh sempre ROOT_DRIVE
-        self.fetch_drive_files()
+        # self.fetch_drive_files()
         for i in range(1, len(folder_list)):
             # da fecth para atualizar estado local
             id = self.get_folder_id(
@@ -312,7 +335,7 @@ class GoogleDrive:
                     f"FOLDER CRIADO: {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}")
                 folder_id = folder_drive.get('id')
                 id_parents.append(folder_id)
-                self.fetch_drive_files(changed_file_id=folder_id)
+                # self.fetch_drive_files(changed_file_id=folder_id)
             else:
                 folder_id = id
                 # print(f"FOLDER {folder_list[i]} JA EXISTE!")
@@ -327,7 +350,7 @@ class GoogleDrive:
         :param list[str] nomes_parents: contem nomes dos folders-pai do arquivo (NUNCA INCLUIR O NOME DO ROOT DENTRO)
         Returns: id do arquivo criado
         """
-        self.fetch_drive_files()
+        # self.fetch_drive_files()
         nomes_parents.insert(0, self.ROOT_DRIVE)
 
         print(
@@ -374,7 +397,7 @@ class GoogleDrive:
                     response = self.drive_service.files().create(
                         body=file_metadata, media_body=media, fields='id', supportsAllDrives=True).execute()
                     file_id = response.get('id')
-                    self.fetch_drive_files(changed_file_id=file_id)
+                    # self.fetch_drive_files(changed_file_id=file_id)
                 else:
                     # UPLOAD EM PARTES (NECESSARIO PARA ARQUIVOS > 5MB)
                     request = self.drive_service.files().create(
@@ -387,7 +410,7 @@ class GoogleDrive:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
                     file_id = response.get('id')
 
-                    self.fetch_drive_files(changed_file_id=file_id)
+                    # self.fetch_drive_files(changed_file_id=file_id)
                 return file_id
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)
@@ -397,7 +420,7 @@ class GoogleDrive:
             print(Exception("ERRO AO PEGAR MIMETYPE"))
             return None
 
-    def update_file(self, new_data, filename, folder, parents):
+    def update_file(self, new_data, filename, folder):
         """
         Updates a file in Google Drive with new data
 
@@ -412,7 +435,7 @@ class GoogleDrive:
         try:
             # Get folder and file IDs
             folder_id = self.get_folder_id(folder)
-            file_id = self.get_file_id(filename)
+            file_id = self.get_file_id(filename, folder)
 
             if not folder_id:
                 print("Folder not found")
@@ -432,7 +455,7 @@ class GoogleDrive:
                     media_body=media
                 ).execute()
 
-                self.fetch_drive_files()  # Update local state
+                # self.fetch_drive_files()   #Update local state
                 return updated_file.get('id')
 
             return None
@@ -458,7 +481,9 @@ class GoogleDrive:
                 raise ValueError("NAO PODE DELETAR ROOT_DADOS!!!!!!!")
             # Delete the file
             self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
-            self.fetch_drive_files()
+
+            # self.fetch_drive_files()
+
             return True
 
         except Exception as e:
@@ -466,7 +491,7 @@ class GoogleDrive:
             return False
 
     def download_file(self, file_id):
-        self.fetch_drive_files()
+        # self.fetch_drive_files()
         filename = str(self.file_state.loc[file_id, 'name'])
         request = self.drive_service.files().get_media(fileId=file_id)
         import io

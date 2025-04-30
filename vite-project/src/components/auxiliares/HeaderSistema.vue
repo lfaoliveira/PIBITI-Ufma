@@ -37,7 +37,7 @@
             >
           </div>
           <div class="nav-item" v-if="this.logado">
-            <Salvar :modo="this.modoSalvar"></Salvar>
+            <Salvar @click="fnBaixar" :modo="this.modoSalvar"></Salvar>
           </div>
         </li>
       </transition>
@@ -46,6 +46,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import Salvar from "../icons/Salvar.vue";
 import Voltar from "../icons/Voltar.vue";
 
@@ -62,6 +63,7 @@ export default {
       logado: false,
       telaPequena: false,
       isOpen: false,
+      urlPDF: null,
     };
   },
   props: {
@@ -103,9 +105,16 @@ export default {
       this.$router.push(rota);
     },
 
-    salvarResultado() {
+    async fnBaixar() {
       // lógica para salvar resultado
-      console.log("Resultado salvo");
+      console.log("Baixando...");
+      if (this.urlPDF !== null) {
+        const res = await axios.get(this.urlPDF);
+        console.log("HEADER: ");
+        console.log(res.data, typeof res.data);
+      } else {
+        alert("Nao foi possível encontrar realtório!");
+      }
     },
     mostrarHamburguer() {
       this.telaPequena = window.innerWidth < 940 || window.innerHeight < 940;

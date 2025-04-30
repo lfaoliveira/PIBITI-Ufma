@@ -1,7 +1,7 @@
 <!-- PARTE GERADA POR IA -->
 
 <template>
-  <HeaderSistema :activeIndex="5" />
+  <HeaderSistema :activeIndex="5" :urlPDF="this.pdfURL" />
   <main class="analysis-view">
     <h1 class="page-title">Análise de Paralisia</h1>
 

@@ -532,8 +532,7 @@ def analisar():
         gerar_pdf(path_pdf, dict_dados)
         id_pdf = drive.upload_to_drive(
             path_pdf, [email_medico, id_diag], resumable=True)
-        url_pdf = url_for('get_file', values={
-                          "id_file": id_pdf}, _external=True)
+        url_pdf = url_for('get_file', id_file=id_pdf, _external=True)
     else:
         url_pdf = None
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
@@ -541,12 +540,11 @@ def analisar():
     print("PEGANDO URLS")
     print(drive.file_state)
     id_graf = drive.upload_to_drive(path_graf, [email_medico, id_diag])
-    url_graf = url_for('get_file', values={"id_file": id_graf}, _external=True)
+    url_graf = url_for('get_file', id_file=id_graf, _external=True)
 
     id_video_out = drive.upload_to_drive(
         path_out, [email_medico, id_diag], resumable=True)
-    url_video_out = url_for(
-        'get_file', values={"id_file": id_video_out}, _external=True)
+    url_video_out = url_for('get_file', id_file=id_video_out, _external=True)
 
     result = {"diagAutom": str_diag, "grafico": url_graf, "pdf": url_pdf,
               "dataDiag": timestamp, "video": url_video_out, "ultimaModif": timestamp}
