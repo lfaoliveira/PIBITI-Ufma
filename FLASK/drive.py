@@ -284,13 +284,24 @@ class GoogleDrive:
         }
         if type not in mapeamento_func.keys():
             raise ValueError(f"OPERACAO: {type} NAO EXISTE!")
-        func = mapeamento_func[type]
-        return func(**keywords)
+        try:
 
-    def create_folder(self, nomes_parents: list = []):
+            func = mapeamento_func[type]
+            ret = func(**keywords)
+            # TODO: IMPLEMENTAR CACHING AQUI
+            return ret
+        except Exception as e:
+            print(e)
+            return e
+
+    def update_cached(self, change_dict):
+        pass
+
+    def create_folder(self, **kwargs):
         """
         Criacao de Folder. PRECISA SEMPRE GARANTIR QUE NAO HAJAM DUPLICATAS!!!!
         """
+        nomes_parents = kwargs.get('nomes_parents')
         folder_name = nomes_parents[-1]
         # print(f"\nFOLDER_NAME: {folder_name}")
         # print(f"CAMINHO: {nomes_parents}\n")

@@ -1,65 +1,219 @@
 from datetime import datetime
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
-import itertools
 from bson import ObjectId
 import shutil
-from flask_mail import Mail, Message
 from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file
 from flask_session import Session
-import mimetypes
-from googleapiclient.http import MediaFileUpload
 from flask_pymongo import PyMongo
+from flask_cors import CORS, cross_origin
+from flask_mail import Mail, Message
+import mimetypes
 import hashlib
 from datetime import timedelta
 
-from flask_cors import CORS, cross_origin
 import tensorflow as tf
 import threading
-from pdf import Converter
 
 import ffmpeg
-import uuid
 import requests
 import csv
+from pdf import Converter
 from drive import GoogleDrive
 
 
-def count_active_threads():
-    return len(threading.enumerate())
+class Helper:
+    def __init__(self):
+        pass
+
+    def count_active_threads():
+        return len(threading.enumerate())
+
+    @staticmethod
+    def allowed_file(filename: str):
+        ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm",
+                              "mkv", "ogv", "ogg", "mp4", "avi"]
+        for ext in ALLOWED_EXTENSIONS:
+            if filename.lower().endswith(ext):
+                return ext
+        return None
+
+    @staticmethod
+    def read_ENV_VARS(arq_config):
+        try:
+            with open(arq_config, 'r') as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    if len(row) >= 2:  # Ensure row has key and value
+                        key, value = row[0], row[1]
+                        os.environ[key] = value
+        except FileNotFoundError:
+            print(f"Warning: Config file {arq_config} not found")
+        except Exception as e:
+            print(f"{e}")
+
+    @staticmethod
+    def get_peso(api: GoogleDrive):
+        file_name = "trained_weights_final.h5"
+        id = api.get_file_id(file_name)
+        bytes_file, _ = api.download_file(id)
+        with open(file_name, 'wb') as f:
+            f.write(bytes_file)
+
+    @staticmethod
+    def enviar_email(mensagem, destino, assunto):
+        msg = Message(
+            subject=assunto,
+            recipients=[destino],  # List of recipients
+            body=mensagem
+        )
+        try:
+            mail.send(msg)
+            return OK
+        except Exception as e:
+            return INTERNAL_SERVER_ERROR
+
+    @staticmethod
+    def traduzir_diag(diag: str, sep='+'):
+        splitado = diag.split(sep)
+
+        esq, dir = splitado
+        if esq == "true" and dir == "false":
+            string = "Esquerdo"
+        elif esq == "false" and dir == "true":
+            string = "Direito"
+        elif esq == "true" and dir == "true":
+            string = "Ambos"
+        elif esq == "false" and dir == "false":
+            string = "Saudável"
+        else:
+            raise ValueError("valores incorretos ao traduzir diagnostico!")
+
+        if string != "Ambos":
+            string = f"Paralisia no Olho {string}"
+        elif string == "Ambos":
+            string = f"Paralisia em Ambos Olhos"
+        else:
+            string = f"Paciente Saudável"
+        return string
+
+    @staticmethod
+    def converter_arq(input: str, output: str):
+        """
+        Converte video de input em .mp4 
+        """
+        if not os.path.exists(input):
+            raise FileNotFoundError(f"Input file not found: {input}")
+
+        print(f"Converting {input} to {output}")
+        stream = ffmpeg.input(input)
+        stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
+        print(stream, "\n\n")
+        try:
+            # Execute the conversion
+            ffmpeg.run(stream, cmd='ffmpeg')
+            return output
+        except ffmpeg.Error as e:
+            print('stdout:', e.stdout.decode('utf8'))
+            print('stderr:', e.stderr.decode('utf8'))
+
+    @staticmethod
+    def gerar_pdf(path_output, dict_dados):
+        """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF RENDERIZADO
+
+        :param dict_dados dict[str,Any]: keys: [velEsq, nomeMedico, crm, dataAgora, nomePaciente, diagAutom, velDir, diagnosticoMedico, urlGrafico, difVel]
+        :param path_output str: path pro output do pdf
+        """
+        # mapeamento nome no BD -> tag no HTML
+        mapeamento = {'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
+                      'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
+                      'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
+                      'difVel': "dif-vel"}
+
+        # dados com chaves do banco de dados que devem ser mapeados pro pdf
+        '''dict_dados = {'velEsq': '2 mm/s', 'crm': "MA-1234", 'nomeMedico': "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak", 'dataAgora': "11/01/2001",
+                    'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
+                    'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
+                    'difVel': '20 %'}'''
+
+        # ajeita strings de diagnostico
+        str_diag_autom = Helper.traduzir_diag(dict_dados['diagAutom'])
+        dict_dados['diagAutom'] = str_diag_autom
+        str_diag_medico = Helper.traduzir_diag(dict_dados['diagnosticoMedico'])
+        dict_dados['diagnosticoMedico'] = str_diag_medico
+
+        dt_object = datetime.fromtimestamp(dict_dados['dataAgora'])
+        formatted_time = dt_object.strftime("%d-%m-%Y")
+        dict_dados['dataAgora'] = formatted_time
+        print(dict_dados['dataAgora'])
+
+        dict_input_weasy = {}
+        for key_dado in dict_dados.keys():
+            nomeTag = mapeamento[key_dado]
+            dict_input_weasy[nomeTag] = dict_dados[key_dado]
+        conv = Converter()
+        try:
+            filename = os.path.basename(path_output)
+            string_html = conv.insert_text_by_class(dict_input_weasy)
+
+            # base_url = 'file://' + app.static_folder
+            base_url = app.static_folder
+            pdfOK, erro = conv.convert_html_to_pdf(
+                string_html, filename, base_url)
+
+            if pdfOK:
+                print(base_url)
+                if os.path.exists(path_output):
+                    os.remove(path_output)
+
+                shutil.move(filename, path_output)
+                print("PDF created successfully!")
+            else:
+                raise erro
+        except Exception as e:
+            print(e)
 
 
-def allowed_file(filename: str):
-    ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm",
-                          "mkv", "ogv", "ogg", "mp4", "avi"]
-    for ext in ALLOWED_EXTENSIONS:
-        if filename.lower().endswith(ext):
-            return ext
-    return None
+class InterfaceMongo:
+    def __init__(self):
+        CACHING_NAME = "Caching"
+        self.caching_collection = mongo.db.get_collection(CACHING_NAME)
 
+    def cache(self, change_list):
+        """
+        Funcao responsavel por cachear mudança do Drive para dentro do Banco de Dados\n
+        :param dict change_list: Lista que contem dicionario com mudanças. Chaves do dicionario: ['object_id_drive', 'operation', 'time',]
+        """
+        if len(change_list > 0):
+            id_list = []
+            try:
+                for change_dict in change_list:
+                    res = self.caching_collection.insert_one(change_dict)
+                    id_list.append(str(res.inserted_id))
+                return id_list
+            except Exception as e:
+                print(f"Exception when caching: {e}\n")
+                return None
+        else:
+            print("NADA PARA FAZER CACHING!\n")
+            return None
 
-def converter_arq(input: str, output: str):
-    """
-    Converte video de input em .mp4 
-    """
-    if not os.path.exists(input):
-        raise FileNotFoundError(f"Input file not found: {input}")
+    def uncache(self, api: GoogleDrive, id_list: list[str] = []):
+        if len(id_list) > 0:
+            for id in id_list:
+                self.caching_collection.find_one({"_id": ObjectId(id)})
 
-    print(f"Converting {input} to {output}")
-    stream = ffmpeg.input(input)
-    stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
-    print(stream, "\n\n")
-    try:
-        # Execute the conversion
-        ffmpeg.run(stream, cmd='ffmpeg')
-        return output
-    except ffmpeg.Error as e:
-        print('stdout:', e.stdout.decode('utf8'))
-        print('stderr:', e.stderr.decode('utf8'))
+        else:
+            print("LISTA DE IDS VAZIA AO PEGAR CACHE!")
+            return None
+
+    @staticmethod
+    def find_one_with_id(collection, id_string):
+        return collection.find_one({"_id": ObjectId(id_string)})
 
 
 def get_modelo():
@@ -86,125 +240,6 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         return str_res, path_graf
 
 
-def read_ENV_VARS(arq_config):
-    try:
-        with open(arq_config, 'r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                if len(row) >= 2:  # Ensure row has key and value
-                    key, value = row[0], row[1]
-                    os.environ[key] = value
-    except FileNotFoundError:
-        print(f"Warning: Config file {arq_config} not found")
-    except Exception as e:
-        print(f"{e}")
-
-
-def find_one_with_id(collection, id_string):
-    return collection.find_one({"_id": ObjectId(id_string)})
-
-
-def get_peso(api: GoogleDrive):
-    file_name = "trained_weights_final.h5"
-    id = api.get_file_id(file_name)
-    bytes_file, _ = api.download_file(id)
-    with open(file_name, 'wb') as f:
-        f.write(bytes_file)
-
-
-def enviar_email(mensagem, destino, assunto):
-    msg = Message(
-        subject=assunto,
-        recipients=[destino],  # List of recipients
-        body=mensagem
-    )
-    try:
-        mail.send(msg)
-        return OK
-    except Exception as e:
-        return INTERNAL_SERVER_ERROR
-
-
-def traduzir_diag(diag: str, sep='+'):
-    splitado = diag.split(sep)
-
-    esq, dir = splitado
-    if esq == "true" and dir == "false":
-        string = "Esquerdo"
-    elif esq == "false" and dir == "true":
-        string = "Direito"
-    elif esq == "true" and dir == "true":
-        string = "Ambos"
-    elif esq == "false" and dir == "false":
-        string = "Saudável"
-    else:
-        raise ValueError("valores incorretos ao traduzir diagnostico!")
-
-    if string != "Ambos":
-        string = f"Paralisia no Olho {string}"
-    elif string == "Ambos":
-        string = f"Paralisia em Ambos Olhos"
-    else:
-        string = f"Paciente Saudável"
-    return string
-
-
-def gerar_pdf(path_output, dict_dados):
-    """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF RENDERIZADO
-
-    :param dict_dados dict[str,Any]: keys: [velEsq, nomeMedico, crm, dataAgora, nomePaciente, diagAutom, velDir, diagnosticoMedico, urlGrafico, difVel]
-    :param path_output str: path pro output do pdf
-    """
-    # mapeamento nome no BD -> tag no HTML
-    mapeamento = {'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
-                  'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
-                  'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
-                  'difVel': "dif-vel"}
-
-    # dados com chaves do banco de dados que devem ser mapeados pro pdf
-    '''dict_dados = {'velEsq': '2 mm/s', 'crm': "MA-1234", 'nomeMedico': "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak", 'dataAgora': "11/01/2001",
-                  'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
-                  'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
-                  'difVel': '20 %'}'''
-
-    # ajeita strings de diagnostico
-    str_diag_autom = traduzir_diag(dict_dados['diagAutom'])
-    dict_dados['diagAutom'] = str_diag_autom
-    str_diag_medico = traduzir_diag(dict_dados['diagnosticoMedico'])
-    dict_dados['diagnosticoMedico'] = str_diag_medico
-
-    dt_object = datetime.fromtimestamp(dict_dados['dataAgora'])
-    formatted_time = dt_object.strftime("%d-%m-%Y")
-    dict_dados['dataAgora'] = formatted_time
-    print(dict_dados['dataAgora'])
-
-    dict_input_weasy = {}
-    for key_dado in dict_dados.keys():
-        nomeTag = mapeamento[key_dado]
-        dict_input_weasy[nomeTag] = dict_dados[key_dado]
-    conv = Converter()
-    try:
-        filename = os.path.basename(path_output)
-        string_html = conv.insert_text_by_class(dict_input_weasy)
-
-        # base_url = 'file://' + app.static_folder
-        base_url = app.static_folder
-        pdfOK, erro = conv.convert_html_to_pdf(
-            string_html, filename, base_url)
-
-        if pdfOK:
-            print(base_url)
-            if os.path.exists(path_output):
-                os.remove(path_output)
-
-            shutil.move(filename, path_output)
-            print("PDF created successfully!")
-        else:
-            raise erro
-    except Exception as e:
-        print(e)
-
-
 # ------------- VARIAVEIS GLOBAIS--------------#
 COLLECTION_DIAGS = "Diagnosticos"
 COLLECTION_MEDICOS = "Medicos"
@@ -213,7 +248,7 @@ PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 
 # Read environment variables from CSV
 arq_config = "../env.csv"
-read_ENV_VARS(arq_config)
+Helper.read_ENV_VARS(arq_config)
 
 
 app = Flask(__name__)
@@ -290,7 +325,7 @@ print(f"\nHOME: {app.config['WKDIR']}\n\n")
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
     print(" NÃO REINICIE O SERVIDOR!!!!!!!\nBaixando pesos do modelo YOLOv3...")
-    get_peso(app.config["WKDIR"])
+    Helper.get_peso(app.config["WKDIR"])
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
 os.makedirs(app.config["TEMP_FOLDER"], exist_ok=True)
@@ -442,7 +477,7 @@ def analisar():
         user = session["user_id"]
     else:
         user = "TEMP"
-    ext = allowed_file(filename)
+    ext = Helper.allowed_file(filename)
     if ext is None:
         print("Incorrect file type!\n\n")
         return SystemError
@@ -469,7 +504,7 @@ def analisar():
     path_aux_conv = os.path.join(
         app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
 
-    path_arq_input_conv = converter_arq(
+    path_arq_input_conv = Helper.converter_arq(
         path_arq_input, path_aux_conv)
     print("\nDEPOIS PRIMEIRA CONVER\n")
     nome_local = f"{nome_video}.{EXT_OUT}"
@@ -492,7 +527,7 @@ def analisar():
 
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
     print("ULTIMA CONVERSAO")
-    path_out = converter_arq(
+    path_out = Helper.converter_arq(
         path_out_antes_conv, path_out)
 
     '''Removendo APENAS arquivos auxiliares'''
@@ -520,7 +555,7 @@ def analisar():
         diag_medico = diag.get('diagnosticoMedico')  # string codificada
         nome_paciente = diag.get('nomePaciente')
 
-        medico = find_one_with_id(mongo.db.get_collection(
+        medico = InterfaceMongo.find_one_with_id(mongo.db.get_collection(
             COLLECTION_MEDICOS), id_medico)
         nome_medico = medico.get('nome')
         crm = medico.get('crm')
@@ -529,7 +564,7 @@ def analisar():
         dict_dados = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2], "crm": crm,
                       "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
                       "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "urlGrafico": path_graf_pdf, }
-        gerar_pdf(path_pdf, dict_dados)
+        Helper.gerar_pdf(path_pdf, dict_dados)
         id_pdf = drive.upload_to_drive(
             path_pdf, [email_medico, id_diag], resumable=True)
         url_pdf = url_for('get_file', id_file=id_pdf, _external=True)
@@ -582,7 +617,7 @@ def pega_perfil():
         ], allowDiskUse=True)
         print(f"\n\n{res}\n\n")
 
-        medico = find_one_with_id(
+        medico = InterfaceMongo.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
         return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": res})
@@ -649,7 +684,7 @@ def envia_diag():
         f.write(video_data)
 
     if id_medico:
-        email_medico = find_one_with_id(mongo.db.get_collection(
+        email_medico = InterfaceMongo.find_one_with_id(mongo.db.get_collection(
             COLLECTION_MEDICOS), session['user_id']).get('email')
     else:
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
@@ -771,7 +806,7 @@ def val_login():
         return make_response("False", UNAUTHORIZED)
     else:
         # Check if user exists in database
-        usuario = find_one_with_id(
+        usuario = InterfaceMongo.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), session['user_id'])
         if usuario != None:
             # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
