@@ -191,6 +191,7 @@ class GoogleDrive:
                             break
                         else:
                             print("NAO ACHOU!")
+                            time.sleep(1)
                             cont += 1
 
                     elif changed_file_id != None:
@@ -268,40 +269,10 @@ class GoogleDrive:
         # print(f"MATCHED FILES :{matching_files}")
         return None
 
-    def operation(self, type: str, **keywords):
-        """
-        Funcao de wrapper que vai fazer caching de mudanças e passar keywords para funcao chamada\n
-        :param str type: operacao a ser feita: 'download', 'upload', 'create_folder', 'delete', 'update'
-        NOTE: TIRANDO self.fetch_drive_files de todas as funcoes!!!!!!!
-        """
-
-        mapeamento_func = {
-            'download': self.download_file,
-            'upload': self.upload_to_drive,
-            'create_folder': self.create_folder,
-            'delete': self.delete_file,
-            'update': self.update_file,
-        }
-        if type not in mapeamento_func.keys():
-            raise ValueError(f"OPERACAO: {type} NAO EXISTE!")
-        try:
-
-            func = mapeamento_func[type]
-            ret = func(**keywords)
-            # TODO: IMPLEMENTAR CACHING AQUI
-            return ret
-        except Exception as e:
-            print(e)
-            return e
-
-    def update_cached(self, change_dict):
-        pass
-
-    def create_folder(self, **kwargs):
+    def create_folder(self, nomes_parents=[]):
         """
         Criacao de Folder. PRECISA SEMPRE GARANTIR QUE NAO HAJAM DUPLICATAS!!!!
         """
-        nomes_parents = kwargs.get('nomes_parents')
         folder_name = nomes_parents[-1]
         # print(f"\nFOLDER_NAME: {folder_name}")
         # print(f"CAMINHO: {nomes_parents}\n")
@@ -346,12 +317,13 @@ class GoogleDrive:
                     f"FOLDER CRIADO: {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}")
                 folder_id = folder_drive.get('id')
                 id_parents.append(folder_id)
-                # self.fetch_drive_files(changed_file_id=folder_id)
+                self.fetch_drive_files(changed_file_id=folder_id)
             else:
                 folder_id = id
                 # print(f"FOLDER {folder_list[i]} JA EXISTE!")
             id_parents.append(folder_id)
 
+        self.fetch_drive_files(changed_file_id=id_parents[-1])
         return folder_id
 
     def upload_to_drive(self, file_path, nomes_parents=[], resumable=False):
@@ -421,11 +393,11 @@ class GoogleDrive:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
                     file_id = response.get('id')
 
-                    # self.fetch_drive_files(changed_file_id=file_id)
+                    self.fetch_drive_files(changed_file_id=file_id)
                 return file_id
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)
-                raise e
+                return None
         else:
             """ ERRO NO MIME"""
             print(Exception("ERRO AO PEGAR MIMETYPE"))

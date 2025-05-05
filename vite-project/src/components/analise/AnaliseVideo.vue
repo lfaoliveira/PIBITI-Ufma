@@ -33,6 +33,9 @@ import Rodape from "../auxiliares/Rodape.vue";
 import VideoPlayer from "./VideoPlayer.vue";
 import HeaderSistema from "../auxiliares/HeaderSistema.vue";
 
+import axios from "axios";
+import fs from "fs";
+
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
   name: "Analise de Video",
@@ -63,9 +66,12 @@ export default {
   async mounted() {
     this.responseData = JSON.parse(this.responseStringJson);
 
+    // this.videoSource = this.responseData.video;
+    // this.graficoURL = this.responseData.grafico;
+    this.videoSource = await this.downloadFile(this.responseData.video);
+    this.graficoURL = await this.downloadFile(this.responseData.grafico);
     this.resPronto = true;
-    this.videoSource = this.responseData.video;
-    this.graficoURL = this.responseData.grafico;
+
     this.pdfURL = this.responseData.pdf;
     this.$refs.imgGraf.src = this.graficoURL;
     const strResult = this.responseData.diagAutom;
@@ -82,31 +88,19 @@ export default {
       const label = document.querySelector(".custom-file-upload");
       label.classList.remove("focus");
     },
+    async downloadFile(url) {
+      console.log("URL: ", url);
+      // TODO: TESTAR SE LOGICA DE STREAMING DEU CERTO
+      const response = await axios.get(url, { responseType: "blob" });
 
-    // pegar resultados da análise
-    async getAnalysisResults() {
-      try {
-        alert(this.idVideoAnaliseERRADO);
-        // caso seja video de demonstracao
-        if (parseInt(this.idVideoAnaliseERRADO) === -1) {
-          const mime = "video/mp4";
-          const videoURL = VIDEO_DEMO_URL;
-          const graficoURL = GRAF_DEMO_url;
-          const strResult = STR_RESULT_DEMO;
-          return { strResult, graficoURL, mime, videoURL };
-        }
-        await db.open();
-        const resultData = await db.get(parseInt(this.idVideoAnaliseERRADO));
-        const mime = resultData.mimeVideo;
-        const videoURL = resultData.video;
-        const graficoURL = resultData.grafico;
-        const strResult = resultData.string;
+      const blob = response.data;
+      console.log("RESPONSE DATA: ", response.data);
+      const blobURL = URL.createObjectURL(blob);
 
-        return { strResult, graficoURL, mime, videoURL };
-      } catch (error) {
-        console.error("ERRO! " + error);
-      }
+      console.log(`Blob URL created: ${blobURL}`);
+      return blobURL;
     },
+
     parseResult(string) {
       const split = String(string).split(",");
       this.velE = parseFloat(split[0]).toFixed(2);

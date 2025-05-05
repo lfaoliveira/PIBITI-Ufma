@@ -7,7 +7,7 @@ from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file
+from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file, Response, stream_with_context
 from flask_session import Session
 from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
@@ -24,6 +24,8 @@ import requests
 import csv
 from pdf import Converter
 from drive import GoogleDrive
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 
 class Helper:
@@ -439,16 +441,63 @@ def index():
 
 
 @app.route('/get-file/<id_file>', methods=['GET'])
+# usando esse decorator pra evitar erros de TLS
+@cross_origin(supports_credentials=True)
 def get_file(id_file):
-    import io
     """
     Serves files using file_id from Google Drive.
     """
-    print("filename: ", id_file)
+    print("FILE ID: ", id_file)
     try:
-        file_bytes, filename = drive.download_file(id_file)
-        return send_file(io.BytesIO(file_bytes), attachment_filename=filename, mimetype=mimetypes.guess_type(filename))
+        limite_mega = 20*1024*1024  # (20 MB)
+        print("PEGANDO ARQUIVO!")
+        file_generator, filename = drive.download_file(id_file)
+        # TODO: IMPLEMENTAR LOGICA DE STREAM AO ENVIAR ARQUIVOS MUITO GRANDES!!!!
+        print("DEPOIS DOWNLOAD")
+        return Response(
+            stream_with_context(file_generator),
+            headers={
+                'Content-Disposition': f'attachment; filename="{filename}"',
+                'Content-Type': mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+            }
+        )
     except Exception as e:
+        print(f"ERRO AO PEGAR ARQUIVO: {e}")
+        return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
+
+
+@app.route('/get-file-local/<filename>', methods=['GET'])
+# usando esse decorator pra evitar erros de TLS
+@cross_origin(supports_credentials=True)
+def get_file_local(filename):
+    """
+    NOTE: USAR ^APENAS^ BASENAME DO ARQUVIO
+    Serves files from '/tmp' using filename.
+    """
+    try:
+        if len(filename) > 0:
+            # limite_mega = 20*1024*1024
+            filename = os.path.join(
+                app.config["TEMP_FOLDER"], secure_filename(filename))
+            print("FILE NAME: ", filename)
+
+            chunk_size = 1024*1024
+
+            def file_generator(file_path):
+                with open(file_path, "rb") as f:
+                    # ':=' walrus operator, designa e avalia variavel 'chunk'
+                    while chunk := f.read(chunk_size):  # Read in chunks of 8KB
+                        yield chunk
+            print(f"BAIXANDO ARQUIVO {filename}")
+            return Response(
+                stream_with_context(file_generator(filename)),
+                headers={
+                    'Content-Disposition': f'attachment; filename="{os.path.basename(filename)}"',
+                    'Content-Type': mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+                }
+            )
+    except Exception as e:
+        print(f"ERRO AO PEGAR ARQUIVO: {e}")
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
@@ -565,6 +614,7 @@ def analisar():
                       "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
                       "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "urlGrafico": path_graf_pdf, }
         Helper.gerar_pdf(path_pdf, dict_dados)
+
         id_pdf = drive.upload_to_drive(
             path_pdf, [email_medico, id_diag], resumable=True)
         url_pdf = url_for('get_file', id_file=id_pdf, _external=True)
@@ -615,12 +665,13 @@ def pega_perfil():
                 },
             },
         ], allowDiskUse=True)
-        print(f"\n\n{res}\n\n")
+        lista_res = list(res)[0]['data']
+        print(f"\n\n{lista_res}\n\n")
 
         medico = InterfaceMongo.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
-        return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": res})
+        return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": lista_res})
 
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)

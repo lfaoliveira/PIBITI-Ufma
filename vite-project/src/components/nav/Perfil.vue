@@ -27,7 +27,7 @@
         </thead>
         <tr v-for="(obj, index) in entradas">
           <td class="cel-dado" v-for="(valor, key) in obj">
-            <template v-if="key === 'linkRelatorio'">
+            <template v-if="key === 'pdf'">
               <a @click="baixarRelatorio" :href="valor">Baixar</a>
             </template>
             <template v-else>
@@ -127,7 +127,8 @@ export default {
           if (Object.hasOwn(this.header, key)) {
             if (pair[1] == "") pair[1] = "-";
             if (key === "dataDiag" || key === "ultimaModif") {
-              pair[1] = new Date(pair[1]).toLocaleString("pt-BR", {
+              // OBS: Date RECEBE TEMPO EM ms, logo multplica tempo UNIX em mil
+              pair[1] = new Date(pair[1] * 1000).toLocaleString("pt-BR", {
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
@@ -196,7 +197,7 @@ export default {
           desc: "-",
           dataDiag: "-",
           ultimaModif: "-",
-          linkRelatorio: "-",
+          pdf: "-",
         },
         {
           nomePaciente: "-",
@@ -205,7 +206,7 @@ export default {
           desc: "-",
           dataDiag: "-",
           ultimaModif: "-",
-          linkRelatorio: "-",
+          pdf: "-",
         },
       ],
     };
