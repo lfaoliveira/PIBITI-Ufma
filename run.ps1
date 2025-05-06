@@ -1,15 +1,41 @@
-$mongoService = Get-Service -Name "MongoDB"
+# $mongoService = Get-Service -Name "MongoDB"
+& mongod --version
+if ($LASTEXITCODE -ne 0){
+    #mongo daemon nao existe
+    $installerUrl = "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.0-signed.msi"
+    $installerPath = "$env:TEMP\mongodb.msi"
+    Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
+    $installDir = "C:\MongoDB"
+    Start-Process -FilePath "msiexec.exe" -ArgumentList @(
+    "/qn",
+    "/i `"$installerPath`"",
+    "INSTALLLOCATION=`"$installDir`"",
+    "ADDLOCAL=ServerNoService,ServerService",
+    "SHOULD_INSTALL_COMPASS=0"
+    ) -Wait -NoNewWindow
+    & "$installDir\bin\mongod.exe" --config "$configPath" --serviceName "MongoDB" --serviceDisplayName "MongoDB Network Service" --install --serviceUser "NT AUTHORITY\NetworkService"
+    Set-Service -Name "MongoDB" -StartupType Automatic
+    winget install MongoDB.Compass
+    Start-Service -Name "MongoDB"
+}
+
+if ($mongoService.Status -ne "Running") {
+    Write-Host "MongoDB service is not running or is stopped. Installing MongoDB and MongoDB Compass..."
+    winget install MongoDB.MongoDBServer
+    Start-Service -Name "MongoDB"
+}
+
 if ($mongoService.Status -eq "Stopped") {
     Restart-Service -Name "MongoDB"
 }
+Get-Service -Name "MongoDB"
+
 # checando se ffmpeg esta instalado
 if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
     Write-Host "Installing ffmpeg..."
     winget install ffmpeg
     Restart-Computer
 }
-
-Get-Service -Name "MongoDB"
 
 if (-not (Test-Path "./FLASK/permalink-googleDrive-pibiti6-nervo.json")) {
     Write-Error "permalink-googleDrive-pibiti6-nervo.json file not found in FLASK directory"

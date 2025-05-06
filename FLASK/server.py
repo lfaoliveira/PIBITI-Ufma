@@ -500,8 +500,34 @@ def get_file_local(filename):
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
-# TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
+def insert_storage_flag(in_drive=False, filename=None):
+    storage_string = ""
+    
+    if not in_drive:
+        temp_folder = os.path.basename(app.config["TEMP_FOLDER"])
+        filename = secure_filename(filename)
+        relpath = os.path.relpath(os.path.join(temp_folder,filename), app.config["WKDIR"])
+        storage_string = f"local:{relpath}"
+    else:
+        # in_drive, filename eh hash do drive
+        storage_string = f"cloud:{filename}"
 
+    return storage_string
+
+def get_file_storage_string(string):
+    splitted = string.split(":")
+    tipo, payload = spllited
+    if tipo.lower() == "local":
+        response = requests.get(
+            url_for('get_file_local',filename=os.path.basename(payload), _external=True),
+            cookies=request.cookies
+        )
+        return response
+    else:
+        response = requests.get(
+            url_for('get_file', id_file=payload, _external=True),
+            cookies=request.cookies
+        )
 
 @app.route("/analise", methods=["POST"])
 @cross_origin(supports_credentials=True)
