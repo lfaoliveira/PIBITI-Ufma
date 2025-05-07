@@ -16,7 +16,7 @@ from flask_mail import Mail, Message
 import mimetypes
 import hashlib
 from datetime import timedelta
-from typing import Any
+from typing import Any, Union
 import tensorflow as tf
 import threading
 
@@ -514,7 +514,7 @@ def get_file_local(filename):
 @app.route('/get-file/<resource_url>', methods=['GET'])
 @cross_origin(supports_credentials=True)
 # usando esse decorator pra evitar erros de TLS
-def get_file(resource_uri) -> Any | Response:
+def get_file(resource_uri) -> Union[Any, Response]:
     """
     Serves files depending on storage
     """
@@ -847,12 +847,6 @@ def envia_diag():
     path_temp_videoLabel = os.path.join(app.config["TEMP_FOLDER"], nome_local)
     with open(path_temp_videoLabel, "wb") as f:
         f.write(video_data)
-
-    if id_medico:
-        email_medico = InterfaceMongo.find_one_with_id(mongo.db.get_collection(
-            COLLECTION_MEDICOS), session['user_id']).get('email')
-    else:
-        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
 
     return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "nome_input": nome_local, "filename": filename}, OK)
 
