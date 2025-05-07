@@ -269,9 +269,10 @@ class GoogleDrive:
         # print(f"MATCHED FILES :{matching_files}")
         return None
 
-    def create_folder(self, nomes_parents=[]):
+    def create_folder(self, nomes_parents: list = [], wait=False):
         """
         Criacao de Folder. PRECISA SEMPRE GARANTIR QUE NAO HAJAM DUPLICATAS!!!!
+        (NUNCA INCLUIR O NOME DO ROOT DENTRO)
         """
         folder_name = nomes_parents[-1]
         # print(f"\nFOLDER_NAME: {folder_name}")
@@ -317,16 +318,16 @@ class GoogleDrive:
                     f"FOLDER CRIADO: {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}")
                 folder_id = folder_drive.get('id')
                 id_parents.append(folder_id)
-                self.fetch_drive_files(changed_file_id=folder_id)
+                if wait:
+                    self.fetch_drive_files(changed_file_id=folder_id)
             else:
                 folder_id = id
                 # print(f"FOLDER {folder_list[i]} JA EXISTE!")
             id_parents.append(folder_id)
 
-        self.fetch_drive_files(changed_file_id=id_parents[-1])
         return folder_id
 
-    def upload_to_drive(self, file_path, nomes_parents=[], resumable=False):
+    def upload_to_drive(self, file_path, nomes_parents=[], wait=False, resumable=False):
         """
         Faz upload de arquivo para o drive; Cria folder de destino se folder nao existir \n
 
@@ -358,13 +359,10 @@ class GoogleDrive:
 
         # cria parentes, se nao existirem, e folder
         if (id_folder == None):
-            print(f"CRIANDO DIRETORIO {nomes_parents[-1]}")
-            id_folder = self.create_folder(nomes_parents)
-            if id_folder == None:
-                return None
+            print(f"ESPERANDO DIRETORIO {nomes_parents[-1]}")
 
         mime = mimetypes.guess_type(file_path)
-        if mime:
+        if mime[0]:
             media = MediaFileUpload(
                 file_path, mimetype=mime[0], resumable=resumable)
 
@@ -393,7 +391,8 @@ class GoogleDrive:
                             print(f"Uploaded {int(status.progress() * 100)}%.")
                     file_id = response.get('id')
 
-                    self.fetch_drive_files(changed_file_id=file_id)
+                    if wait:
+                        self.fetch_drive_files(changed_file_id=file_id)
                 return file_id
             except Exception as e:
                 print("PROBLEMA NO UPLOAD: \n\n", e)

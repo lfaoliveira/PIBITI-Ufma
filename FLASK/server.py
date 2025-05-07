@@ -16,7 +16,7 @@ from flask_mail import Mail, Message
 import mimetypes
 import hashlib
 from datetime import timedelta
-
+from typing import Any
 import tensorflow as tf
 import threading
 
@@ -236,10 +236,10 @@ def get_modelo():
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
     modelo = analisador.modelo
     with modelo.sess.graph.as_default():
-        str_res, path_graf = analisador.funcao_metodo(
+        str_res, dict_graf = analisador.funcao_metodo(
             path_processamento_arq, path_out, timestamp
         )
-        return str_res, path_graf
+        return str_res, dict_graf
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
@@ -450,10 +450,10 @@ def index():
     return "Hello World"
 
 
-@app.route('/get-file/<id_file>', methods=['GET'])
-# usando esse decorator pra evitar erros de TLS
+@app.route('/get-file-drive/<id_file>', methods=['GET'])
 @cross_origin(supports_credentials=True)
-def get_file(id_file):
+# usando esse decorator pra evitar erros de TLS
+def get_file_drive(id_file):
     """
     Serves files using file_id from Google Drive.
     """
@@ -477,11 +477,11 @@ def get_file(id_file):
 
 
 @app.route('/get-file-local/<filename>', methods=['GET'])
-# usando esse decorator pra evitar erros de TLS
 @cross_origin(supports_credentials=True)
+# usando esse decorator pra evitar erros de TLS
 def get_file_local(filename):
     """
-    NOTE: USAR ^APENAS^ BASENAME DO ARQUVIO
+    NOTE: USAR ^APENAS^ BASENAME DO ARQUVIO QUE ESTEJA NO TMP
     Serves files from '/tmp' using filename.
     """
     try:
@@ -510,37 +510,72 @@ def get_file_local(filename):
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
-def insert_storage_flag(in_drive=False, filename=None):
+
+@app.route('/get-file/<resource_url>', methods=['GET'])
+@cross_origin(supports_credentials=True)
+# usando esse decorator pra evitar erros de TLS
+def get_file(resource_uri) -> Any | Response:
+    """
+    Serves files depending on storage
+    """
+    print("URI: ", resource_uri)
+    try:
+        print("PEGANDO ARQUIVO!")
+        tipo, uri = split_storage_url(resource_uri)
+        if tipo == "local":
+            return get_file_local(uri)
+        else:
+            return get_file_drive(uri)
+
+    except Exception as e:
+        print(f"ERRO AO PEGAR ARQUIVO: {e}")
+        return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
+
+
+def make_storage_url(local=True, filename=None):
+    """
+    Cria uma string em duas partes: primeira eh flag indicando onde arquivo esta armazenado, segunda eh url para o arquivo
+    """
     storage_string = ""
-    
-    if not in_drive:
+    sep = ":"
+    if local:
         temp_folder = os.path.basename(app.config["TEMP_FOLDER"])
-        filename = secure_filename(filename)
-        relpath = os.path.relpath(os.path.join(temp_folder,filename), app.config["WKDIR"])
-        storage_string = f"local:{relpath}"
+        filename = secure_filename(os.path.basename(filename))
+        relpath = os.path.relpath(os.path.join(
+            temp_folder, filename), app.config["WKDIR"])
+        storage_string = f"local{sep}{relpath}"
     else:
-        # in_drive, filename eh hash do drive
-        storage_string = f"cloud:{filename}"
+        # arquivo pro google drive, filename eh hash do drive
+        id_drive = filename
+        storage_string = f"cloud{sep}{id_drive}"
 
     return storage_string
 
-def get_file_storage_string(string):
-    splitted = string.split(":")
-    tipo, payload = spllited
-    if tipo.lower() == "local":
-        response = requests.get(
-            url_for('get_file_local',filename=os.path.basename(payload), _external=True),
-            cookies=request.cookies
-        )
-        return response
-    else:
-        response = requests.get(
-            url_for('get_file', id_file=payload, _external=True),
-            cookies=request.cookies
-        )
 
-def sync_google_drive():
-    pass
+def split_storage_url(string: str):
+    sep = ":"
+    tipo, uri = string.split(sep)
+    return tipo, uri
+
+
+def sync_google_drive(storage_strings: dict, id_diag: str):
+    str_video_in = storage_strings["video_in"]
+    tipo, path_video_in = split_storage_url(str_video_in)
+
+    str_video_out = storage_strings["video_out"]
+    tipo, path_video_out = split_storage_url(str_video_out)
+
+    id_in = drive.upload_to_drive(path_video_in)
+    id_out = drive.upload_to_drive(path_video_out)
+
+    url_in = make_storage_url(local=False, filename=id_in)
+    url_out = make_storage_url(local=False, filename=id_out)
+
+    modif = {"video_in": url_in, "video": url_out}
+    mongo.db.get_collection(COLLECTION_DIAGS).update_one(
+        {"_id": ObjectId(id_diag)},
+        {"$set": modif}
+    )
 
 
 @app.route("/analise", methods=["POST"])
@@ -552,7 +587,7 @@ def analisar():
     """
     timestamp = time.time()
     id_diag = request.form.get("id_diag", None)
-    id_folder_drive = request.form.get("id_folder_drive", None)
+    nome_input = request.form.get("nome_input", None)
     filename = request.form.get("filename", None)
     diag = None
 
@@ -574,16 +609,11 @@ def analisar():
 
     nome_video = f"{user}_{str(round(timestamp, 4))}"
     nome_local = f"{nome_video}.{ext}"
-    filename_arq_input = secure_filename(f"INPUT_{nome_local}")
+    filename_arq_input = secure_filename(f"INPUT_{nome_input}")
 
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
     path_arq_input = os.path.join(
         app.config["TEMP_FOLDER"], filename_arq_input)
-
-    id_drive_videoLabel = diag.get('videoLabel')
-    bytes_videoLabel, filename = drive.download_file(id_drive_videoLabel)
-    with open(path_arq_input, 'wb') as f:
-        f.write(bytes_videoLabel)
 
     """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
     arq_stream = arq.stream"""
@@ -602,7 +632,7 @@ def analisar():
         app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
 
     # executando predicao
-    res_tensor, graf_tensor = predict(
+    res_tensor, dict_graf_tensor = predict(
         analisador, path_arq_input_conv, path_out_antes_conv, timestamp
     )
 
@@ -611,9 +641,10 @@ def analisar():
         res_np = sess.run(res_tensor)
         if "ERRO" in res_np.decode('utf-8'):
             return make_response(res_np, BAD_REQUEST)
-        graf_np = sess.run(graf_tensor)
+        graf_np = sess.run(dict_graf_tensor)
     # Decode bytes to string since predict returns all output as tensor
-    str_res, path_graf = res_np.decode('utf-8'), graf_np.decode('utf-8')
+    str_res, dict_graf_tensor = res_np.decode('utf-8'), graf_np.decode('utf-8')
+    print(f"DICT GRAF: {dict_graf_tensor}")
 
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
     print("ULTIMA CONVERSAO")
@@ -624,9 +655,10 @@ def analisar():
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
 
-    # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
-    path_pdf = os.path.join(
-        app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
+    # TODO: ARMAZENAR DADOS PDF NO DB
+    # path_pdf = os.path.join(
+    #     app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
+
     # str_res no formato "velE,velD,percentDif,olho_doente"
     split_res = str_res.split(",")
     olho_doente = str_res.split(",")[3]
@@ -641,7 +673,6 @@ def analisar():
     id_medico = diag.get('id_medico', None)
     # NOTE: NAO GERA PDF PRA USUARIOS ANONIMOS!
     if id_medico:
-        path_graf_pdf = os.path.join("..", "tmp", os.path.basename(path_graf))
         diag_medico = diag.get('diagnosticoMedico')  # string codificada
         nome_paciente = diag.get('nomePaciente')
 
@@ -649,44 +680,40 @@ def analisar():
             COLLECTION_MEDICOS), id_medico)
         nome_medico = medico.get('nome')
         crm = medico.get('crm')
-        email_medico = medico.get('email')
 
-        dict_dados = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2], "crm": crm,
-                      "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
-                      "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "urlGrafico": path_graf_pdf, }
-        Helper.gerar_pdf(path_pdf, dict_dados)
-
-        id_pdf = drive.upload_to_drive(
-            path_pdf, [email_medico, id_diag], resumable=True)
-        url_pdf = url_for('get_file', id_file=id_pdf, _external=True)
+        dict_dados_pdf = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2], "crm": crm,
+                          "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
+                          "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "dadosGrafico": dict_graf_tensor}
     else:
-        url_pdf = None
-        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
+        dict_dados_pdf = None
 
     print("PEGANDO URLS")
-    print(drive.file_state)
-    id_graf = drive.upload_to_drive(path_graf, [email_medico, id_diag])
-    url_graf = url_for('get_file', id_file=id_graf, _external=True)
 
-    id_video_out = drive.upload_to_drive(
-        path_out, [email_medico, id_diag], resumable=True)
-    url_video_out = url_for('get_file', id_file=id_video_out, _external=True)
-
-    result = {"diagAutom": str_diag, "grafico": url_graf, "pdf": url_pdf,
-              "dataDiag": timestamp, "video": url_video_out, "ultimaModif": timestamp}
+    result = {"diagAutom": str_diag, "dados_grafico": dict_graf_tensor, "dados_pdf": dict_dados_pdf,
+              "dataDiag": timestamp, "video": local_url_video_out, "ultimaModif": timestamp}
     mongo.db.get_collection(COLLECTION_DIAGS).update_one(
         {"_id": ObjectId(id_diag)},
         {"$set": result}
     )
 
     result["diagAutom"] = str_res
-    # NOTE: BOTAR PARA O SERVIDOR CRIAR THREAD PARA SINCRONIZAR COM Google Drive
+    local_url_video_out = make_storage_url(local=True, filename=path_out)
+    local_url_video_in = make_storage_url(local=True, filename=path_arq_input)
+    storage_dict = {"video_in": local_url_video_in,
+                    "video_out": local_url_video_out}
 
+    # NOTE: BOTANDO PARA O SERVIDOR CRIAR THREAD PARA SINCRONIZAR COM Google Drive
     def after_analise():
         # cria nova thread pra sincronizar com google drive
-        thread = threading.Thread(target=sync_google_drive)
+        thread = threading.Thread(
+            target=sync_google_drive, args=(storage_dict))
         thread.start()
 
+    result.pop('dados_grafico')
+    result.pop('dados_pdf')
+    result["grafico"] = url_for(
+        'gerar_relatorio', id_diag=id_diag, _external=True)
+    result["pdf"] = url_for('gerar_relatorio', id_diag=id_diag, _external=True)
     resp = jsonify(result)
     resp.call_on_close(after_analise)
     return resp
@@ -724,6 +751,44 @@ def pega_perfil():
 
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
+
+
+@app.route("/gerar_relatorio/<id_diag>", methods=["GET"])
+def gerar_relatorio(id_diag):
+    """
+    Gera pdf com grafico e outros dados importantes e retorna url do pdf
+    """
+
+    diag = InterfaceMongo.find_one_with_id(
+        mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
+    dados_pdf = diag.get('dados_pdf')
+    output = os.path.relpath(os.path.join(
+        app.config["TEMP_FOLDER"], dados_pdf["nomePaciente"]), app.config["WKDIR"])
+    dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
+
+    Helper.gerar_pdf(output, dados_pdf)
+    uri_pdf = make_storage_url(output)
+    return get_file(uri_pdf)
+
+
+@app.route("/gerar_grafico/<id_diag>", methods=["GET"])
+def gerar_grafico(id_diag, external=True):
+    """
+    Gera grafico e retorna ele como stream
+    """
+
+    diag = InterfaceMongo.find_one_with_id(
+        mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
+    dados_grafico = diag.get('dados_grafico')
+    vel_esq, vel_dir, titulo, time = dados_grafico["vel_esq"], dados_grafico[
+        "vel_dir"], dados_grafico["titulo"], dados_grafico["time"]
+
+    path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
+    uri_graf = make_storage_url(path_graf)
+    if external:
+        return get_file(uri_graf)
+    else:
+        return uri_graf
 
 
 @app.route("/envia_diag", methods=["POST"])
@@ -789,20 +854,7 @@ def envia_diag():
     else:
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
 
-    id_videoLabel = drive.upload_to_drive(
-        path_temp_videoLabel, [email_medico, id_diag_mongo], resumable=True)
-    dados = {"videoLabel": id_videoLabel}
-    result = mongo.db.get_collection(COLLECTION_DIAGS).update_one(
-        {"_id": ObjectId(id_diag_mongo)},
-        {"$set": dados}
-    )
-    os.remove(path_temp_videoLabel)
-    print(f"RESULTADO UPDATE MONGO: {result}\n")
-
-    if result.acknowledged:
-        return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "id_folder_drive": drive.get_folder_id(id_diag_mongo), "filename": filename}, OK)
-    else:
-        return make_response("Erro ao registrar diagnostico", INTERNAL_SERVER_ERROR)
+    return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "nome_input": nome_local, "filename": filename}, OK)
 
 
 @app.route("/auth", methods=["POST"])
@@ -853,6 +905,7 @@ def autenticar():
             return "OK"
         else:
             print("\nSEM SESSAO\n")
+        # cria sessão para o usuario logado
         if usuario != None and senha == usuario['senha']:
             session['user_id'] = str(usuario['_id'])
             # Add session creation timestamp
@@ -866,6 +919,7 @@ def autenticar():
     elif (tipo == "cadastro"):
         nome = request.form.get("nome")
         crm = request.form.get("crm")
+        drive.create_folder([email], wait=False)
         if usuario != None:
             return "JA_EXISTE"
 

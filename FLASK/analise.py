@@ -23,6 +23,7 @@ class AnaliseParalisia:
     def funcao_metodo(self, videoEntrada, videoSaida, timestamp):
         # olhoEsquerdo e  olhoDireito são listas de pontos com as posições (x,y) dos respectivos olhos em cada frame
         # frames é uma lista com os indices dos frames que foram usados
+
         try:
             olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(
                 videoEntrada, videoSaida)
@@ -46,24 +47,20 @@ class AnaliseParalisia:
             return "ERRO:FALHA NA MANIPULAÇÃO DO GRÁFICO DE POSIÇÃO", "None"
 
         try:
-            path_graf = self.plotHampelFinal(
-                xE,
-                xD,
-                xEsquerdo,
+            titulo = "Grafico de Velocidade dos Olhos"
+            dict_graf = {"vel_esq": xEsquerdoFinal, "vel_dir": xDireitaFinal,
+                         "titulo": titulo, "time": timestamp}
+
+            """ path_graf = self.plotHampelFinal(
                 xEsquerdoFinal,
-                xDireito,
-                xDireitaFinal,
-                "Remocao de Ruido",
-                timestamp,
-            )
+                xDireitaFinal, titulo, timestamp,
+            ) """
 
             velE, velD = self.calculaVelocidadeEspacoPercorrido(
-                xEsquerdoFinal, xDireitaFinal
-            )
-            (
-                velE2,
-                velD2,
-            ) = self.calculaVelocidade(xEsquerdoFinal, xDireitaFinal, frames, timestamp)
+                xEsquerdoFinal, xDireitaFinal)
+
+            velE2, velD2 = self.calculaVelocidade(
+                xEsquerdoFinal, xDireitaFinal, frames, timestamp)
             print(
                 f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
             )
@@ -85,7 +82,7 @@ class AnaliseParalisia:
 
             if percentDif < threshold:
                 olho_doente = "None"
-            return f"{velE},{velD},{percentDif},{olho_doente}", path_graf
+            return f"{velE},{velD},{percentDif},{olho_doente}", dict_graf
         except Exception as e:
             print("ERRO:FALHA NO CALCULO DA VELOCIDADE: ", e)
             return "ERRO:FALHA NO CALCULO DA VELOCIDADE", "None"
@@ -236,11 +233,7 @@ class AnaliseParalisia:
 
     def plotHampelFinal(
         self,
-        xEsquerda,
-        xDireita,
-        xEsquerdoHampel,
         xEsquerdoFinal,
-        xDireitaHampel,
         xDireitaFinal,
         titulo,
         timestamp,
