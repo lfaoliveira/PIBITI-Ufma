@@ -10,6 +10,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file, Response, stream_with_context
 from flask_session import Session
 from flask_pymongo import PyMongo
+import gridfs
 from flask_cors import CORS, cross_origin
 from flask_mail import Mail, Message
 import mimetypes
@@ -24,7 +25,6 @@ import requests
 import csv
 from pdf import Converter
 from drive import GoogleDrive
-from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -256,10 +256,19 @@ Helper.read_ENV_VARS(arq_config)
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-
 app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
 app.config["SESSION_TYPE"] = "filesystem"
 mongo = PyMongo(app)
+
+# objeto que vai fazer logica de armazenamento de arquivos no MongoDB
+fs = gridfs.GridFS(mongo.db)
+
+
+def upload_file(file_path):
+    with open(file_path, "rb") as file_data:
+        file_id = fs.put(file_data, filename=os.path.basename(file_path))
+        print(f"File uploaded successfully with ID: {file_id}")
+
 
 # SEGURANÇA
 app.secret_key = os.environ.get('SECRET_KEY')
@@ -275,6 +284,7 @@ app.config.update(
     SESSION_COOKIE_SAMESITE='None',
     PERMANENT_SESSION_LIFETIME=timedelta(days=7)
 )
+
 Session(app)
 # CONFIGS DE EMAIL
 app.config.update(
@@ -503,11 +513,16 @@ def get_file_local(filename):
 # TODO: utilizar Gunicorn pra spawn de novas threads no servidor Flask (talvez seja desnecessario por conta do Kubernetes)
 
 
+def sync_google_drive():
+    pass
+
+
 @app.route("/analise", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def analisar():
     """
     Takes video  input, executa the model e and returns result as JSON
+    # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
     """
     timestamp = time.time()
     id_diag = request.form.get("id_diag", None)
@@ -639,8 +654,16 @@ def analisar():
     )
 
     result["diagAutom"] = str_res
-    # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
-    return jsonify(result)
+    # NOTE: BOTAR PARA O SERVIDOR CRIAR THREAD PARA SINCRONIZAR COM Google Drive
+
+    def after_analise():
+        # cria nova thread pra sincronizar com google drive
+        thread = threading.Thread(target=sync_google_drive)
+        thread.start()
+
+    resp = jsonify(result)
+    resp.call_on_close(after_analise)
+    return resp
 
 
 @app.route("/pega_perfil", methods=["GET"])
