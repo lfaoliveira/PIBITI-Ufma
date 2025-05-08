@@ -194,7 +194,7 @@ class AnaliseParalisia:
                 indices.append(i)
         return new_series, indices
 
-    def getHampel(self, x1, x2):
+    def getHampel(self, x1, x2) -> tuple:
         lent = min(len(x1), len(x2))
         x1 = x1[:lent]
         x2 = x2[:lent]

@@ -23,6 +23,7 @@ import threading
 import ffmpeg
 import requests
 import csv
+import numpy as np
 from pdf import Converter
 from drive import GoogleDrive
 from concurrent.futures import ThreadPoolExecutor
@@ -239,6 +240,7 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         str_res, dict_graf = analisador.funcao_metodo(
             path_processamento_arq, path_out, timestamp
         )
+
         return str_res, dict_graf
 
 
@@ -558,7 +560,8 @@ def split_storage_url(string: str):
     return tipo, uri
 
 
-def sync_google_drive(storage_strings: dict, id_diag: str):
+def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
+    print(f"STORAGE: {storage_strings}, ID: {id_diag}")
     str_video_in = storage_strings["video_in"]
     tipo, path_video_in = split_storage_url(str_video_in)
 
@@ -576,6 +579,7 @@ def sync_google_drive(storage_strings: dict, id_diag: str):
         {"_id": ObjectId(id_diag)},
         {"$set": modif}
     )
+    print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
 
 
 @app.route("/analise", methods=["POST"])
@@ -586,6 +590,7 @@ def analisar():
     # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
     """
     timestamp = time.time()
+    print(f"KEYS FORM: {request.form.keys()}\n")
     id_diag = request.form.get("id_diag", None)
     nome_input = request.form.get("nome_input", None)
     filename = request.form.get("filename", None)
@@ -610,6 +615,8 @@ def analisar():
     nome_video = f"{user}_{str(round(timestamp, 4))}"
     nome_local = f"{nome_video}.{ext}"
     filename_arq_input = secure_filename(f"INPUT_{nome_input}")
+    os.rename(os.path.join(app.config["TEMP_FOLDER"], nome_input), os.path.join(
+        app.config["TEMP_FOLDER"], filename_arq_input))
 
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
     path_arq_input = os.path.join(
@@ -643,8 +650,13 @@ def analisar():
             return make_response(res_np, BAD_REQUEST)
         graf_np = sess.run(dict_graf_tensor)
     # Decode bytes to string since predict returns all output as tensor
-    str_res, dict_graf_tensor = res_np.decode('utf-8'), graf_np.decode('utf-8')
-    print(f"DICT GRAF: {dict_graf_tensor}")
+    str_res, dict_graf_tensor = res_np.decode('utf-8'), graf_np
+
+    dict_graf_tensor['vel_esq'] = np.array(
+        dict_graf_tensor['vel_esq']).tolist()
+    dict_graf_tensor['vel_dir'] = np.array(
+        dict_graf_tensor['vel_dir']).tolist()
+    dict_graf_tensor['time'] = float(dict_graf_tensor['time'])
 
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
     print("ULTIMA CONVERSAO")
@@ -680,14 +692,18 @@ def analisar():
             COLLECTION_MEDICOS), id_medico)
         nome_medico = medico.get('nome')
         crm = medico.get('crm')
-
+        email_medico = medico.get('email')
         dict_dados_pdf = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2], "crm": crm,
                           "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
                           "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "dadosGrafico": dict_graf_tensor}
     else:
+        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
         dict_dados_pdf = None
 
     print("PEGANDO URLS")
+
+    local_url_video_out = make_storage_url(local=True, filename=path_out)
+    local_url_video_in = make_storage_url(local=True, filename=path_arq_input)
 
     result = {"diagAutom": str_diag, "dados_grafico": dict_graf_tensor, "dados_pdf": dict_dados_pdf,
               "dataDiag": timestamp, "video": local_url_video_out, "ultimaModif": timestamp}
@@ -697,16 +713,14 @@ def analisar():
     )
 
     result["diagAutom"] = str_res
-    local_url_video_out = make_storage_url(local=True, filename=path_out)
-    local_url_video_in = make_storage_url(local=True, filename=path_arq_input)
+
     storage_dict = {"video_in": local_url_video_in,
                     "video_out": local_url_video_out}
 
-    # NOTE: BOTANDO PARA O SERVIDOR CRIAR THREAD PARA SINCRONIZAR COM Google Drive
     def after_analise():
         # cria nova thread pra sincronizar com google drive
         thread = threading.Thread(
-            target=sync_google_drive, args=(storage_dict))
+            target=sync_google_drive, args=(storage_dict, id_diag, email_medico))
         thread.start()
 
     result.pop('dados_grafico')
@@ -716,6 +730,7 @@ def analisar():
     result["pdf"] = url_for('gerar_relatorio', id_diag=id_diag, _external=True)
     resp = jsonify(result)
     resp.call_on_close(after_analise)
+    print("\nANALISE FINALZIADA!")
     return resp
 
 
@@ -848,6 +863,7 @@ def envia_diag():
     with open(path_temp_videoLabel, "wb") as f:
         f.write(video_data)
 
+    print("DIAG ENVIADO!\n")
     return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "nome_input": nome_local, "filename": filename}, OK)
 
 

@@ -87,6 +87,7 @@ export default {
       const formData = new FormData();
       formData.append("id_diag", this.objResposta.id_diag);
       formData.append("filename", String(this.objResposta.filename));
+      formData.append("nome_input", String(this.objResposta.nome_input));
 
       axios
         .post(this.$store.getters.getAnalise, formData, {
