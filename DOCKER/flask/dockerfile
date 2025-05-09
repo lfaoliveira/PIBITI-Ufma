@@ -1,25 +1,30 @@
 # Python3.9: alpine
-FROM sha256:f8b3360c67251d9ff5cefaf6fd2d0afaa3f968d141a4a85607556fccda982028
+# FROM python@sha256:f8b3360c67251d9ff5cefaf6fd2d0afaa3f968d141a4a85607556fccda982028
+#Python3.9-slim (debian-based)
+FROM python@sha256:c8ecde0b63a4881272d794f7fcf2ba2ed4c0f7594c8d783905423e7e964ade28
 
 #INSTALLING FFmpeg
 # Set environment variables to avoid user prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
+ENV nomeConda="env-pibiti"
+WORKDIR /
 
 # Install FFmpeg
 # the ffmpeg python livrary does not depend on the specifics of the ffmpeg version
-RUN apk update && \
-    apk add --no-cache ffmpeg=6.1.2-r1 && \
-    rm -rf /var/cache/apk/*
+# ffmpeg=6.1.2-r1
+RUN apt-get update && apt-get install -y ffmpeg bash
+
+# Install required MSYS2 packages
+RUN apt-get install -y weasyprint gcc
 
 # Set the working directory in the container
-WORKDIR /
 
-COPY requirements.txt /requirements.txt
-
+COPY /requirements.txt /requirements.txt
+COPY /permalink-googleDrive-pibiti6-nervo.json /permalink-googleDrive-pibiti6-nervo.json
 # pip
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
+RUN test -f /permalink-googleDrive-pibiti6-nervo.json || (echo "permalink-googleDrive-pibiti6-nervo.json file not found in FLASK directory" && exit 1)
 EXPOSE 5000
 
-CMD ["python","-m", "server.py"]
+CMD ["python","-m", "FLASK/server.py"]

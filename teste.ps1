@@ -1,27 +1,28 @@
 # 1. Ensure TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$ErrorActionPreference = "Stop"
+
+$ErrorActionPreference = 'Continue'
 # Run PowerShell as Administrator and execute the script
 
 
-<# if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+<#  if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     # Relaunch the script with elevated privileges
     Start-Process powershell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
     # Exit the current non-elevated session
     exit
-} 
- #>
+}    #>
+ 
 # ----------------------------------------
 # Variables: adjust versions or paths here
 # ----------------------------------------
 $serverVersion  = '8.0.6'
-$installDir     = "C:\Program Files\MongoDB\Server\$serverVersion"
+$installDir     = "C:\Program Files\MongoDB\Server\$serverVersion\"
 $serverUrl = "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-$serverVersion-signed.msi"
 $serverMsi      = Join-Path $env:TEMP "mongodb-server.msi"
 $serviceName    = 'MongoDB'
 $configFile     = Join-Path $installDir 'bin\mongod.cfg'
-$logFile        = Join-Path $env:TEMP 'mongodb-install.log'
+$logFile        = Join-Path "C:\" 'mongodb-install.log'
 
 # 3. Ensure the install directory and bin subdirectory exist
 if (-Not (Test-Path $installDir)) {
@@ -39,11 +40,18 @@ if (-Not (Test-Path $serverMsi)) {
     Start-BitsTransfer -Source $serverUrl -Destination $serverMsi -ErrorAction Stop
     Write-Host "Downloaded MongoDB Server via BITS"
 }
+try{
+    Write-Host "Install Directory: $installDir"
+    Write-Host "Install MSI: $serverMsi"
+    Start-Process -FilePath 'msiexec.exe' `
+      -ArgumentList "/i `"$serverMsi`" /q INSTALLLOCATION=`"$installDir`" ADDLOCAL=ServerService  /l*v `"$logFile`" SHOULD_INSTALL_COMPASS=0" `
+      -Wait
+    Write-Output "Installed MongoDB Server binaries to $installDir"
 
-Start-Process -FilePath 'msiexec.exe' `
-  -ArgumentList "/i `"$serverMsi`" /qn INSTALLLOCATION=`"$installDir`" ADDLOCAL=All /l*v `"$logFile`"" `
-  -Wait
-Write-Output "Installed MongoDB Server binaries to $installDir"
+}
+catch{
+    Write-Warning "Failed to INSTALL MONGO"
+}
 
 # ----------------------------------------
 # 5. Create the mongod.cfg if missing
@@ -63,22 +71,34 @@ net:
 }
 
 # -ErrorAction SilentlyContinue
-$mongoService = Get-Service -Name $serviceName
-
-if ($mongoService ) {
-    if ((Get-Service -Name $serviceName).Status -eq 'Running') {
-        Stop-Service -Name $serviceName -Force
-        Write-Output "Stopped running service '$serviceName'"
+try{
+    $mongoService = Get-Service -Name $serviceName
+    if ($mongoService ) {
+        if ((Get-Service -Name $serviceName).Status -eq 'Running') {
+            Stop-Service -Name $serviceName -Force
+            Write-Output "Stopped running service '$serviceName'"
+        }
+      sc.exe delete $serviceName
     }
-  sc.exe delete $serviceName
+
+}
+catch{
+    Write-Warning "Failed to GET MONGO SERVICE"
 }
 # Create service to run under NetworkService
-sc.exe create $serviceName `
-  binPath= "\"$installDir\bin\mongod.exe\" --config \"$configFile\" --service" `
-  DisplayName= "MongoDB Database" `
-  start= auto `
-  obj= "NT AUTHORITY\NetworkService"
-Write-Output "Configured `$serviceName` to run as NT AUTHORITY\NetworkService"
+
+try{
+    sc.exe create $serviceName `
+      binPath= "\"$installDir\bin\mongod.exe\" --config \"$configFile\" --service" `
+      DisplayName= "MongoDB Database" `
+      start= auto `
+      obj= "NT AUTHORITY\NetworkService"
+    Write-Output "Configured $serviceName to run as NT AUTHORITY\NetworkService"
+
+}
+catch{
+    Write-Warning "Failed to CREATE SERVICE"
+}
 # :contentReference[oaicite:11]{index=11}
 
 # ----------------------------------------

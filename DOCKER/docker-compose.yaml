@@ -7,8 +7,8 @@ services:
         volumes:
         - flask:.
         environment:
-        - NODE_ENV: development
         - FLASK_ENV: development
+        - nomeConda: "env-pibiti"
     frontend:
         build: ./frontend
         ports:
@@ -16,8 +16,8 @@ services:
         environment:
         - NODE_ENV: development
     db: # MongoDB
-        images: sha256:936020698d1b62b73f6bd40d52f172eb90e2a79e955aa4de26975100e5e991c6
-        ports: 27017:20017
+        images: mongo@sha256:936020698d1b62b73f6bd40d52f172eb90e2a79e955aa4de26975100e5e991c6
+        ports: 27017:27017
         volumes:
             - db:/data/db
 

@@ -1,18 +1,14 @@
 # Use the official Node.js image from the Docker Hub
-FROM node:18 as builder
+from node:18 as builder
 
 # Set the working directory in the container
-WORKDIR /
+WORKDIR /frontend
 
 # Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+COPY package*.json /front/package*.json
 
 # Install the application dependencies
 RUN npm install
-
-# ACHO que esse copy eh inutil
-
-# COPY . ./
 
 # Expose the port the application will run on
 EXPOSE 5153
