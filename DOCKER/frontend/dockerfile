@@ -5,7 +5,7 @@ from node:18 as builder
 WORKDIR /frontend
 
 # Copy package.json and package-lock.json to the working directory
-COPY package*.json /front/package*.json
+COPY ./vite-project ./
 
 # Install the application dependencies
 RUN npm install
