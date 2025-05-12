@@ -14,12 +14,17 @@ export default {
     };
   },
   async mounted() {
-    const resp = await axios.get(this.$store.getters.getUrlChecklogin, {
-      withCredentials: true,
-    });
-    if (resp.status === 200) {
-      this.$store.commit("setLogado", true);
-      console.log("LOGADO: ", this.$store.getters.getLogado);
+    try {
+      const resp = await axios.get(this.$store.getters.getUrlChecklogin, {
+        withCredentials: true,
+      });
+      if (resp.status === 200) {
+        this.$store.commit("setLogado", true);
+        console.log("LOGADO: ", this.$store.getters.getLogado);
+      }
+    } catch {
+      this.$store.commit("setLogado", false);
+      console.log("LOGADO: ", false);
     }
   },
 };

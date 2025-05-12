@@ -491,7 +491,7 @@ def get_file_local(filename):
             # limite_mega = 20*1024*1024
             filename = os.path.join(
                 app.config["TEMP_FOLDER"], secure_filename(filename))
-            print("FILE NAME: ", filename)
+            print("FILE NAME GET_LOCAL: ", filename)
 
             chunk_size = 1024*1024
 
@@ -513,7 +513,7 @@ def get_file_local(filename):
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
 
-@app.route('/get-file/<resource_url>', methods=['GET'])
+@app.route('/get-file/<resource_uri>', methods=['GET'])
 @cross_origin(supports_credentials=True)
 # usando esse decorator pra evitar erros de TLS
 def get_file(resource_uri) -> Union[Any, Response]:
@@ -522,19 +522,22 @@ def get_file(resource_uri) -> Union[Any, Response]:
     """
     print("URI: ", resource_uri)
     try:
-        print("PEGANDO ARQUIVO!")
-        tipo, uri = split_storage_url(resource_uri)
-        if tipo == "local":
-            return get_file_local(uri)
-        else:
-            return get_file_drive(uri)
+        if resource_uri:
 
+            print("PEGANDO ARQUIVO!")
+            tipo, uri = split_storage_url(resource_uri)
+            if tipo == "local":
+                return get_file_local(os.path.basename(uri))
+            else:
+                return get_file_drive(uri)
+        else:
+            raise Exception("RECURSO NULO!")
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
 
-def make_storage_url(local=True, filename=None):
+def make_storage_url(filename=None, local=True):
     """
     Cria uma string em duas partes: primeira eh flag indicando onde arquivo esta armazenado, segunda eh url para o arquivo
     """
@@ -606,7 +609,7 @@ def analisar():
     if "user_id" in session:
         user = session["user_id"]
     else:
-        user = "TEMP"
+        user = "ANONIMO"
     ext = Helper.allowed_file(filename)
     if ext is None:
         print("Incorrect file type!\n\n")
@@ -684,7 +687,7 @@ def analisar():
 
     id_medico = diag.get('id_medico', None)
     # NOTE: NAO GERA PDF PRA USUARIOS ANONIMOS!
-    if id_medico:
+    if str(id_medico) != "None":
         diag_medico = diag.get('diagnosticoMedico')  # string codificada
         nome_paciente = diag.get('nomePaciente')
 
@@ -726,8 +729,10 @@ def analisar():
     result.pop('dados_grafico')
     result.pop('dados_pdf')
     result["grafico"] = url_for(
-        'gerar_relatorio', id_diag=id_diag, _external=True)
+        'gerar_grafico', external=True, id_diag=id_diag, _external=True)
     result["pdf"] = url_for('gerar_relatorio', id_diag=id_diag, _external=True)
+    result["video"] = url_for(
+        'get_file', resource_uri=local_url_video_out, _external=True)
     resp = jsonify(result)
     resp.call_on_close(after_analise)
     print("\nANALISE FINALZIADA!")
@@ -776,7 +781,10 @@ def gerar_relatorio(id_diag):
 
     diag = InterfaceMongo.find_one_with_id(
         mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
-    dados_pdf = diag.get('dados_pdf')
+    dados_pdf = diag.get('dados_pdf', None)
+    if str(dados_pdf) == "None":
+        return make_response("NAO TEM PDF!", BAD_REQUEST)
+
     output = os.path.relpath(os.path.join(
         app.config["TEMP_FOLDER"], dados_pdf["nomePaciente"]), app.config["WKDIR"])
     dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
@@ -794,12 +802,17 @@ def gerar_grafico(id_diag, external=True):
 
     diag = InterfaceMongo.find_one_with_id(
         mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
-    dados_grafico = diag.get('dados_grafico')
+    dados_grafico = diag.get('dados_grafico', None)
+    if str(dados_grafico) == "None":
+        return make_response("NAO TEM GRAFICO!", BAD_REQUEST)
+
     vel_esq, vel_dir, titulo, time = dados_grafico["vel_esq"], dados_grafico[
         "vel_dir"], dados_grafico["titulo"], dados_grafico["time"]
 
     path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
+    print(f"PATH_GRAF: {path_graf}\n\n")
     uri_graf = make_storage_url(path_graf)
+    print(f"URI DO GRAF: {uri_graf}\n\n")
     if external:
         return get_file(uri_graf)
     else:

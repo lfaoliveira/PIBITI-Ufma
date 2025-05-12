@@ -5,9 +5,16 @@
 
     <OverlayAviso
       class="overlay-aviso"
-      :eventoAviso="'videoErrado'"
+      :eventoAviso="'formatoErrado'"
       :titulo="'Formato de vídeo não suportado!'"
       :subtexto="`Formatos aceitos: ${this.extensoes}`"
+      :srcImg="'src/assets/alert_circle.png'"
+    ></OverlayAviso>
+    <OverlayAviso
+      class="overlay-aviso"
+      :eventoAviso="'tamanhoErrado'"
+      :titulo="'Vídeo muito grande!'"
+      :subtexto="`Tamanho máximo: 50MB`"
       :srcImg="'src/assets/alert_circle.png'"
     ></OverlayAviso>
     <main>
@@ -124,7 +131,11 @@ import Rodape from "../auxiliares/Rodape.vue";
 import OverlayAviso from "../auxiliares/OverlayAviso.vue";
 import emitter from "../../eventBus";
 
-const eventoVideoErrado = "videoErrado";
+const eventoFormatoErrado = "formatoErrado";
+const eventoTamanhoErrado = "tamanhoErrado";
+
+//em bytes
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
 export default {
   name: "fichaDiag",
@@ -152,7 +163,7 @@ export default {
       return (
         this.nomePac !== "" &&
         this.paralisia !== "" &&
-        this.videoObj !== null &&
+        this.videoObj != null &&
         this.videoObj != undefined &&
         (Boolean(this.olhoEsquerdo) != false || Boolean(this.olhoDireito) != false)
       );
@@ -170,9 +181,13 @@ export default {
       this.$router.push({ name: "PaginaCarregando" });
     },
     getVideo($evt) {
-      //checagem por tipos de video
+      //checagem por tipos de video e tamanho
       const file = $evt.target.files[0];
-
+      if (file.size > MAX_FILE_SIZE) {
+        emitter.emit(eventoTamanhoErrado);
+        this.videoObj = null;
+        return;
+      }
       if (file) {
         const filename = String(file.name).toLowerCase();
         const ext = filename.split(".")[1];
@@ -180,7 +195,7 @@ export default {
         if (this.extensoes.includes(`${ext}`)) {
           this.videoObj = file;
         } else {
-          emitter.emit(eventoVideoErrado);
+          emitter.emit(eventoFormatoErrado);
           this.videoObj = null;
         }
       }

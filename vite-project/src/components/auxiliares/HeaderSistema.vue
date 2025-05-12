@@ -23,9 +23,14 @@
         </li>
       </template>
       <transition name="slide">
-        <li ref="opcoes" class="lista-opcoes" v-show="this.isOpen || !this.telaPequena">
-          <div v-if="!this.logado" class="nav-item">
+        <li
+          ref="opcoes"
+          class="lista-opcoes"
+          v-show="this.isOpen || !this.telaPequena || this.logado == false"
+        >
+          <div v-if="this.logado == false" class="nav-item">
             <a
+              class="acesso"
               :class="{ active: activeIndex === itensEsquerdo.length }"
               @click="setActive('Acessar Sistema')"
               >Acessar Sistema</a
@@ -78,7 +83,6 @@ export default {
   },
   mounted() {
     //executar checagem se esta logado
-    this.logado = this.$store.getters.getLogado;
     this.emAnalise = this.$route.path === "/analise";
     this.mostrarHamburguer();
     // this.clickMenu();
@@ -87,6 +91,7 @@ export default {
       this.mostrarHamburguer();
       this.$forceUpdate();
     });
+    this.logado = this.$store.getters.getLogado;
   },
   methods: {
     setActive(nome) {
@@ -280,5 +285,24 @@ export default {
   cursor: pointer;
   font-weight: 800;
   text-decoration: underline;
+}
+@media (max-width: 940px), (max-height: 940px) {
+  .nav-item a {
+    padding: 0px;
+  }
+  .lado-direito:has(.acesso) {
+    height: clamp(5vmin, 70px, 10vmin);
+    padding: clamp(0.2%, 10px, 1%) 0px;
+
+    .lista-opcoes {
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+    .acesso {
+      margin-right: clamp(2vmin, 20px, 2%);
+      padding: 0px;
+    }
+  }
 }
 </style>

@@ -1,4 +1,3 @@
-version: "3.8"
 name: SISTEMA_WEB_PIBITI
 services:
     flask: # Flask + Tensorflow
