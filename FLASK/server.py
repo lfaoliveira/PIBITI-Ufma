@@ -27,6 +27,7 @@ import numpy as np
 from pdf import Converter
 from drive import GoogleDrive
 from concurrent.futures import ThreadPoolExecutor
+from _email import MailHandler
 
 
 class Helper:
@@ -298,8 +299,10 @@ app.config.update(
     MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
     MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER')
 )
-
+# OBJETO DO FLASK_MAIL
 mail = Mail(app)
+# HANDLER DE EMAILS
+MAILHANDLER = MailHandler(mail)
 """ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
@@ -948,6 +951,8 @@ def autenticar():
 
         medicos.insert_one({"email": email, "nome": nome,
                             "crm": crm, "senha": senha})
+        # ENVIAR EMAIL DE CADASTRO PARA ADMIN E USUÁRIO
+
         return "CADASTRADO"
 
     else:
