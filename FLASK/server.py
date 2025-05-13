@@ -381,7 +381,6 @@ def teste_pdf():
     conv = Converter()
     try:
         filename = "diagnostico.pdf"
-        # TODO: ARMAZENAR PDF NO GOOGLE DRIVE
         string_html = conv.insert_text_by_class(dict_input_weasy)
 
         # base_url = 'file://' + app.static_folder
@@ -467,7 +466,6 @@ def get_file_drive(id_file):
         limite_mega = 20*1024*1024  # (20 MB)
         print("PEGANDO ARQUIVO!")
         file_generator, filename = drive.download_file(id_file)
-        # TODO: IMPLEMENTAR LOGICA DE STREAM AO ENVIAR ARQUIVOS MUITO GRANDES!!!!
         print("DEPOIS DOWNLOAD")
         return Response(
             stream_with_context(file_generator),
@@ -673,7 +671,6 @@ def analisar():
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
 
-    # TODO: ARMAZENAR DADOS PDF NO DB
     # path_pdf = os.path.join(
     #     app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
 
@@ -951,7 +948,7 @@ def autenticar():
 
         medicos.insert_one({"email": email, "nome": nome,
                             "crm": crm, "senha": senha})
-        # ENVIAR EMAIL DE CADASTRO PARA ADMIN E USUÁRIO
+        # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
 
         return "CADASTRADO"
 

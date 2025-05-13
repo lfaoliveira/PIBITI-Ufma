@@ -6,27 +6,27 @@ SOURCE_HTML = "FLASK\\assets\\template-email.html"
 # TODO: MUDAR TITULO DO APLICATIVO!!!!!!!!!!!!!
 TITULO_APP = "<<TITULO DO APP>>"
 
+CORPO = "corpo-texto"
+BOTOES = "botoes"
+
 
 class MailHandler:
     def __init__(self, flask_mail):
         self.mailer = flask_mail
-
-    def format_html(self, class_value_mapper: dict):
         with open(SOURCE_HTML, 'r', encoding='utf-8') as file:
             html_content = file.read()
-        parser = BeautifulSoup(html_content, 'html.parser')
+        self.parser = BeautifulSoup(html_content, 'html.parser')
+
+    def format_html(self, class_value_mapper: dict):
         # substitui valores no HTML
         for classe, valor in class_value_mapper.items():
-            elements = parser.find_all(class_=classe)
+            elements = self.parser.find_all(class_=classe)
             for element in elements:
-                if element.name.lower() == "img":
-                    element['src'] = valor
-                    continue
                 # Remove existing content.
                 element.clear()
                 element.append(str(valor))
         # Return the modified HTML as a string.
-        return str(parser)
+        return str(self.parser)
 
     def enviar_email_usuario(self, tipo: Literal['recuperar', 'cadastroOK', 'cadastroInvalido']):
 
@@ -49,6 +49,44 @@ class MailHandler:
             texto_botao = "Link do suporte"
         else:
             raise ValueError(f"TIPO: {tipo} NAO EXISTE!")
+
+    def add_h2(self, lista_texto):
+
+        corpo = self.parser.find_all(class_=CORPO)[0]
+        for texto in lista_texto:
+            h2_tag = self.parser.new_tag("h2")
+            h2_tag.string = texto
+            corpo.append(h2_tag)
+        return str(self.parser)
+
+    def reset_parser(self):
+        with open(SOURCE_HTML, 'r', encoding='utf-8') as file:
+            html_content = file.read()
+        self.parser = BeautifulSoup(html_content, 'html.parser')
+
+    def add_botao(self, dict_link: dict[str, str]):
+        """
+        dict_link: dict[str, str] key=texto, value=url
+        """
+
+        botoes = self.parser.find_all(class_=BOTOES)[0]
+        for texto, link in dict_link.items():
+            td_tag = self.parser.new_tag("td")
+            td_tag.string = texto
+            botoes.append(td_tag)
+            button_tag = self.parser.new_tag("button")
+            button_tag.string = texto
+            button_tag['onclick'] = f"location.href='{link}'"
+            td_tag.append(button_tag)
+
+    def add_table(self, entries):
+        """
+        Adiciona table e entradas ao corpo do texto
+        """
+        corpo = self.parser.find_all(class_=CORPO)[0]
+        table_tag = self.parser.new_tag("table")
+        corpo.append(table_tag)
+        for entry in entries:
 
     def enviar_email_admin(self, email_med, nome_med, crm):
         texto_cad = "Novo cadastro:"

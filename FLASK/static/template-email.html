@@ -1,82 +1,14 @@
-<!-- <!DOCTYPE html>  
-<head>
-    <meta charset="utf-8" lang="pt">
-    <title>Email</title>
-</head>
-
-<body>
-    <style>
-        *{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
-        }
-    </style>
-<table class="frame-pagina">
-    <header>
-        <div class="div-logo">
-            <img class="logo" src="adadawd">
-        </div>
-    </header>
-    <main>
-      
-      <section class="login">
-        <h1>Fazer Login</h1>
-        <form >
-          <div class="form-group">
-            <label>Email</label>
-          </div>
-          <div class="form-group">
-            <label>Senha</label>
-          </div>
-          
-          <a href="/esqueceuSenha" id="esqueci">Esqueci minha senha</a>
-          <p id="semLogin">
-            Não Possui Login?
-            <a >Cadastre-se</a>
-          </p>
-
-        </form>
-      </section>
-      
-      <section class="sec-cadastro">
-        <h1>Cadastro</h1>
-        <form class="form-cadastro">
-          <div class="form-group">
-            <label>Email</label>
-            <p class="erro"></p>
-          </div>
-          <div class="form-group">
-            <label>Nome Completo</label>
-          </div>
-
-          <div class="form-group">
-            <label>CRM</label>
-          </div>
-
-          <Button
-            class="but-cadastro"
-            type="submit"
-            :ativo="checkCampos()"
-            texto="Cadastro"
-          ></Button>
-        </form>
-      </section>
-    </main>
-
-    <footer>
-        <img class="logo-vip">
-        <img class="logo-ufma">
-        <img class="logo-nca">
-    </footer>
-  </table>
-</body> -->
-
-
 <!DOCTYPE html>
 <html lang="pt" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Email Template</title>
+  <style>
+        *{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+        }
+  </style>
 </head>
 <body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, sans-serif;">
 
@@ -103,21 +35,16 @@
           
           <!-- Body -->
           <tr>
+            <!-- ADICIONAR HTML AQUI CONFORME NECESSÁRIO -->
             <td class="corpo-texto" style="padding: 20px; color: #333333; font-size: 16px; line-height: 1.5;">
               
             </td>
           </tr>
-          
+          <!-- BOTOES -->
           <tr>
-            <td class="botoes" style="padding: 20px; color: #333333; font-size: 16px; line-height: 1.5;">
+            <td style="padding: 20px; color: #333333; font-size: 16px; line-height: 1.5;">
               <table>
-                <tr>
-                    <td>
-                        <button class="botao-esq"> TEXTO</button>
-                    </td>
-                    <td>
-                        <button class="botao-dir">TEXTO DIR</button>
-                    </td>
+                <tr class="botoes">
                 </tr>
               </table>
             </td>
@@ -126,7 +53,6 @@
           <!-- Footer -->
           <tr>
             <td class="rodape" align="center" bgcolor="#ffffff" style="padding: 15px; font-size: 12px; color: #ffffff;">
-
                 <table>
                 <tr>
                     <td >
@@ -140,7 +66,6 @@
                     </td>
                 </tr>
               </table>
-              
             </td>
           </tr>
           
