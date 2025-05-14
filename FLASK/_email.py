@@ -8,6 +8,9 @@ TITULO_APP = "<<TITULO DO APP>>"
 
 CORPO = "corpo-texto"
 BOTOES = "botoes"
+URL_RECUP_SENHA = ""
+URL_HOMEPAGE = ""
+URL_SUPORTE = ""
 
 
 class MailHandler:
@@ -37,22 +40,30 @@ class MailHandler:
         texto1 = ""
         texto2 = ""
         texto_botao = ""
-
+        link = ""
         if tipo == 'recuperar':
             texto1 = "Clique no link abaixo para recuperar sua senha."
             texto2 = "Se não foi você, por favor não clique no link e nos avise por meio deste email: "
             texto_botao = "Recuperar Senha"
+            link = URL_RECUP_SENHA
 
         elif tipo == 'cadastroOK':
             texto1 = "Seu cadastro foi validado com sucesso!"
             texto2 = "Agora você pode salvar seus diagnósticos em nosso site "
             texto_botao = "Link do site"
+            link = URL_HOMEPAGE
+
         elif tipo == 'cadastroInvalido':
             texto1 = "Seu cadastro estava inválido!"
             texto2 = "Verifique se seu nome ou CRM estavam corretos e tente novamente."
             texto_botao = "Link do suporte"
+            link = URL_SUPORTE
         else:
             raise ValueError(f"TIPO: {tipo} NAO EXISTE!")
+
+        lista_texto = [texto1, texto2]
+        self.add_h2(lista_texto)
+        self.add_botao({texto_botao: link})
 
     def add_h2(self, lista_texto):
 
