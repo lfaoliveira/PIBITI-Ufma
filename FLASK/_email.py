@@ -17,6 +17,11 @@ class MailHandler:
             html_content = file.read()
         self.parser = BeautifulSoup(html_content, 'html.parser')
 
+    def reset_parser(self):
+        with open(SOURCE_HTML, 'r', encoding='utf-8') as file:
+            html_content = file.read()
+        self.parser = BeautifulSoup(html_content, 'html.parser')
+
     def format_html(self, class_value_mapper: dict):
         # substitui valores no HTML
         for classe, valor in class_value_mapper.items():
@@ -29,7 +34,6 @@ class MailHandler:
         return str(self.parser)
 
     def enviar_email_usuario(self, tipo: Literal['recuperar', 'cadastroOK', 'cadastroInvalido']):
-
         texto1 = ""
         texto2 = ""
         texto_botao = ""
@@ -59,16 +63,10 @@ class MailHandler:
             corpo.append(h2_tag)
         return str(self.parser)
 
-    def reset_parser(self):
-        with open(SOURCE_HTML, 'r', encoding='utf-8') as file:
-            html_content = file.read()
-        self.parser = BeautifulSoup(html_content, 'html.parser')
-
     def add_botao(self, dict_link: dict[str, str]):
         """
         dict_link: dict[str, str] key=texto, value=url
         """
-
         botoes = self.parser.find_all(class_=BOTOES)[0]
         for texto, link in dict_link.items():
             td_tag = self.parser.new_tag("td")
@@ -79,14 +77,24 @@ class MailHandler:
             button_tag['onclick'] = f"location.href='{link}'"
             td_tag.append(button_tag)
 
-    def add_table(self, entries):
+        return str(self.parser)
+
+    def add_table(self, entries: list[str]):
         """
-        Adiciona table e entradas ao corpo do texto
+        Adiciona ao corpo do texto table e entradas(texto)
         """
         corpo = self.parser.find_all(class_=CORPO)[0]
-        table_tag = self.parser.new_tag("table")
-        corpo.append(table_tag)
+        table = self.parser.new_tag("table")
         for entry in entries:
+            table_row = self.parser.new_tag("tr")
+            td_tag = self.parser.new_tag("td")
+            td_tag.text = entry
+            td_tag['style'] = "margin: 5px;"
+            table_row.append(td_tag)
+            table.append(table_row)
+
+        corpo.append(table)
+        return str(self.parser)
 
     def enviar_email_admin(self, email_med, nome_med, crm):
         texto_cad = "Novo cadastro:"
