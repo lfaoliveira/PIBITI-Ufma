@@ -10,6 +10,7 @@ import Acesso from './components/Acesso.vue';
 import FichaDiag from './components/analise/FichaDiag.vue';
 import Perfil from './components/nav/Perfil.vue';
 import EsqueciSenha from './components/auxiliares/EsqueciSenha.vue';
+import MudarSenha from './components/auxiliares/MudarSenha.vue';
 
 
 
@@ -47,6 +48,9 @@ const routes = [
     },
     {
         name: 'EsqueciSenha', path: '/esqueceuSenha',  component: EsqueciSenha
+    },
+    {
+        name: 'MudarSenha', path: '/mudarSenha',  component: MudarSenha
     },
 ];
 

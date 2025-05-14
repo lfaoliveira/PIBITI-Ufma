@@ -12,26 +12,26 @@
         :eventoAviso="'falha'"
         :titulo="'Email Inválido!'"
         :subtexto="''"
-        :srcImg="'src/assets/alert_circle.png'"
+        :srcImg="'src/assets/check_circle.png'"
       ></OverlayAviso>
 
-      <h1>Recuperar Senha</h1>
-      <form @submit.prevent="recuperarSenha" name="FORM RECUPERAR">
+      <h1>Recuperar Senah</h1>
+      <form @submit.prevent="recuperarSenha">
         <div class="form-group">
           <label>Email</label>
           <input
             @input="checkEmail"
             type="text"
-            v-model="email"
+            v-model="this.email"
             placeholder="exemplo@email.com"
           />
-          <p v-if="erro" class="erro">Insira um email válido!</p>
+          <p v-if="this.erro" class="erro">Insira um email válido!</p>
         </div>
-        <Button type="submit" :ativo="!erro" texto="Recuperar"></Button>
+        <Button type="submit" :ativo="!this.erro" texto="Recuperar"></Button>
       </form>
     </main>
 
-    <Rodape />
+    <Rodape class="roda" />
   </section>
 </template>
 
@@ -55,18 +55,20 @@ export default {
     Button,
     Rodape,
   },
+  created() {},
   data() {
     return {
       email: "",
       erro: false,
     };
   },
-  mounted() {
-    console.log("MONTADO ESQUECI");
+  props: {
+    emailUsuario: "",
   },
   methods: {
     checkEmail() {
       const emailRegex = /^[\w]+@[\w]+\.[\w]+$/;
+      //tira espacos
       this.email = this.email.replace(/\s/, "");
       let passou = emailRegex.test(this.email);
 
@@ -75,24 +77,22 @@ export default {
       this.erro = !passou;
       return passou;
     },
-    async recuperarSenha() {
-      const form = new FormData();
-      const urlFront = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/mudarSenha`;
-      form.append("email", this.email);
-      form.append("url_front", urlFront);
-      console.log("ENTROU");
-      try {
-        console.log("TENTANDO");
-        const res = await axios.post(this.$store.getters.getUrlEsqueciSenha, form);
-        if (res.status == 200) {
-          emitter.emit(eventoSucesso);
-        }
-      } catch (error) {
-        console.log("ERROR: ", error);
-
+  },
+  // chama backend pra mandar email pro medico
+  async recuperarSenha() {
+    const form = new FormData();
+    form.append("email", this.email);
+    try {
+      const res = await axios.post(this.store.getters.getUrlEsqueciSenha, form);
+      if (res.status == 200) {
+        emitter.emit(eventoSucesso);
+      }
+    } catch {
+      if (res.status == 400) {
+        // TODO: EMITIR EVENTO DE AVISO QUE EMAIL NÃO EXISTE
         emitter.emit(eventoFalha);
       }
-    },
+    }
   },
 };
 </script>

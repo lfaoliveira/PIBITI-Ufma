@@ -406,7 +406,7 @@ def teste_pdf():
         return make_response("An error occurred during PDF creation.", INTERNAL_SERVER_ERROR)
 
 
-@app.route("/deletar_tudo")
+""" @app.route("/deletar_tudo")
 def deletar_tudo():
     # drive.upload_to_drive("requirements.txt", ROOT_DRIVE)
     files = drive.fetch_drive_files().copy()
@@ -422,19 +422,14 @@ def deletar_tudo():
         else:
             print(f"NAO CONSEGUI: {file.get('name')}")
     print(drive.fetch_drive_files())
-    return make_response("OK", OK)
+    return make_response("OK", OK) """
 
 
-@app.route("/teste_arq")
+@app.route("/teste_email")
 def teste_folder():
     try:
-        file_path = "requirements.txt"
-        if os.path.exists(file_path):
-            drive.upload_to_drive(file_path, nomes_parents=[
-                                  "TESTE", "DENTRO"], resumable=False)
-        else:
-            print(f"File '{file_path}' does not exist.")
-        print(drive.fetch_drive_files())
+        MAILHANDLER.enviar_email_usuario(
+            "recuperar")
         return make_response("OK", OK)
 
     except Exception as e:
@@ -442,7 +437,7 @@ def teste_folder():
         return make_response("DEU ALGUMA COISA ERRADA", INTERNAL_SERVER_ERROR)
 
 
-@app.route("/teste_mongo")
+@app.route("/teste_esquecer")
 def teste2():
     diags = mongo.db.get_collection(COLLECTION_DIAGS)
     for diag in diags.find():
@@ -934,7 +929,6 @@ def autenticar():
             # Add session creation timestamp
             session['_creation_time'] = time.time()
             session.modified = True  # Ensure session is saved
-            print(session)
             return "OK"
         else:
             return make_response('INCORRETO', UNAUTHORIZED)
@@ -959,9 +953,22 @@ def autenticar():
 @app.route("/esqueci_senha", methods=["POST"])
 def esqueci():
     emailDestino = request.form.get('email', None)
+    url_front = request.form.get('url_front', None)
+
+    print(f"URL FRONT: {url_front}")
     if emailDestino:
-        pass
         # TODO:  codigo para enviar email de recuperacao para medico
+        medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
+        medico = medicos.find_one({"email": emailDestino})
+        if medico is None:
+            return make_response("EMAIL NAO EXISTE", BAD_REQUEST)
+        assunto = "Recuperação de Senha"
+
+        MAILHANDLER.enviar_email_usuario(
+            'recuperar', emailDestino, assunto, url_front)
+        return make_response("OK", OK)
+    else:
+        return make_response("Email Inválido!", BAD_REQUEST)
 
 
 @app.route("/mudar_senha", methods=["PUT"])
@@ -969,9 +976,20 @@ def mudar_senha():
     email = request.form.get('email', None)
     novaSenha = request.form.get('novaSenha', None)
     if novaSenha is None or email is None:
-        return make_response("", UNAUTHORIZED)
+        return make_response(f"INPUT NULO!", UNAUTHORIZED)
     novaSenha = alg_hash(novaSenha.encode('utf-8')).hexdigest()
-    # TODO: codigo pra atulizar senha do usuario
+
+    medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
+    medico = medicos.find_one({"email": email})
+
+    if medico == None:
+        return make_response("EMAIL NAO EXISTE", BAD_REQUEST)
+    else:
+        medicos.update_one(
+            {"email": email},
+            {"$set": {"senha": novaSenha}}
+        )
+        return make_response("", OK)
 
 
 @app.route("/val_login", methods=["GET"])
