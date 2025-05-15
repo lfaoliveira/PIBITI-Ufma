@@ -9,7 +9,6 @@ from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
 from flask import Flask, make_response, redirect, session, jsonify, request, url_for, abort, Response, stream_with_context
-from flask_session import Session
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
@@ -276,6 +275,8 @@ if app.secret_key is None:
 alg_hash = hashlib.sha3_256
 
 # TODO: MUDAR SEGURANÇA DOS COOKIES QUANO FOR PRO DEPLOY
+# SESSÃO PADRÃO DO FLASK
+# NOTE: FLASK < 3.1 não tem suporte pra cookies Partitioned
 """-------CONFIGS DE SESSAO---------------"""
 app.config.update(
     SESSION_PERMANENT=True,
@@ -288,7 +289,6 @@ app.config.update(
     SESSION_TYPE="filesystem",
 )
 
-# Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.session_protection = 'basic'
@@ -959,7 +959,6 @@ def autenticar():
 
         medicos.insert_one({"email": email, "nome": nome,
                             "crm": crm, "senha": senha})
-        # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
 
         return "CADASTRADO"
 
@@ -1002,9 +1001,25 @@ def autenticar():
 
         user_obj = User(email)
         login_user(user_obj, remember=True)
+
+        # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
+        MAILHANDLER.enviar_email_admin(email, nome, crm)
+
         return make_response("CADASTRADO", OK)
     else:
         return make_response("Tipo inválido", BAD_REQUEST)
+
+
+@app.route("/aceitaCadastro/<email_medico>", methods=["POST"])
+def cadastroOK():
+    # TODO: ENVIAR EMAIL AVISANDO
+    pass
+
+
+@app.route("/recusaCadastro/<email_medico>", methods=["POST"])
+def cadastroOK():
+    # TODO: ENVIAR EMAIL AVISANDO
+    pass
 
 
 @app.route("/esqueci_senha", methods=["POST"])

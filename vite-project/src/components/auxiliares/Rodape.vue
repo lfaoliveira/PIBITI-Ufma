@@ -33,7 +33,7 @@
     </ul>
     <nav class="footer-nav">
       <!-- TODO: MUDAR EMAIL DE CONTATO-->
-      <a href="mailto:contato@email.ufma.br" class="footer-link">Suporte</a>
+      <a href="mailto:viplab.psno@nca.ufma.br" class="footer-link">Suporte</a>
       <a href="/termos" target="_blank" class="footer-link">Termos e Condições</a>
       <a href="/duvidas" target="_blank" class="footer-link">Sobre</a>
     </nav>

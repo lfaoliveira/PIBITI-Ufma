@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from flask_mail import Mail, Message
 from typing import Literal
+import time
 
 SOURCE_HTML = ".\\static\\template-email.html"
 # TODO: MUDAR TITULO DO APLICATIVO!!!!!!!!!!!!!
@@ -118,15 +119,24 @@ class MailHandler:
         return
 
     def enviar_email_admin(self, email_med, nome_med, crm):
-        texto_cad = "Novo cadastro:"
-        texto_email = f"Email: {email_med}"
-        texto_nome = f"Nome: {nome_med}"
-        texto_crm = f"CRM: {crm}"
-        self.add_table([texto_cad, texto_email, texto_nome, texto_crm])
-        self.add_anchor({"Aceitar": "/2", "Recusar": "/3"})
-        self.enviar_email(str(self.parser),
-                          "luisfelipearaujo503@gmail.com", "TESTE EMAIL ADMIN")
-        self.reset_parser()
+        try:
+
+            texto_cad = "Novo cadastro:"
+            texto_email = f"Email: {email_med}"
+            texto_nome = f"Nome: {nome_med}"
+            texto_crm = f"CRM: {crm}"
+            # TODO: CRIAR URL de aceitacao e recusa de cadastro
+            self.add_table([texto_cad, texto_email, texto_nome, texto_crm])
+            self.add_anchor({"Aceitar": "/2", "Recusar": "/3"})
+            self.enviar_email(str(self.parser),
+                              "luisfelipearaujo503@gmail.com", "TESTE EMAIL ADMIN")
+            self.reset_parser()
+            return True
+
+        except Exception as e:
+            print(e)
+            time.sleep(2)
+            return self.enviar_email_admin(email_med, nome_med, crm)
 
     def enviar_email(self, html, destino, assunto):
         try:
