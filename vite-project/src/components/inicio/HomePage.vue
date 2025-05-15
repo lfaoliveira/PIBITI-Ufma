@@ -141,6 +141,8 @@ export default {
   data() {
     return {};
   },
-  mounted() {},
+  mounted() {
+    console.log("MONTADO HOMEPAGE");
+  },
 };
 </script>

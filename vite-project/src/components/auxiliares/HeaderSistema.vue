@@ -10,9 +10,9 @@
       </li>
     </ul>
     <ul ref="ladoDireito" class="lado-direito">
-      <template v-if="this.logado && this.telaPequena">
+      <template v-if="this.logado">
         <li class="div-hamburguer">
-          <button class="button-hamburguer" @click="this.clickMenu">
+          <button class="button-hamburguer" @click="clickMenu">
             <img
               class="img-hamburguer"
               :src="
@@ -26,7 +26,7 @@
         <li
           ref="opcoes"
           class="lista-opcoes"
-          v-show="this.isOpen || !this.telaPequena || this.logado == false"
+          v-show="this.isOpen || this.logado == false"
         >
           <div v-if="this.logado == false" class="nav-item">
             <a
@@ -41,6 +41,11 @@
               >Perfil</a
             >
           </div>
+
+          <div class="nav-item" v-if="this.logado">
+            <Sair></Sair>
+          </div>
+
           <div class="nav-item" v-if="this.logado">
             <Salvar @click="fnBaixar" :modo="this.modoSalvar"></Salvar>
           </div>
@@ -51,15 +56,18 @@
 </template>
 
 <script>
-import axios from "axios";
 import Salvar from "../icons/Salvar.vue";
 import Voltar from "../icons/Voltar.vue";
+import Sair from "../icons/Sair.vue";
+
+import axios from "axios";
 
 export default {
   name: "HeaderSistema",
   components: {
     Salvar,
     Voltar,
+    Sair,
   },
   data() {
     return {
@@ -84,14 +92,8 @@ export default {
   mounted() {
     //executar checagem se esta logado
     this.emAnalise = this.$route.path === "/analise";
-    this.mostrarHamburguer();
-    // this.clickMenu();
-
-    window.addEventListener("resize", () => {
-      this.mostrarHamburguer();
-      this.$forceUpdate();
-    });
     this.logado = this.$store.getters.getLogado;
+    console.log("ANALISe");
   },
   methods: {
     setActive(nome) {
@@ -119,22 +121,6 @@ export default {
         console.log(res.data, typeof res.data);
       } else {
         alert("Nao foi possível encontrar realtório!");
-      }
-    },
-    mostrarHamburguer() {
-      this.telaPequena = window.innerWidth < 940 || window.innerHeight < 940;
-      if (this.telaPequena) {
-        // tem menu
-        this.$refs.ladoDireito.classList.add("dir-peq");
-        this.$refs.ladoDireito.classList.remove("dir-grande");
-        this.$refs.opcoes.classList.add("opcoes-peq");
-        this.$refs.opcoes.classList.remove("opcoes-grande");
-      } else {
-        // nao tem menu
-        this.$refs.ladoDireito.classList.add("dir-grande");
-        this.$refs.ladoDireito.classList.remove("dir-peq");
-        this.$refs.opcoes.classList.add("opcoes-grande");
-        this.$refs.opcoes.classList.remove("opcoes-peq");
       }
     },
     clickMenu() {
@@ -168,6 +154,7 @@ export default {
   }
   &:has(.div-hamburguer) {
     max-height: 8vmin;
+    padding-right: 10vmin;
 
     .button-hamburguer {
       background: none;
@@ -213,28 +200,9 @@ export default {
 .lista-opcoes {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   transition: transform 0.3s, opacity 0.1s;
-}
-
-.opcoes-peq {
-  flex-direction: column;
-  align-items: flex-end;
-}
-.opcoes-grande {
-  flex-direction: row;
-  align-items: center;
-  gap: 3vmin;
-}
-
-.opcoes-peq {
-  flex-direction: column;
-  align-items: flex-end;
-}
-.opcoes-grande {
-  flex-direction: row;
-  align-items: center;
-  gap: 3vmin;
+  padding-right: 1vmin;
 }
 
 .header {
@@ -255,26 +223,12 @@ export default {
   background: #0e0021;
   height: max-content;
   padding: 0px;
-  width: clamp(200px, 36vmin, 320px);
+  //   width: clamp(200px, 36vmin, 320px);
   display: flex;
   align-items: flex-end;
+  flex-direction: column;
+  width: fit-content;
   gap: 3vmin;
-}
-
-.dir-grande {
-  flex-direction: row;
-}
-.dir-peq {
-  flex-direction: column;
-  width: fit-content;
-}
-
-.dir-grande {
-  flex-direction: row;
-}
-.dir-peq {
-  flex-direction: column;
-  width: fit-content;
 }
 
 .nav-item a {

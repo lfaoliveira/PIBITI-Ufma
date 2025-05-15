@@ -12,6 +12,27 @@ import App from './App.vue'
 
 const app = createApp(App);
 
-app.use(router).use(store) // Use  router, vue-store and vue-cookies in the app
+// Global navigation guard
+router.beforeEach(async (to, from, next) => {
+  try {
+    const response = await axios.get(store.getters.getUrlChecklogin, {
+      withCredentials: true,
+    });
+    if (response.status === 200) {
+      store.commit('setLogado', true);
+      console.log("200")
+    } else {
+      store.commit('setLogado', false);
+    }
+  } catch (error) {
+    store.commit('setLogado', false);
+  }
+  next();
+});
+
+
+app.use(router)
+app.use(store)
+// Use  router, vue-store and vue-cookies in the app
 app.mount('#app');
 

@@ -1,3 +1,4 @@
+from flask import current_app
 from datetime import datetime
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
@@ -7,7 +8,7 @@ from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, make_response, render_template, session, jsonify, request, send_from_directory, url_for, abort, send_file, Response, stream_with_context
+from flask import Flask, make_response, redirect, session, jsonify, request, url_for, abort, Response, stream_with_context
 from flask_session import Session
 from flask_pymongo import PyMongo
 import gridfs
@@ -260,7 +261,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
-app.config["SESSION_TYPE"] = "filesystem"
+
 mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
@@ -281,12 +282,14 @@ alg_hash = hashlib.sha3_256
 
 # TODO: MUDAR SEGURANCÇA DOS COOKIES QUANO FOR PRO DEPLOY
 """-------CONFIGS DE SESSAO---------------"""
+app.config["SESSION_TYPE"] = "filesystem"
 app.config.update(
     SESSION_COOKIE_SECURE=True,  # Set to True in production with HTTPS
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='None',
     PERMANENT_SESSION_LIFETIME=timedelta(days=7)
 )
+
 
 Session(app)
 # CONFIGS DE EMAIL
@@ -1024,12 +1027,14 @@ def val_login():
 
 
 @app.route("/logout", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def logout():
     try:
-        session.pop('user_id', None)
-        return make_response('', OK)
+        session.clear()
+        return redirect(url_for('val_login'))
     except Exception as e:
-        return abort(INTERNAL_SERVER_ERROR)
+        print(f"EXCEPTION!!!: {e}")
+        return make_response("", INTERNAL_SERVER_ERROR)
 
 
 if __name__ == "__main__":
