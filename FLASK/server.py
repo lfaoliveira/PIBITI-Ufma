@@ -291,6 +291,8 @@ app.config.update(
 # Session(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.session_protection = 'basic'
+
 
 # CONFIGS DE EMAIL
 app.config.update(
@@ -979,7 +981,7 @@ def autenticar():
         usuario = medicos.find_one({"email": email})
         if usuario and usuario.get("senha") == alg_hash(senha.encode('utf-8')).hexdigest():
             user_obj = User(email)
-            login_user(user_obj)
+            login_user(user_obj, remember=True)
             return make_response("LOGADO", OK)
         else:
             return make_response("Credenciais inválidas", UNAUTHORIZED)
@@ -999,7 +1001,7 @@ def autenticar():
                            "crm": crm, "senha": senha_hash})
 
         user_obj = User(email)
-        login_user(user_obj)
+        login_user(user_obj, remember=True)
         return make_response("CADASTRADO", OK)
     else:
         return make_response("Tipo inválido", BAD_REQUEST)
@@ -1088,17 +1090,17 @@ def val_login():
         print("USUÁRIO NÃO AUTENTICADO OU SESSÃO EXPIRADA")
         return make_response("False", UNAUTHORIZED)
     else:
-        return make_response("LOGADO", OK)
-    '''
+        '''
         # Check if user exists in database
         usuario = InterfaceMongo.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), str(current_user.id))
         if usuario is not None and current_user.is_authenticated:
-            
+
         else:
             print("USUARIO INEXISTE OU SESSAO EXPIRADA!!!!!")
             return make_response("False", INTERNAL_SERVER_ERROR)
-    '''
+        '''
+        return make_response("LOGADO", OK)
 
 
 @app.route("/logout")

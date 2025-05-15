@@ -222,20 +222,24 @@ export default {
         form.append("email", this.email);
         form.append("senha", this.senha);
         //SEMPRE ver se precisa de credenciais na requisicao
-        const res = await axios.post(this.$store.getters.getUrlLogin, form, {
-          withCredentials: true,
-        });
-        console.log(res);
-        // sucesso login
-        if (res.status === 200) {
-          this.boolErros.senha.login = false;
-          console.log("Sucesso no LOGIN");
-          this.$store.commit("setLogado", true);
-          this.$router.push("/perfil");
-        } else {
-          //erro no login
+        let res = 0;
+        try {
+          res = await axios.post(this.$store.getters.getUrlLogin, form, {
+            withCredentials: true,
+          });
+          console.log(res);
+          // sucesso login
+          if (res.status === 200) {
+            this.boolErros.senha.login = false;
+            console.log("Sucesso no LOGIN");
+            this.$store.commit("setLogado", true);
+            this.$router.push("/perfil");
+          }
+        } catch (e) {
+          console.log("FALHA!");
           this.boolErros.senha.login = true;
         }
+
         ///// CADASTRO
       } else if (this.tipo === "cadastro") {
         const form = new FormData();
