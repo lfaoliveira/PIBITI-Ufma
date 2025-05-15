@@ -84,18 +84,23 @@ export default {
   created() {},
   async mounted() {
     console.log("MONTADO PERFIL");
-    const res2 = await axios.get(this.$store.getters.getPerfil, {
-      params: { pagAtual: this.pagAtual },
-      withCredentials: true,
-    });
+    if (!this.$store.getters.getLogado) {
+      emitter.emit("semLogin");
+    }
+    let res2;
+    try {
+      res2 = await axios.get(this.$store.getters.getPerfil, {
+        params: { pagAtual: this.pagAtual },
+        withCredentials: true,
+      });
+    } catch (e) {
+      console.log("ERRO AO PEGAR PERFIL!");
+    }
     this.entradas = this.ajustarEntradasTabela(res2.data.lista);
     this.nomeMedico = res2.data.nomeMedico;
     this.crm = res2.data.crm;
     console.log("ENTRADAS: ", this.entradas);
     this.maxPags = Math.ceil(this.entradas.length / this.maxItens_Pag);
-    if (!this.$store.getters.getLogado) {
-      emitter.emit("semLogin");
-    }
   },
   methods: {
     baixarRelatorio(evt) {

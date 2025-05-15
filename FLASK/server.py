@@ -10,10 +10,11 @@ import os
 from werkzeug.utils import secure_filename
 from flask import Flask, make_response, redirect, session, jsonify, request, url_for, abort, Response, stream_with_context
 from flask_session import Session
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_pymongo import PyMongo
-import gridfs
 from flask_cors import CORS, cross_origin
 from flask_mail import Mail, Message
+
 import mimetypes
 import hashlib
 from datetime import timedelta
@@ -29,6 +30,7 @@ from pdf import Converter
 from drive import GoogleDrive
 from concurrent.futures import ThreadPoolExecutor
 from _email import MailHandler
+from user import User
 
 
 class Helper:
@@ -265,13 +267,6 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
 mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
-fs = gridfs.GridFS(mongo.db)
-
-
-def upload_file(file_path):
-    with open(file_path, "rb") as file_data:
-        file_id = fs.put(file_data, filename=os.path.basename(file_path))
-        print(f"File uploaded successfully with ID: {file_id}")
 
 
 # SEGURANÇA
@@ -280,18 +275,23 @@ if app.secret_key is None:
     exit(1)
 alg_hash = hashlib.sha3_256
 
-# TODO: MUDAR SEGURANCÇA DOS COOKIES QUANO FOR PRO DEPLOY
+# TODO: MUDAR SEGURANÇA DOS COOKIES QUANO FOR PRO DEPLOY
 """-------CONFIGS DE SESSAO---------------"""
-app.config["SESSION_TYPE"] = "filesystem"
 app.config.update(
+    SESSION_PERMANENT=True,
     SESSION_COOKIE_SECURE=True,  # Set to True in production with HTTPS
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='None',
-    PERMANENT_SESSION_LIFETIME=timedelta(days=7)
+    SESSION_USE_SIGNER=True,
+    SESSION_COOKIE_PARTITIONED=True,
+    PERMANENT_SESSION_LIFETIME=timedelta(days=1),
+    SESSION_TYPE="filesystem",
 )
 
+# Session(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
-Session(app)
 # CONFIGS DE EMAIL
 app.config.update(
     MAIL_SERVER=os.environ.get('MAIL_SERVER', 'smtp.example.com'),
@@ -312,7 +312,7 @@ Possível risco de segurança!
 CORS(app, supports_credentials=True)
 # path para arquivos temporarios
 
-print("WeasyPrint: se Aparecer erro: 'Fontconfig error: Cannot load default config file: No such file: (null)', testar se pdfs estao sendo gerados corretamente para ter deploy garantido\n")
+# print("WeasyPrint: se Aparecer erro: 'Fontconfig error: Cannot load default config file: No such file: (null)', testar se pdfs estao sendo gerados corretamente para ter deploy garantido\n")
 print("APP INICIADO")
 
 os.makedirs("tmp", exist_ok=True)
@@ -450,6 +450,11 @@ def teste2():
 @app.route("/")
 def index():
     return "Hello World"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get_user(user_id)
 
 
 @app.route('/get-file-drive/<id_file>', methods=['GET'])
@@ -739,12 +744,18 @@ def analisar():
 
 @app.route("/pega_perfil", methods=["GET"])
 @cross_origin(supports_credentials=True)
+@login_required
 def pega_perfil():
     maxItensPag = 16
     pagAtual = request.args.get('pagAtual', None)
     if pagAtual != None:
         pagAtual = int(pagAtual)
-        id_medico = session['user_id']
+
+        email_medico = str(current_user.id)
+        medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one({
+            "email": email_medico})
+        id_medico = str(medico["_id"])
+        print("ID MEDICO: ", id_medico)
         res = mongo.db.get_collection(COLLECTION_DIAGS).aggregate([
             {
                 '$match': {
@@ -760,7 +771,7 @@ def pega_perfil():
             },
         ], allowDiskUse=True)
         lista_res = list(res)[0]['data']
-        print(f"\n\n{lista_res}\n\n")
+        # print(f"DIAGS: \n\n{lista_res}\n\n")
 
         medico = InterfaceMongo.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
@@ -878,7 +889,7 @@ def envia_diag():
     return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "nome_input": nome_local, "filename": filename}, OK)
 
 
-@app.route("/auth", methods=["POST"])
+'''@app.route("/auth", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def autenticar():
     """
@@ -911,28 +922,29 @@ def autenticar():
     tipo = request.args['tipo']
     # ---------LOGIN--------#
     if tipo == "login":
-        # sessao 'permanente', com duracao de 7 dias
+        # sessao 'permanente', com duracao fixa
         session.permanent = True
         if not email or not senha:
             print("EMAIL OU SENHA INVALIDOS")
-            return abort(UNAUTHORIZED)
+            return make_response("", BAD_REQUEST)
 
         """logica de cookies de sessao"""
         response = requests.get(
             url_for('val_login', _external=True),
             cookies=request.cookies
         )
-        if response.text == 'True':
+        if response.status_code == 200:
             return "OK"
         else:
             print("\nSEM SESSAO\n")
         # cria sessão para o usuario logado
         if usuario != None and senha == usuario['senha']:
-            session['user_id'] = str(usuario['_id'])
             # Add session creation timestamp
             session['_creation_time'] = time.time()
+            session['user_id'] = str(usuario['_id'])
             session.modified = True  # Ensure session is saved
-            return "OK"
+            print("LOGADO")
+            return make_response("LOGADO", OK)
         else:
             return make_response('INCORRETO', UNAUTHORIZED)
     # ------CADASTRO--------#
@@ -950,7 +962,47 @@ def autenticar():
         return "CADASTRADO"
 
     else:
-        return make_response('TIPO DE AUTENTICACAO ERRADO', BAD_REQUEST)
+        return make_response('TIPO DE AUTENTICACAO ERRADO', BAD_REQUEST)'''
+
+
+@app.route("/auth", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def autenticar():
+    tipo = request.args.get("tipo", "login")
+    email = request.form.get("email")
+    senha = request.form.get("senha")
+    medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
+
+    if tipo == "login":
+        if not email or not senha:
+            return make_response("Email ou senha ausentes", BAD_REQUEST)
+        usuario = medicos.find_one({"email": email})
+        if usuario and usuario.get("senha") == alg_hash(senha.encode('utf-8')).hexdigest():
+            user_obj = User(email)
+            login_user(user_obj)
+            return make_response("LOGADO", OK)
+        else:
+            return make_response("Credenciais inválidas", UNAUTHORIZED)
+    elif tipo == "cadastro":
+        nome = request.form.get("nome")
+        crm = request.form.get("crm")
+        # checando valores
+        if not any(valor for valor in [email, senha, nome, crm]):
+            return make_response("Dados de cadastro ausentes", BAD_REQUEST)
+
+        # Usuario ja existe
+        if medicos.find_one({"email": email}):
+            return make_response("JA_EXISTE", OK)
+
+        senha_hash = alg_hash(senha.encode('utf-8')).hexdigest()
+        medicos.insert_one({"email": email, "nome": nome,
+                           "crm": crm, "senha": senha_hash})
+
+        user_obj = User(email)
+        login_user(user_obj)
+        return make_response("CADASTRADO", OK)
+    else:
+        return make_response("Tipo inválido", BAD_REQUEST)
 
 
 @app.route("/esqueci_senha", methods=["POST"])
@@ -995,12 +1047,16 @@ def mudar_senha():
         return make_response("", OK)
 
 
-@app.route("/val_login", methods=["GET"])
+'''@app.route("/val_login", methods=["GET"])
 @cross_origin(supports_credentials=True)
 def val_login():
     """
     Valida cookies de sessao do usuario
     """
+    if not session:
+        print("SESSAO FOI LIMPA OU EXPIRADA")
+        return make_response("False", UNAUTHORIZED)
+
     if 'user_id' not in session.keys():
         print("SESSAO NAO INICIADA")
         return make_response("False", UNAUTHORIZED)
@@ -1015,26 +1071,52 @@ def val_login():
                 print("SESSAO EXPIRADA")
                 return make_response("False", UNAUTHORIZED)
             else:
-                return make_response("True", OK)
+                print("Cookies being sent to client:", dict(request.cookies))
+                return make_response("LOGADO", OK)
         else:
             print("ID DA SESSAO TA ERRADO")
-            return make_response("False", INTERNAL_SERVER_ERROR)
-
-    # Optional: Add additional security checks
-    # - Check if session is expired
-    # - Verify user still exists in database
-    # - Check if session token is valid
+            return make_response("False", INTERNAL_SERVER_ERROR)'''
 
 
-@app.route("/logout", methods=["GET"])
+@app.route("/val_login", methods=["GET"])
 @cross_origin(supports_credentials=True)
+def val_login():
+    """
+    Valida cookies de sessao do usuario usando flask-login
+    """
+    if not current_user.is_authenticated:
+        print("USUÁRIO NÃO AUTENTICADO OU SESSÃO EXPIRADA")
+        return make_response("False", UNAUTHORIZED)
+    else:
+        return make_response("LOGADO", OK)
+    '''
+        # Check if user exists in database
+        usuario = InterfaceMongo.find_one_with_id(
+            mongo.db.get_collection(COLLECTION_MEDICOS), str(current_user.id))
+        if usuario is not None and current_user.is_authenticated:
+            
+        else:
+            print("USUARIO INEXISTE OU SESSAO EXPIRADA!!!!!")
+            return make_response("False", INTERNAL_SERVER_ERROR)
+    '''
+
+
+@app.route("/logout")
+@cross_origin(supports_credentials=True)
+@login_required
 def logout():
     try:
-        session.clear()
-        return redirect(url_for('val_login'))
+        logout_user()
+        response = make_response(redirect(url_for('val_login')))
+        # Overwrite cookie with expired date to remove it from browser
+        response.set_cookie('session', '', expires=0, path='/', secure=True,
+                            httponly=True, samesite='None', partitioned=True)
+        response.delete_cookie('remember_token')
+        return response
+
     except Exception as e:
         print(f"EXCEPTION!!!: {e}")
-        return make_response("", INTERNAL_SERVER_ERROR)
+        return make_response(f"{e}", INTERNAL_SERVER_ERROR)
 
 
 if __name__ == "__main__":

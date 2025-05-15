@@ -5,6 +5,7 @@ import { createStore } from 'vuex';
 import router from './router.js'; // Import the router config
 import store from './store/index'; // Import your Vuex store
 import 'video.js/dist/video-js.css';
+import axios from 'axios';
 
 
 
@@ -12,19 +13,21 @@ import App from './App.vue'
 
 const app = createApp(App);
 
-// Global navigation guard
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (_to, _from, next) => {
   try {
     const response = await axios.get(store.getters.getUrlChecklogin, {
       withCredentials: true,
     });
+    
     if (response.status === 200) {
-      store.commit('setLogado', true);
-      console.log("200")
+        store.commit('setLogado', true);
+        console.log("LOGADO: ", true)
     } else {
-      store.commit('setLogado', false);
+        console.log("LOGADO: ", false)
+        store.commit('setLogado', false);
     }
-  } catch (error) {
+} catch (error) {
+    console.log("LOGADO: ", false)
     store.commit('setLogado', false);
   }
   next();

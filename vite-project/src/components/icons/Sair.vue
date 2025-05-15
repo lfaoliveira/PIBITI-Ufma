@@ -30,6 +30,7 @@ export default {
           }
         }
       } catch (e) {
+        console.log("STATUS DESLOGAR: ", e.status);
         if (e.status !== 200) {
           this.$store.commit("setLogado", false);
           console.log("DESLOGADO!!!!!");

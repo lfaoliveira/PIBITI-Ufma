@@ -13,8 +13,8 @@ export default {
       _: 0,
     };
   },
-  async mounted() {
-    console.log("LOGADO: ", this.$store.getters.getLogado);
+  mounted() {
+    // console.log("LOGADO: ", this.$store.getters.getLogado);
   },
 };
 </script>

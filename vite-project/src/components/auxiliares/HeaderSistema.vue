@@ -91,6 +91,7 @@ export default {
   },
   mounted() {
     //executar checagem se esta logado
+
     this.emAnalise = this.$route.path === "/analise";
     this.logado = this.$store.getters.getLogado;
     console.log("ANALISe");

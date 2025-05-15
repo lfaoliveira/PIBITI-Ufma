@@ -37,7 +37,6 @@ export default {
   data() {
     return {
       aberto: null,
-      rota: null,
     };
   },
   props: {
@@ -46,6 +45,7 @@ export default {
     subtexto: "",
     opcional: "",
     srcImg: { type: String, default: "", required: true },
+    rota: null,
   },
   methods: {
     openOverlay() {
@@ -53,7 +53,8 @@ export default {
     },
     closeOverlay() {
       this.aberto = false;
-      if (this.rota !== null) {
+      if (this.rota != null) {
+        console.log("ROTA: ", this.rota);
         this.$router.push(this.rota);
       }
     },

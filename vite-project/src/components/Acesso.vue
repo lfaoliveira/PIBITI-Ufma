@@ -227,7 +227,7 @@ export default {
         });
         console.log(res);
         // sucesso login
-        if (res.data === "OK") {
+        if (res.status === 200) {
           this.boolErros.senha.login = false;
           console.log("Sucesso no LOGIN");
           this.$store.commit("setLogado", true);
