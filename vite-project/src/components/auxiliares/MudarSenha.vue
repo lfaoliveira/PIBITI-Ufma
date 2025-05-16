@@ -20,7 +20,7 @@
         <div class="form-group">
           <label>Email</label>
           <input @input="checkEmail" type="text" v-model="this.email" />
-          <p v-if="this.erro" class="erro">Insira um email válido!</p>
+          <p v-if="this.boolErros.email" class="erro">Insira um email válido!</p>
         </div>
         <div class="form-group">
           <label>Nova Senha</label>
@@ -28,16 +28,27 @@
             @input="checkSenha"
             type="text"
             v-model="this.novaSenha"
-            placeholder="Insira a nova senha"
+            placeholder="Insira a nova confirmnovaSenha"
           />
-          <p v-if="this.erro" class="erro">Insira um email válido!</p>
+          <li v-if="this.boolErros.senha.cadastro.numCaracteres" class="erro">
+            A senha deve conter 8 a 20 caracteres
+          </li>
+          <li v-if="this.boolErros.senha.cadastro.maiusculas" class="erro">
+            A senha deve ter pelo menos 1 letra maiúscula
+          </li>
         </div>
         <div class="form-group">
           <label>Confirmar Senha</label>
-          <input @input="checkSenha" type="text" v-model="this.confirmNovaSenha" />
-          <p v-if="this.erro" class="erro">Insira um email válido!</p>
+          <input
+            @input="checkConfirmacaoSenha"
+            type="text"
+            v-model="this.confirmNovaSenha"
+          />
+          <p v-if="this.boolErros.senha.cadastro.confirm" class="erro">
+            As senhas devem ser iguais!
+          </p>
         </div>
-        <Button type="submit" :ativo="!this.erro" texto="Enviar"></Button>
+        <Button type="submit" :ativo="checkCampos" texto="Enviar"></Button>
       </form>
     </main>
 
@@ -72,12 +83,27 @@ export default {
       novaSenha: "",
       confirmNovaSenha: "",
       erro: false,
+      boolErros: {
+        email: false,
+        senha: {
+          cadastro: {
+            numCaracteres: false,
+            maiusculas: false,
+            confirm: false,
+          },
+          login: false,
+        },
+      },
     };
   },
   props: {
     emailUsuario: "",
   },
   methods: {
+    checkCampos() {
+      return this.checkEmail() && this.checkSenha() && this.checkConfirmacaoSenha();
+    },
+
     checkEmail() {
       const emailRegex = /^[\w]+@[\w]+\.[\w]+$/;
       //tira espacos
@@ -86,27 +112,33 @@ export default {
 
       if (passou && this.email === "exemplo@email.com") passou = false;
       else if (this.email === "") passou = true;
-      this.erro = !passou;
+      this.boolErros.email = !passou;
       return passou;
     },
     checkSenha() {
       let passou = true;
       const regMaiusc = /[A-Z]/;
 
-      const passou1 = this.senha.length >= 8 && this.senha.length <= 20;
+      const passou1 = this.novaSenha.length >= 8 && this.novaSenha.length <= 20;
       if (!passou1) {
         this.boolErros.senha.cadastro.numCaracteres = true;
         passou = false;
       } else {
         this.boolErros.senha.cadastro.numCaracteres = false;
       }
-      const passou2 = regMaiusc.test(this.senha);
+      const passou2 = regMaiusc.test(this.novaSenha);
       if (!passou2) {
         this.boolErros.senha.cadastro.maiusculas = true;
         passou = false;
       } else {
         this.boolErros.senha.cadastro.maiusculas = false;
       }
+      return passou;
+    },
+    checkConfirmacaoSenha() {
+      const passou = this.novaSenha == this.confirmNovaSenha;
+      this.boolErros.senha.cadastro.confirm = !passou;
+
       return passou;
     },
   },
