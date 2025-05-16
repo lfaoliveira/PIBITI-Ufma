@@ -51,6 +51,7 @@ const store = createStore({
         getUrlLogin: (state) => (state.urlBackend + "/auth?tipo=login"),
         getUrlChecklogin: (state) => (state.urlBackend + "/val_login"),
         getUrlEsqueciSenha: (state) => (state.urlBackend + "/esqueci_senha"),
+        getUrlMudarSenha: (state) => (state.urlBackend + "/mudar_senha"),
         getUrlDeslogar: (state) => (state.urlBackend + "/logout"),
         getDiag: (state) => (state.urlBackend + "/envia_diag"),
         getPerfil:  (state) => (state.urlBackend + "/pega_perfil"),

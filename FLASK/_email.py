@@ -38,39 +38,6 @@ class MailHandler:
         # Return the modified HTML as a string.
         return str(self.parser)
 
-    def enviar_email_usuario(self, tipo: Literal['recuperar', 'cadastroOK', 'cadastroInvalido'], email_destino, assunto, url):
-        texto1 = ""
-        texto2 = ""
-        texto_botao = ""
-        link = url
-
-        if tipo == 'recuperar':
-            texto1 = "Clique no link abaixo para recuperar sua senha."
-            texto2 = f"Se não foi você, por favor não clique no link e nos avise por meio deste email: {EMAIL_APP}"
-            texto_botao = "Recuperar Senha"
-
-        elif tipo == 'cadastroOK':
-            texto1 = "Seu cadastro foi validado com sucesso!"
-            texto2 = "Agora você pode salvar seus diagnósticos em nosso site "
-            texto_botao = "Link do site"
-
-        elif tipo == 'cadastroInvalido':
-            texto1 = "Seu cadastro estava inválido!"
-            texto2 = "Verifique se seu nome e CRM estavam corretos e tente novamente."
-            texto_botao = "Link do suporte"
-        else:
-            raise ValueError(f"TIPO: {tipo} NAO EXISTE!")
-
-        lista_texto = [texto1, texto2]
-        self.add_h2(lista_texto)
-        self.add_anchor({texto_botao: link})
-
-        self.enviar_email(str(self.parser),
-                          email_destino, assunto)
-
-        self.reset_parser()
-        return
-
     def add_h2(self, lista_texto):
 
         corpo = self.parser.find_all(class_=CORPO)[0]
@@ -95,9 +62,11 @@ class MailHandler:
                 background = "hsl(267, 81%, 37%)"
             else:
                 background = "#000000"
+            td_tag['style'] = "width: 20ch"
             anchor_tag[
                 'style'] = f"color: #ffffff; text-align: center; margin-right:10px; padding: 2% 0.5%; background: {background}; border-radius: 17%;"
             td_tag.append(anchor_tag)
+
             botoes.append(td_tag)
         return
 
@@ -118,7 +87,48 @@ class MailHandler:
         corpo.append(table)
         return
 
-    def enviar_email_admin(self, email_med, nome_med, crm):
+    def enviar_email_usuario(self, tipo: Literal['recuperar', 'cadastroOK', 'cadastroInvalido'], email_destino, assunto, url):
+        try:
+            texto1 = ""
+            texto2 = ""
+            texto_botao = ""
+            link = url
+
+            if tipo == 'recuperar':
+                texto1 = "Clique no link para recuperar sua senha."
+                texto2 = f"Se não foi você, por favor não clique no link e nos avise por meio deste email: {EMAIL_APP}"
+                texto_botao = "Recuperar Senha"
+
+            elif tipo == 'cadastroOK':
+                texto1 = "Seu cadastro foi validado com sucesso!"
+                texto2 = "Agora você pode salvar seus diagnósticos em nosso site."
+                texto_botao = "Link do site"
+
+            elif tipo == 'cadastroInvalido':
+                texto1 = "Seu cadastro estava inválido!"
+                texto2 = "Verifique se seu nome e CRM estavam corretos e tente novamente."
+                texto_botao = "Link do suporte"
+            else:
+                raise ValueError(f"TIPO: {tipo} NAO EXISTE!")
+
+            self.add_h2([texto1, texto2])
+            self.add_anchor({texto_botao: link})
+
+            self.enviar_email(str(self.parser),
+                              email_destino, assunto)
+
+            with open("last_email_rendered.html", "w", encoding="utf-8") as f:
+                f.write(str(self.parser))
+
+            self.reset_parser()
+            return True
+
+        except Exception as e:
+            print(e)
+            time.sleep(2)
+            return self.enviar_email_usuario(tipo, email_destino, assunto, url)
+
+    def enviar_email_admin(self, email_med, nome_med, crm, urlAceita, urlRecusa):
         try:
 
             texto_cad = "Novo cadastro:"
@@ -127,10 +137,14 @@ class MailHandler:
             texto_crm = f"CRM: {crm}"
             # TODO: CRIAR URL de aceitacao e recusa de cadastro
             self.add_table([texto_cad, texto_email, texto_nome, texto_crm])
-            self.add_anchor({"Aceitar": "/2", "Recusar": "/3"})
+            self.add_anchor({"Aceitar": urlAceita, "Recusar": urlRecusa})
             self.enviar_email(str(self.parser),
-                              "luisfelipearaujo503@gmail.com", "TESTE EMAIL ADMIN")
+                              EMAIL_APP, "NOVO CADASTRO")
             self.reset_parser()
+
+            with open("last_email_rendered.html", "w", encoding="utf-8") as f:
+                f.write(str(self.parser))
+
             return True
 
         except Exception as e:

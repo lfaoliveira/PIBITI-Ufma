@@ -19,15 +19,25 @@
       <form @submit.prevent="recuperarSenha">
         <div class="form-group">
           <label>Email</label>
+          <input @input="checkEmail" type="text" v-model="this.email" />
+          <p v-if="this.erro" class="erro">Insira um email válido!</p>
+        </div>
+        <div class="form-group">
+          <label>Nova Senha</label>
           <input
-            @input="checkEmail"
+            @input="checkSenha"
             type="text"
-            v-model="this.email"
-            placeholder="exemplo@email.com"
+            v-model="this.novaSenha"
+            placeholder="Insira a nova senha"
           />
           <p v-if="this.erro" class="erro">Insira um email válido!</p>
         </div>
-        <Button type="submit" :ativo="!this.erro" texto="Recuperar"></Button>
+        <div class="form-group">
+          <label>Confirmar Senha</label>
+          <input @input="checkSenha" type="text" v-model="this.confirmNovaSenha" />
+          <p v-if="this.erro" class="erro">Insira um email válido!</p>
+        </div>
+        <Button type="submit" :ativo="!this.erro" texto="Enviar"></Button>
       </form>
     </main>
 
@@ -59,6 +69,8 @@ export default {
   data() {
     return {
       email: "",
+      novaSenha: "",
+      confirmNovaSenha: "",
       erro: false,
     };
   },
@@ -77,13 +89,33 @@ export default {
       this.erro = !passou;
       return passou;
     },
+    checkSenha() {
+      let passou = true;
+      const regMaiusc = /[A-Z]/;
+
+      const passou1 = this.senha.length >= 8 && this.senha.length <= 20;
+      if (!passou1) {
+        this.boolErros.senha.cadastro.numCaracteres = true;
+        passou = false;
+      } else {
+        this.boolErros.senha.cadastro.numCaracteres = false;
+      }
+      const passou2 = regMaiusc.test(this.senha);
+      if (!passou2) {
+        this.boolErros.senha.cadastro.maiusculas = true;
+        passou = false;
+      } else {
+        this.boolErros.senha.cadastro.maiusculas = false;
+      }
+      return passou;
+    },
   },
   // chama backend pra mandar email pro medico
   async recuperarSenha() {
     const form = new FormData();
     form.append("email", this.email);
     try {
-      const res = await axios.post(this.store.getters.getUrlEsqueciSenha, form);
+      const res = await axios.put(this.store.getters.getUrlMudarSenha, form);
       if (res.status == 200) {
         emitter.emit(eventoSucesso);
       }

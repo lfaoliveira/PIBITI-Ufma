@@ -16,7 +16,7 @@
         :subtexto="'Nosso time está verificando seu CRM e enviará um email de confirmação assim que possível.'"
         :opcional="'Antes disso não será possível salvar seus diagnósticos'"
         :srcImg="'src/assets/check_circle.png'"
-        :rota="'/analise'"
+        :rota="'/perfil'"
       ></OverlayAviso>
 
       <!-- PARTE DO LOGIN -->
@@ -280,7 +280,7 @@ export default {
     checkNome() {
       if (this.nome !== "") {
         //Tudo que nao seja letra e espaco sai
-        let nomeRegex = /[^A-Za-z\s]/;
+        let nomeRegex = /[^\p{L}\s]/gu;
         this.nome = this.nome.replace(nomeRegex, "");
         //ajusta espaços
         nomeRegex = /[\s\n\t\r]{2,}/;

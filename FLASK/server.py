@@ -184,42 +184,8 @@ class Helper:
             print(e)
 
 
-class InterfaceMongo:
-    def __init__(self):
-        CACHING_NAME = "Caching"
-        self.caching_collection = mongo.db.get_collection(CACHING_NAME)
-
-    def cache(self, change_list):
-        """
-        Funcao responsavel por cachear mudança do Drive para dentro do Banco de Dados\n
-        :param dict change_list: Lista que contem dicionario com mudanças. Chaves do dicionario: ['object_id_drive', 'operation', 'time',]
-        """
-        if len(change_list > 0):
-            id_list = []
-            try:
-                for change_dict in change_list:
-                    res = self.caching_collection.insert_one(change_dict)
-                    id_list.append(str(res.inserted_id))
-                return id_list
-            except Exception as e:
-                print(f"Exception when caching: {e}\n")
-                return None
-        else:
-            print("NADA PARA FAZER CACHING!\n")
-            return None
-
-    def uncache(self, api: GoogleDrive, id_list: list[str] = []):
-        if len(id_list) > 0:
-            for id in id_list:
-                self.caching_collection.find_one({"_id": ObjectId(id)})
-
-        else:
-            print("LISTA DE IDS VAZIA AO PEGAR CACHE!")
-            return None
-
-    @staticmethod
-    def find_one_with_id(collection, id_string):
-        return collection.find_one({"_id": ObjectId(id_string)})
+def find_one_with_id(collection, id_string):
+    return collection.find_one({"_id": ObjectId(id_string)})
 
 
 def get_modelo():
@@ -321,7 +287,9 @@ os.makedirs("tmp", exist_ok=True)
 
 PATH_PIBITI = os.getcwd()
 PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
-
+EMAIL_ADMIN = 'viplab.psno@nca.ufma.br'
+DOMINIO_SITE = "http://localhost:5000"
+DOMINIO_FRONT_VUE = "http://localhost:5173"
 
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
@@ -433,8 +401,10 @@ def deletar_tudo():
 @app.route("/teste_email")
 def teste_folder():
     try:
-        MAILHANDLER.enviar_email_usuario(
-            "recuperar")
+        # MAILHANDLER.enviar_email_usuario(
+        #     "recuperar", "luisfelipearaujo503@gmail.com", "TESTE TESTE", "http://localhost:5173/")
+        MAILHANDLER.enviar_email_admin("luisfelipearaujo503@gmail.com", "FULANO",
+                                       "MA-1234", "http://localhost:5173/", "http://localhost:5173/")
         return make_response("OK", OK)
 
     except Exception as e:
@@ -452,11 +422,6 @@ def teste2():
 @app.route("/")
 def index():
     return "Hello World"
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get_user(user_id)
 
 
 @app.route('/get-file-drive/<id_file>', methods=['GET'])
@@ -696,7 +661,7 @@ def analisar():
         diag_medico = diag.get('diagnosticoMedico')  # string codificada
         nome_paciente = diag.get('nomePaciente')
 
-        medico = InterfaceMongo.find_one_with_id(mongo.db.get_collection(
+        medico = find_one_with_id(mongo.db.get_collection(
             COLLECTION_MEDICOS), id_medico)
         nome_medico = medico.get('nome')
         crm = medico.get('crm')
@@ -756,6 +721,9 @@ def pega_perfil():
         email_medico = str(current_user.id)
         medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one({
             "email": email_medico})
+        validado = bool(medico['validado'])
+        if not validado:
+            return make_response("MEDICO NAO VALIDADO!", UNAUTHORIZED)
         id_medico = str(medico["_id"])
         print("ID MEDICO: ", id_medico)
         res = mongo.db.get_collection(COLLECTION_DIAGS).aggregate([
@@ -775,7 +743,7 @@ def pega_perfil():
         lista_res = list(res)[0]['data']
         # print(f"DIAGS: \n\n{lista_res}\n\n")
 
-        medico = InterfaceMongo.find_one_with_id(
+        medico = find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
         return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": lista_res})
@@ -790,7 +758,7 @@ def gerar_relatorio(id_diag):
     Gera pdf com grafico e outros dados importantes e retorna url do pdf
     """
 
-    diag = InterfaceMongo.find_one_with_id(
+    diag = find_one_with_id(
         mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
     dados_pdf = diag.get('dados_pdf', None)
     if str(dados_pdf) == "None":
@@ -811,7 +779,7 @@ def gerar_grafico(id_diag, external=True):
     Gera grafico e retorna ele como stream
     """
 
-    diag = InterfaceMongo.find_one_with_id(
+    diag = find_one_with_id(
         mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
     dados_grafico = diag.get('dados_grafico', None)
     if str(dados_grafico) == "None":
@@ -891,79 +859,9 @@ def envia_diag():
     return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "nome_input": nome_local, "filename": filename}, OK)
 
 
-'''@app.route("/auth", methods=["POST"])
-@cross_origin(supports_credentials=True)
-def autenticar():
-    """
-    Handles user authentication for login and registration.
-        Data received through request.form 
-            email (str): User's email
-            senha (str): password
-            nome (str): User's name (registration only)
-            crm (str): Medical license (registration only)
-
-        Data received through request.args:
-        tipo (str): 'login' or 'cadastro'
-
-        Uses session authentication and MongoDB for storage.
-        Passwords are hashed. Sessions last 7 days.
-    Notes:
-        - Passwords are hashed before storage and comparison
-        - Sessions are set to be permanent (7 days)
-        - User ID and creation time are stored in session for logged users
-    """
-    email, senha = request.form.get(
-        "email", None), request.form.get("senha", None)
-    if email is None or senha is None:
-        print("EMAIL OU SENHA INVALIDOS")
-        return make_response('SEM EMAIL OU SENHA', BAD_REQUEST)
-
-    medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
-    usuario = medicos.find_one({"email": email})
-    senha = alg_hash(senha.encode('utf-8')).hexdigest()
-    tipo = request.args['tipo']
-    # ---------LOGIN--------#
-    if tipo == "login":
-        # sessao 'permanente', com duracao fixa
-        session.permanent = True
-        if not email or not senha:
-            print("EMAIL OU SENHA INVALIDOS")
-            return make_response("", BAD_REQUEST)
-
-        """logica de cookies de sessao"""
-        response = requests.get(
-            url_for('val_login', _external=True),
-            cookies=request.cookies
-        )
-        if response.status_code == 200:
-            return "OK"
-        else:
-            print("\nSEM SESSAO\n")
-        # cria sessão para o usuario logado
-        if usuario != None and senha == usuario['senha']:
-            # Add session creation timestamp
-            session['_creation_time'] = time.time()
-            session['user_id'] = str(usuario['_id'])
-            session.modified = True  # Ensure session is saved
-            print("LOGADO")
-            return make_response("LOGADO", OK)
-        else:
-            return make_response('INCORRETO', UNAUTHORIZED)
-    # ------CADASTRO--------#
-    elif (tipo == "cadastro"):
-        nome = request.form.get("nome")
-        crm = request.form.get("crm")
-        drive.create_folder([email], wait=False)
-        if usuario != None:
-            return "JA_EXISTE"
-
-        medicos.insert_one({"email": email, "nome": nome,
-                            "crm": crm, "senha": senha})
-
-        return "CADASTRADO"
-
-    else:
-        return make_response('TIPO DE AUTENTICACAO ERRADO', BAD_REQUEST)'''
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get_user(user_id)
 
 
 @app.route("/auth", methods=["POST"])
@@ -984,6 +882,7 @@ def autenticar():
             return make_response("LOGADO", OK)
         else:
             return make_response("Credenciais inválidas", UNAUTHORIZED)
+
     elif tipo == "cadastro":
         nome = request.form.get("nome")
         crm = request.form.get("crm")
@@ -997,29 +896,58 @@ def autenticar():
 
         senha_hash = alg_hash(senha.encode('utf-8')).hexdigest()
         medicos.insert_one({"email": email, "nome": nome,
-                           "crm": crm, "senha": senha_hash})
+                           "crm": crm, "senha": senha_hash, "validado": False})
 
+        # loga usuario
         user_obj = User(email)
         login_user(user_obj, remember=True)
 
         # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
-        MAILHANDLER.enviar_email_admin(email, nome, crm)
+        urlAceita = url_for("aceitar_cadastro",
+                            email_medico=email, _external=True)
+        urlRecusa = url_for("recusar_cadastro",
+                            email_medico=email, _external=True)
+        MAILHANDLER.enviar_email_admin(email, nome, crm, urlAceita, urlRecusa)
 
         return make_response("CADASTRADO", OK)
     else:
         return make_response("Tipo inválido", BAD_REQUEST)
 
 
-@app.route("/aceitaCadastro/<email_medico>", methods=["POST"])
-def cadastroOK():
-    # TODO: ENVIAR EMAIL AVISANDO
-    pass
+@app.route("/aceitaCadastro/<email_medico>", methods=["GET", "POST"])
+def aceitar_cadastro(email_medico):
+    try:
+        a = MAILHANDLER.enviar_email_usuario(
+            'cadastroOK', email_medico, "Cadastro Validado!", DOMINIO_FRONT_VUE)
+        if not a:
+            raise Exception("Não foi possível enviar email!!!")
+
+        # TODO INSERIR LOGICA DE FLAG DE VALIDAÇÃO DE CADASTRO
+        mongo.db.get_collection(COLLECTION_MEDICOS).update_one(
+            {"email": email_medico},
+            {"$set": {"validado": True}}
+        )
+
+        return make_response(f"EMAIL ENVIADO!", OK)
+    except Exception as e:
+        print(f"ERRO AO ENVIAR EMIAL DE CADASTRO: {e}")
+        return make_response(f"{e}", INTERNAL_SERVER_ERROR)
 
 
-@app.route("/recusaCadastro/<email_medico>", methods=["POST"])
-def cadastroOK():
-    # TODO: ENVIAR EMAIL AVISANDO
-    pass
+@app.route("/recusaCadastro/<email_medico>", methods=["GET", "POST"])
+def recusar_cadastro(email_medico):
+    try:
+        a = MAILHANDLER.enviar_email_usuario(
+            'cadastroInvalido', email_medico, "Cadastro Inválido!", EMAIL_ADMIN)
+        if not a:
+            raise Exception("Não foi possível enviar email!!!")
+        mongo.db.get_collection(COLLECTION_MEDICOS).delete_one(
+            {"email": email_medico})
+
+        return make_response(f"EMAIL ENVIADO!", OK)
+    except Exception as e:
+        print(f"ERRO AO ENVIAR EMIAL DE CADASTRO: {e}")
+        return make_response(f"{e}", INTERNAL_SERVER_ERROR)
 
 
 @app.route("/esqueci_senha", methods=["POST"])
@@ -1033,11 +961,12 @@ def esqueci():
         medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
         medico = medicos.find_one({"email": emailDestino})
         if medico is None:
-            return make_response("EMAIL NAO EXISTE", BAD_REQUEST)
-        assunto = "Recuperação de Senha"
+            return make_response("Email Inválido!", UNAUTHORIZED)
 
+        assunto = "Recuperação de Senha"
         MAILHANDLER.enviar_email_usuario(
             'recuperar', emailDestino, assunto, url_front)
+
         return make_response("OK", OK)
     else:
         return make_response("Email Inválido!", BAD_REQUEST)
@@ -1061,38 +990,7 @@ def mudar_senha():
             {"email": email},
             {"$set": {"senha": novaSenha}}
         )
-        return make_response("", OK)
-
-
-'''@app.route("/val_login", methods=["GET"])
-@cross_origin(supports_credentials=True)
-def val_login():
-    """
-    Valida cookies de sessao do usuario
-    """
-    if not session:
-        print("SESSAO FOI LIMPA OU EXPIRADA")
-        return make_response("False", UNAUTHORIZED)
-
-    if 'user_id' not in session.keys():
-        print("SESSAO NAO INICIADA")
-        return make_response("False", UNAUTHORIZED)
-    else:
-        # Check if user exists in database
-        usuario = InterfaceMongo.find_one_with_id(
-            mongo.db.get_collection(COLLECTION_MEDICOS), session['user_id'])
-        if usuario != None:
-            # Check if session cookie has expired based on PERMANENT_SESSION_LIFETIME
-            if session.get('_creation_time', 0) + app.config['PERMANENT_SESSION_LIFETIME'].total_seconds() <= time.time():
-                session.clear()
-                print("SESSAO EXPIRADA")
-                return make_response("False", UNAUTHORIZED)
-            else:
-                print("Cookies being sent to client:", dict(request.cookies))
-                return make_response("LOGADO", OK)
-        else:
-            print("ID DA SESSAO TA ERRADO")
-            return make_response("False", INTERNAL_SERVER_ERROR)'''
+        return make_response("SENHA ATUALIZADA!", OK)
 
 
 @app.route("/val_login", methods=["GET"])
@@ -1107,7 +1005,7 @@ def val_login():
     else:
         '''
         # Check if user exists in database
-        usuario = InterfaceMongo.find_one_with_id(
+        usuario = find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), str(current_user.id))
         if usuario is not None and current_user.is_authenticated:
 

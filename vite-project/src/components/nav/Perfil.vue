@@ -94,6 +94,9 @@ export default {
         withCredentials: true,
       });
     } catch (e) {
+      if (e.response.status == 401) {
+        this.ajustarEntradasTabela([]);
+      }
       console.log("ERRO AO PEGAR PERFIL!");
     }
     this.entradas = this.ajustarEntradasTabela(res2.data.lista);
