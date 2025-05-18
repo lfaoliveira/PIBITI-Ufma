@@ -15,8 +15,8 @@
         :srcImg="'src/assets/check_circle.png'"
       ></OverlayAviso>
 
-      <h1>Recuperar Senah</h1>
-      <form @submit.prevent="recuperarSenha">
+      <h1>Recuperar Senha</h1>
+      <form @submit.prevent="this.mudarSenha">
         <div class="form-group">
           <label>Email</label>
           <input @input="checkEmail" type="text" v-model="this.email" />
@@ -31,7 +31,7 @@
             placeholder="Insira a nova confirmnovaSenha"
           />
           <li v-if="this.boolErros.senha.cadastro.numCaracteres" class="erro">
-            A senha deve conter 8 a 20 caracteres
+            A senha deve ter de 8 a 20 caracteres
           </li>
           <li v-if="this.boolErros.senha.cadastro.maiusculas" class="erro">
             A senha deve ter pelo menos 1 letra maiúscula
@@ -48,7 +48,8 @@
             As senhas devem ser iguais!
           </p>
         </div>
-        <Button type="submit" :ativo="checkCampos" texto="Enviar"></Button>
+        <!-- BUG AO CLICAR!!!!! -->
+        <Button type="submit" :ativo="checkCampos()" texto="Enviar"></Button>
       </form>
     </main>
 
@@ -101,7 +102,16 @@ export default {
   },
   methods: {
     checkCampos() {
-      return this.checkEmail() && this.checkSenha() && this.checkConfirmacaoSenha();
+      console.log(
+        "CHECK CAMPOS: ",
+        this.checkEmail() && this.checkSenha() && this.checkConfirmacaoSenha()
+      );
+      return (
+        this.email !== "" &&
+        this.checkEmail() &&
+        this.checkSenha() &&
+        this.checkConfirmacaoSenha()
+      );
     },
 
     checkEmail() {
@@ -143,15 +153,19 @@ export default {
     },
   },
   // chama backend pra mandar email pro medico
-  async recuperarSenha() {
+  async mudarSenha() {
     const form = new FormData();
     form.append("email", this.email);
+    form.append("novaSenha", this.novaSenha);
+    console.log("MUDANDO SENHA");
     try {
-      const res = await axios.put(this.store.getters.getUrlMudarSenha, form);
+      const res = await axios.post(this.store.getters.getUrlMudarSenha, form);
       if (res.status == 200) {
+        console.log("SENHA MUDADA");
         emitter.emit(eventoSucesso);
       }
-    } catch {
+    } catch (e) {
+      console.log("DEU MERDA");
       if (res.status == 400) {
         // TODO: EMITIR EVENTO DE AVISO QUE EMAIL NÃO EXISTE
         emitter.emit(eventoFalha);

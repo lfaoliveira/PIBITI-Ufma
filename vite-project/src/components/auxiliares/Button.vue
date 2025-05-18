@@ -2,7 +2,7 @@
   <div class="button-container">
     <button
       :type="type"
-      @click="$emit('click', $event)"
+      @click="handleClick"
       v-if="ativo == true"
       class="button classeAtivo"
       enabled
@@ -18,7 +18,14 @@
 <script>
 export default {
   name: "botaoPequeno",
-  methods: {},
+  methods: {
+    handleClick() {
+      this.$emit("click");
+      if (this.type == "submit") {
+        this.$emit("submit");
+      }
+    },
+  },
   props: {
     ativo: true,
     texto: "",

@@ -972,11 +972,13 @@ def esqueci():
         return make_response("Email Inválido!", BAD_REQUEST)
 
 
-@app.route("/mudar_senha", methods=["PUT"])
+@app.route("/mudar_senha", methods=["POST"])
 def mudar_senha():
     email = request.form.get('email', None)
     novaSenha = request.form.get('novaSenha', None)
+    print("COMECANDO MUDANCA")
     if novaSenha is None or email is None:
+        print("INPUT NULO")
         return make_response(f"INPUT NULO!", UNAUTHORIZED)
     novaSenha = alg_hash(novaSenha.encode('utf-8')).hexdigest()
 
@@ -990,6 +992,7 @@ def mudar_senha():
             {"email": email},
             {"$set": {"senha": novaSenha}}
         )
+        print("SENHA ATUALIZADA")
         return make_response("SENHA ATUALIZADA!", OK)
 
 
