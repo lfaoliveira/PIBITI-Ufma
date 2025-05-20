@@ -1,7 +1,7 @@
 <!-- PARTE GERADA POR IA -->
 
 <template>
-  <HeaderSistema :activeIndex="5" :urlPDF="this.pdfURL" />
+  <HeaderSistema :activeIndex="5" :urlPDF="pdfURL" />
   <main class="analysis-view">
     <h1 class="page-title">Análise de Paralisia</h1>
 
@@ -34,7 +34,6 @@ import VideoPlayer from "./VideoPlayer.vue";
 import HeaderSistema from "../auxiliares/HeaderSistema.vue";
 
 import axios from "axios";
-import fs from "fs";
 
 export default {
   // COMPONENTE QUE VAI IMPORTAR COMPONENTES DE ANALISE
@@ -65,6 +64,7 @@ export default {
   },
   async mounted() {
     this.responseData = JSON.parse(this.responseStringJson);
+    console.log("REPONSE DATA: ", this.responseData);
 
     // this.videoSource = this.responseData.video;
     // this.graficoURL = this.responseData.grafico;
@@ -73,6 +73,7 @@ export default {
     this.resPronto = true;
 
     this.pdfURL = this.responseData.pdf;
+    console.log("\n\nTHIS.PDF: ", this.pdfURL);
     this.$refs.imgGraf.src = this.graficoURL;
     const strResult = this.responseData.diagAutom;
     this.parseResult(strResult);

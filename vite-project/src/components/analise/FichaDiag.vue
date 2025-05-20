@@ -41,7 +41,18 @@
               <label>Sim</label>
             </div>
             <div class="label-input">
-              <input type="radio" v-model="this.paralisia" value="Nao" name="paralisia" />
+              <input
+                type="radio"
+                @input="
+                  () => {
+                    this.olhoEsquerdo = 'false';
+                    this.olhoDireito = 'false';
+                  }
+                "
+                v-model="this.paralisia"
+                value="Nao"
+                name="paralisia"
+              />
               <label>Não</label>
             </div>
             <div class="label-input">

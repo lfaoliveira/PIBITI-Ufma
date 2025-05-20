@@ -76,11 +76,11 @@ export default {
       logado: false,
       telaPequena: false,
       isOpen: false,
-      urlPDF: null,
     };
   },
   props: {
     activeIndex: 0,
+    urlPDF: null,
   },
   created() {
     this.$store.subscribe((mutation, state) => {
@@ -116,12 +116,12 @@ export default {
     async fnBaixar() {
       // lógica para salvar resultado
       console.log("Baixando...");
-      if (this.urlPDF !== null) {
+      if (this.urlPDF != null) {
         const res = await axios.get(this.urlPDF);
         console.log("HEADER: ");
         console.log(res.data, typeof res.data);
       } else {
-        alert("Nao foi possível encontrar realtório!");
+        alert("Nao foi possível encontrar relatório!");
       }
     },
     clickMenu() {

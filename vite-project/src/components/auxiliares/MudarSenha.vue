@@ -16,7 +16,7 @@
       ></OverlayAviso>
 
       <h1>Recuperar Senha</h1>
-      <form @submit.prevent="this.mudarSenha">
+      <form @submit.prevent="mudarSenha">
         <div class="form-group">
           <label>Email</label>
           <input @input="checkEmail" type="text" v-model="this.email" />

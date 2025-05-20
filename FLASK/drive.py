@@ -216,6 +216,15 @@ class GoogleDrive:
 
         return self.file_state
 
+    def check_id(self, id_drive):
+        try:
+            file = self.drive_service.files().get(fileId=id_drive, fields="id",
+                                                  supportsAllDrives=True).execute()
+            return file is not None
+        except HttpError as error:
+            print(f"An error occurred: {error}")
+            return False
+
     def get_file_id(self, file_name, folder_name=None):
         if self.file_state.empty:
             return None

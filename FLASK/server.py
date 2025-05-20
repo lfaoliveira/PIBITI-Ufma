@@ -145,7 +145,7 @@ class Helper:
                     'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
                     'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
                     'difVel': '20 %'}'''
-
+        print(f"DCIT DADOS PDF: {dict_dados}\n")
         # ajeita strings de diagnostico
         str_diag_autom = Helper.traduzir_diag(dict_dados['diagAutom'])
         dict_dados['diagAutom'] = str_diag_autom
@@ -489,18 +489,21 @@ def get_file_local(filename):
 # usando esse decorator pra evitar erros de TLS
 def get_file(resource_uri) -> Union[Any, Response]:
     """
-    Serves files depending on storage
+    Serves files depending on storage, prioritizing local storage, then DB, and finally cloud.
     """
     print("URI: ", resource_uri)
     try:
         if resource_uri:
-
             print("PEGANDO ARQUIVO!")
-            tipo, uri = split_storage_url(resource_uri)
-            if tipo == "local":
-                return get_file_local(os.path.basename(uri))
+            # Check local storage first
+            local_path = os.path.join(
+                app.config["TEMP_FOLDER"], os.path.basename(resource_uri))
+            if os.path.exists(local_path):
+                return get_file_local(os.path.basename(resource_uri))
+            elif drive.check_id(resource_uri):
+                return get_file_drive(resource_uri)
             else:
-                return get_file_drive(uri)
+                raise Exception("Arquivo não encontrado em nenhuma fonte!")
         else:
             raise Exception("RECURSO NULO!")
     except Exception as e:
@@ -576,19 +579,23 @@ def analisar():
             COLLECTION_DIAGS).find_one({"_id": ObjectId(id_diag)})
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
+
     # VERSÃO LOGADO
-    if "user_id" in session:
-        user = session["user_id"]
+    if current_user.is_authenticated:
+        user = current_user.id
     else:
         user = "ANONIMO"
+
     ext = Helper.allowed_file(filename)
     if ext is None:
         print("Incorrect file type!\n\n")
-        return SystemError
+
+        return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
 
     nome_video = f"{user}_{str(round(timestamp, 4))}"
     nome_local = f"{nome_video}.{ext}"
-    filename_arq_input = secure_filename(f"INPUT_{nome_input}")
+    filename_arq_input = f"INPUT_{nome_local}"
+    # renomeia arquivo de input na pasta temporaria para filename_arq_input
     os.rename(os.path.join(app.config["TEMP_FOLDER"], nome_input), os.path.join(
         app.config["TEMP_FOLDER"], filename_arq_input))
 
@@ -623,14 +630,16 @@ def analisar():
         if "ERRO" in res_np.decode('utf-8'):
             return make_response(res_np, BAD_REQUEST)
         graf_np = sess.run(dict_graf_tensor)
-    # Decode bytes to string since predict returns all output as tensor
-    str_res, dict_graf_tensor = res_np.decode('utf-8'), graf_np
 
-    dict_graf_tensor['vel_esq'] = np.array(
-        dict_graf_tensor['vel_esq']).tolist()
-    dict_graf_tensor['vel_dir'] = np.array(
-        dict_graf_tensor['vel_dir']).tolist()
-    dict_graf_tensor['time'] = float(dict_graf_tensor['time'])
+    # Decode bytes to string since predict returns all output as tensor
+    str_res, dict_graf = res_np.decode('utf-8'), graf_np
+
+    dict_graf['vel_esq'] = np.array(
+        dict_graf['vel_esq']).tolist()
+    dict_graf['vel_dir'] = np.array(
+        dict_graf['vel_dir']).tolist()
+    dict_graf['time'] = float(dict_graf['time'])
+    dict_graf['titulo'] = str(dict_graf['titulo'])
 
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
     print("ULTIMA CONVERSAO")
@@ -666,19 +675,19 @@ def analisar():
         nome_medico = medico.get('nome')
         crm = medico.get('crm')
         email_medico = medico.get('email')
-        dict_dados_pdf = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2], "crm": crm,
-                          "diagAutom": str_diag, "dataAgora": timestamp, "nomePaciente": nome_paciente,
-                          "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico, "dadosGrafico": dict_graf_tensor}
+        dict_dados_pdf = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2],
+                          "crm": crm, "diagAutom": str_diag, "dataAgora": timestamp,
+                          "nomePaciente": nome_paciente, "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico}
     else:
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
         dict_dados_pdf = None
 
     print("PEGANDO URLS")
 
-    local_url_video_out = make_storage_url(local=True, filename=path_out)
-    local_url_video_in = make_storage_url(local=True, filename=path_arq_input)
+    local_url_video_out = path_out
+    local_url_video_in = path_arq_input
 
-    result = {"diagAutom": str_diag, "dados_grafico": dict_graf_tensor, "dados_pdf": dict_dados_pdf,
+    result = {"diagAutom": str_diag, "dados_grafico": dict_graf, "dados_pdf": dict_dados_pdf,
               "dataDiag": timestamp, "video": local_url_video_out, "ultimaModif": timestamp}
     mongo.db.get_collection(COLLECTION_DIAGS).update_one(
         {"_id": ObjectId(id_diag)},
@@ -721,8 +730,9 @@ def pega_perfil():
         email_medico = str(current_user.id)
         medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one({
             "email": email_medico})
-        validado = bool(medico['validado'])
+        validado = bool(medico.get('validado', None))
         if not validado:
+            print("MEDICO NAO VALIDADADO!")
             return make_response("MEDICO NAO VALIDADO!", UNAUTHORIZED)
         id_medico = str(medico["_id"])
         print("ID MEDICO: ", id_medico)
@@ -749,6 +759,8 @@ def pega_perfil():
         return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": lista_res})
 
     else:
+        print("INPUT NULO!")
+
         return make_response("INPUT NULO!", BAD_REQUEST)
 
 
@@ -769,7 +781,7 @@ def gerar_relatorio(id_diag):
     dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
 
     Helper.gerar_pdf(output, dados_pdf)
-    uri_pdf = make_storage_url(output)
+    uri_pdf = output
     return get_file(uri_pdf)
 
 
@@ -790,7 +802,7 @@ def gerar_grafico(id_diag, external=True):
 
     path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
     print(f"PATH_GRAF: {path_graf}\n\n")
-    uri_graf = make_storage_url(path_graf)
+    uri_graf = path_graf
     print(f"URI DO GRAF: {uri_graf}\n\n")
     if external:
         return get_file(uri_graf)
@@ -822,20 +834,22 @@ def envia_diag():
         cookies=request.cookies
     )
 
-    if response.text == 'True':
+    if response.status_code == 200:
         # caso pra usuario logado
-        id_medico = session['user_id']
+        email_medico = current_user.id
         medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
-        medico_atual = medicos.find_one({"_id": ObjectId(id_medico)})
-        nomeMedico = medico_atual.get("nome") if medico_atual else None
-        if nomeMedico is None:
+        medico_atual = medicos.find_one({"email": email_medico})
+        if medico_atual is None:
             return make_response("MEDICO LOGADO NAO ENCONTRADO", INTERNAL_SERVER_ERROR)
+        id_medico = medico_atual.get("_id", None)
+
     else:
         # padronizar dados nulos no BD como None e erros de preenchimento como null
         id_medico = None
 
+    print("ID MEDICO: ", id_medico)
     diags = mongo.db.get_collection(COLLECTION_DIAGS)
-    dados = {"nomePaciente": nomePaciente, "id_medico": id_medico,
+    dados = {"nomePaciente": nomePaciente, "id_medico": str(id_medico),
              "diagnosticoMedico": diagnosticoMedico, "desc": desc}
 
     # transforma qualquer valor None em string
@@ -908,6 +922,7 @@ def autenticar():
         urlRecusa = url_for("recusar_cadastro",
                             email_medico=email, _external=True)
         MAILHANDLER.enviar_email_admin(email, nome, crm, urlAceita, urlRecusa)
+        drive.create_folder([email])
 
         return make_response("CADASTRADO", OK)
     else:

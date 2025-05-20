@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: "botaoPequeno",
+  name: "botao",
   methods: {
     handleClick() {
       this.$emit("click");
