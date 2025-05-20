@@ -3,8 +3,8 @@
     /* --main-font: 24pt; */
     --font-title: 21pt;
     --font-h2: 19pt;
-    --font-h3: 18pt;
-    --font-p: 16pt;
+    --font-h3: 14pt;
+    --font-p: 12pt;
     font-weight: 400;
     font-family: Montserrat;
 }
@@ -139,8 +139,7 @@ main{
     color: black;
     width: 40cm;
 }
-
-.diag-auto, .entrada-diag, .diag-medico{
+ .entrada-diag, .diag-medico, .diag-auto{
     width: fit-content;
     font-weight: 500;
     font-size: var(--font-h3);

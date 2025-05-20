@@ -47,7 +47,7 @@
           </div>
 
           <div class="nav-item" v-if="this.logado">
-            <Salvar @click="fnBaixar" :modo="this.modoSalvar"></Salvar>
+            <Salvar :modo="this.modoSalvar" :urlPDF="urlPDF"></Salvar>
           </div>
         </li>
       </transition>
@@ -119,7 +119,6 @@ export default {
       if (this.urlPDF != null) {
         const res = await axios.get(this.urlPDF);
         console.log("HEADER: ");
-        console.log(res.data, typeof res.data);
       } else {
         alert("Nao foi possível encontrar relatório!");
       }

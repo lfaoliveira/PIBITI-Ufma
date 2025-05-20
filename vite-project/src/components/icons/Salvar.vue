@@ -1,8 +1,8 @@
 <template>
-  <button class="salvar" @click="fnSalvar" :disabled="butDisabled">
+  <a class="salvar" :href="urlPDF" :disabled="butDisabled">
     <img class="icone-download" alt="Save icon" src="../../assets/download.png" />
     <div class="texto-salvar">Baixar Resultado</div>
-  </button>
+  </a>
 </template>
 
 <script>
@@ -12,15 +12,18 @@ export default {
   data() {
     return {};
   },
-  mounted() {},
+  mounted() {
+    this.$el.addEventListener("click", (event) => {
+      if (event.target.closest(".salvar")) {
+        console.log("Salvar element clicked");
+      }
+    });
+  },
   props: {
     modo: "off",
+    urlPDF: null,
   },
-  methods: {
-    fnSalvar() {
-      //logica para baixar o pdf dos resultados para a maquina do usuario
-    },
-  },
+  methods: {},
   computed: {
     butDisabled() {
       return this.modo == "off";
@@ -42,7 +45,7 @@ export default {
   @include botao-header;
   padding: 0px;
   flex-direction: row;
-  display: inline-flex;
+  display: flex !important;
 }
 
 .icone-download {

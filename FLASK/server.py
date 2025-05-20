@@ -1,4 +1,3 @@
-from flask import current_app
 from datetime import datetime
 from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
 import time
@@ -8,7 +7,9 @@ from analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
-from flask import Flask, make_response, redirect, session, jsonify, request, url_for, abort, Response, stream_with_context
+import subprocess
+import json
+from flask import Flask, make_response, redirect, session, jsonify, request, url_for, abort, Response, stream_with_context, send_file
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
@@ -27,7 +28,6 @@ import csv
 import numpy as np
 from pdf import Converter
 from drive import GoogleDrive
-from concurrent.futures import ThreadPoolExecutor
 from _email import MailHandler
 from user import User
 
@@ -140,12 +140,7 @@ class Helper:
                       'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
                       'difVel': "dif-vel"}
 
-        # dados com chaves do banco de dados que devem ser mapeados pro pdf
-        '''dict_dados = {'velEsq': '2 mm/s', 'crm': "MA-1234", 'nomeMedico': "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak", 'dataAgora': "11/01/2001",
-                    'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
-                    'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
-                    'difVel': '20 %'}'''
-        print(f"DCIT DADOS PDF: {dict_dados}\n")
+        print(f"DICT DADOS PDF: {dict_dados}\n")
         # ajeita strings de diagnostico
         str_diag_autom = Helper.traduzir_diag(dict_dados['diagAutom'])
         dict_dados['diagAutom'] = str_diag_autom
@@ -161,25 +156,28 @@ class Helper:
         for key_dado in dict_dados.keys():
             nomeTag = mapeamento[key_dado]
             dict_input_weasy[nomeTag] = dict_dados[key_dado]
-        conv = Converter()
+
+        # Serialize data to pass to the external process
+        args_pdf = {
+            "path_output": path_output,
+            "dict_input_weasy": dict_input_weasy
+        }
+        base_url = os.path.join(app.config["WKDIR"], "static")
+
         try:
-            filename = os.path.basename(path_output)
-            string_html = conv.insert_text_by_class(dict_input_weasy)
+            # Execute the PDF generation as an external process
+            process = subprocess.run(
+                ["python", "pdf.py", json.dumps(
+                    dict_input_weasy), path_output, base_url],
+                text=True,
+                capture_output=True
+            )
 
-            # base_url = 'file://' + app.static_folder
-            base_url = app.static_folder
-            pdfOK, erro = conv.convert_html_to_pdf(
-                string_html, filename, base_url)
-
-            if pdfOK:
-                print(base_url)
-                if os.path.exists(path_output):
-                    os.remove(path_output)
-
-                shutil.move(filename, path_output)
+            if process.returncode == 0:
                 print("PDF created successfully!")
             else:
-                raise erro
+                raise Exception(
+                    f"PDF generation failed in external process {process.stderr}")
         except Exception as e:
             print(e)
 
@@ -379,7 +377,7 @@ def teste_pdf():
         return make_response("An error occurred during PDF creation.", INTERNAL_SERVER_ERROR)
 
 
-""" @app.route("/deletar_tudo")
+@app.route("/deletar_tudo")
 def deletar_tudo():
     # drive.upload_to_drive("requirements.txt", ROOT_DRIVE)
     files = drive.fetch_drive_files().copy()
@@ -390,12 +388,15 @@ def deletar_tudo():
             continue
         file = files.loc[id]
         print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
+        if drive.get_folder_id(file.get('name')):
+            # eh folder, logo nao deleta
+            continue
         if drive.delete_file(id):
             print(f"DELETOU {file.get('name')}")
         else:
             print(f"NAO CONSEGUI: {file.get('name')}")
     print(drive.fetch_drive_files())
-    return make_response("OK", OK) """
+    return make_response("OK", OK)
 
 
 @app.route("/teste_email")
@@ -461,7 +462,7 @@ def get_file_local(filename):
         if len(filename) > 0:
             # limite_mega = 20*1024*1024
             filename = os.path.join(
-                app.config["TEMP_FOLDER"], secure_filename(filename))
+                app.config["TEMP_FOLDER"], filename)
             print("FILE NAME GET_LOCAL: ", filename)
 
             chunk_size = 1024*1024
@@ -499,8 +500,10 @@ def get_file(resource_uri) -> Union[Any, Response]:
             local_path = os.path.join(
                 app.config["TEMP_FOLDER"], os.path.basename(resource_uri))
             if os.path.exists(local_path):
+                print("RETORNANDO ARQUIVO LOCAL")
                 return get_file_local(os.path.basename(resource_uri))
             elif drive.check_id(resource_uri):
+                print("RETORNANDO ARQUIVO DO DRIVE")
                 return get_file_drive(resource_uri)
             else:
                 raise Exception("Arquivo não encontrado em nenhuma fonte!")
@@ -511,51 +514,22 @@ def get_file(resource_uri) -> Union[Any, Response]:
         return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
 
 
-def make_storage_url(filename=None, local=True):
-    """
-    Cria uma string em duas partes: primeira eh flag indicando onde arquivo esta armazenado, segunda eh url para o arquivo
-    """
-    storage_string = ""
-    sep = ":"
-    if local:
-        temp_folder = os.path.basename(app.config["TEMP_FOLDER"])
-        filename = secure_filename(os.path.basename(filename))
-        relpath = os.path.relpath(os.path.join(
-            temp_folder, filename), app.config["WKDIR"])
-        storage_string = f"local{sep}{relpath}"
-    else:
-        # arquivo pro google drive, filename eh hash do drive
-        id_drive = filename
-        storage_string = f"cloud{sep}{id_drive}"
-
-    return storage_string
-
-
-def split_storage_url(string: str):
-    sep = ":"
-    tipo, uri = string.split(sep)
-    return tipo, uri
-
-
 def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
     print(f"STORAGE: {storage_strings}, ID: {id_diag}")
-    str_video_in = storage_strings["video_in"]
-    tipo, path_video_in = split_storage_url(str_video_in)
+    path_video_in = storage_strings["video_in"]
+    path_video_out = storage_strings["video_out"]
+    id_in = drive.upload_to_drive(path_video_in, [email])
+    id_out = drive.upload_to_drive(path_video_out, [email])
 
-    str_video_out = storage_strings["video_out"]
-    tipo, path_video_out = split_storage_url(str_video_out)
-
-    id_in = drive.upload_to_drive(path_video_in)
-    id_out = drive.upload_to_drive(path_video_out)
-
-    url_in = make_storage_url(local=False, filename=id_in)
-    url_out = make_storage_url(local=False, filename=id_out)
-
-    modif = {"video_in": url_in, "video": url_out}
+    # Update the document in the database with the new Google Drive file IDs
     mongo.db.get_collection(COLLECTION_DIAGS).update_one(
         {"_id": ObjectId(id_diag)},
-        {"$set": modif}
+        {"$set": {"video_in": id_in,
+                  "video": id_out
+                  }
+         }
     )
+
     print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
 
 
@@ -580,19 +554,13 @@ def analisar():
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
 
-    # VERSÃO LOGADO
-    if current_user.is_authenticated:
-        user = current_user.id
-    else:
-        user = "ANONIMO"
-
     ext = Helper.allowed_file(filename)
     if ext is None:
         print("Incorrect file type!\n\n")
 
         return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
-
-    nome_video = f"{user}_{str(round(timestamp, 4))}"
+    paciente = diag.get('nomePaciente', None)
+    nome_video = f"{paciente}_{str(round(timestamp, 4))}"
     nome_local = f"{nome_video}.{ext}"
     filename_arq_input = f"INPUT_{nome_local}"
     # renomeia arquivo de input na pasta temporaria para filename_arq_input
@@ -615,7 +583,7 @@ def analisar():
     path_arq_input_conv = Helper.converter_arq(
         path_arq_input, path_aux_conv)
     print("\nDEPOIS PRIMEIRA CONVER\n")
-    nome_local = f"{nome_video}.{EXT_OUT}"
+
     path_out_antes_conv = os.path.join(
         app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
 
@@ -684,8 +652,11 @@ def analisar():
 
     print("PEGANDO URLS")
 
-    local_url_video_out = path_out
-    local_url_video_in = path_arq_input
+    local_url_video_out = url_for(
+        'get_file', resource_uri=os.path.basename(path_out), _external=True)
+    print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
+    local_url_video_in = url_for(
+        'get_file', resource_uri=os.path.basename(path_arq_input), _external=True)
 
     result = {"diagAutom": str_diag, "dados_grafico": dict_graf, "dados_pdf": dict_dados_pdf,
               "dataDiag": timestamp, "video": local_url_video_out, "ultimaModif": timestamp}
@@ -696,8 +667,8 @@ def analisar():
 
     result["diagAutom"] = str_res
 
-    storage_dict = {"video_in": local_url_video_in,
-                    "video_out": local_url_video_out}
+    storage_dict = {"video_in": path_arq_input,
+                    "video_out": path_out}
 
     def after_analise():
         # cria nova thread pra sincronizar com google drive
@@ -709,9 +680,9 @@ def analisar():
     result.pop('dados_pdf')
     result["grafico"] = url_for(
         'gerar_grafico', external=True, id_diag=id_diag, _external=True)
-    result["pdf"] = url_for('gerar_relatorio', id_diag=id_diag, _external=True)
-    result["video"] = url_for(
-        'get_file', resource_uri=local_url_video_out, _external=True)
+    result["pdf"] = url_for(
+        'gerar_relatorio', id_diag=id_diag, download=True, _external=True)
+    result["video"] = local_url_video_out
     resp = jsonify(result)
     resp.call_on_close(after_analise)
     print("\nANALISE FINALZIADA!")
@@ -742,7 +713,6 @@ def pega_perfil():
                     "id_medico": id_medico
                 }
             },
-
             {
                 '$facet': {
                     'metadata': [{'$count': 'totalCount'}],
@@ -756,7 +726,7 @@ def pega_perfil():
         medico = find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
-        return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": lista_res})
+        return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": lista_res, "maxItensPag": maxItensPag})
 
     else:
         print("INPUT NULO!")
@@ -769,6 +739,7 @@ def gerar_relatorio(id_diag):
     """
     Gera pdf com grafico e outros dados importantes e retorna url do pdf
     """
+    download = request.args.get("download", default=False, type=bool)
 
     diag = find_one_with_id(
         mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
@@ -776,13 +747,27 @@ def gerar_relatorio(id_diag):
     if str(dados_pdf) == "None":
         return make_response("NAO TEM PDF!", BAD_REQUEST)
 
-    output = os.path.relpath(os.path.join(
-        app.config["TEMP_FOLDER"], dados_pdf["nomePaciente"]), app.config["WKDIR"])
-    dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
+    path_out_pdf = os.path.join(
+        app.config["TEMP_FOLDER"], f"{dados_pdf['nomePaciente']}.pdf")
+    relpath_output = os.path.relpath(path_out_pdf, app.config["WKDIR"])
+    try:
+        dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
 
-    Helper.gerar_pdf(output, dados_pdf)
-    uri_pdf = output
-    return get_file(uri_pdf)
+        Helper.gerar_pdf(relpath_output, dados_pdf)
+
+        uri_pdf = relpath_output
+        if download:
+            print(f"BAIXANDO PDF {relpath_output}...")
+            return send_file(
+                path_out_pdf,
+                as_attachment=True,
+                download_name='Relatorio.pdf'
+            )
+        else:
+            return get_file(uri_pdf)
+    except Exception as e:
+        print(f"EXCEPTION AO GERAR PDF: {e}")
+        return make_response("NAO TEM PDF!", INTERNAL_SERVER_ERROR)
 
 
 @app.route("/gerar_grafico/<id_diag>", methods=["GET"])
@@ -932,16 +917,15 @@ def autenticar():
 @app.route("/aceitaCadastro/<email_medico>", methods=["GET", "POST"])
 def aceitar_cadastro(email_medico):
     try:
-        a = MAILHANDLER.enviar_email_usuario(
-            'cadastroOK', email_medico, "Cadastro Validado!", DOMINIO_FRONT_VUE)
-        if not a:
-            raise Exception("Não foi possível enviar email!!!")
-
-        # TODO INSERIR LOGICA DE FLAG DE VALIDAÇÃO DE CADASTRO
         mongo.db.get_collection(COLLECTION_MEDICOS).update_one(
             {"email": email_medico},
             {"$set": {"validado": True}}
         )
+
+        a = MAILHANDLER.enviar_email_usuario(
+            'cadastroOK', email_medico, "Cadastro Validado!", DOMINIO_FRONT_VUE)
+        if not a:
+            raise Exception("Não foi possível enviar email!!!")
 
         return make_response(f"EMAIL ENVIADO!", OK)
     except Exception as e:

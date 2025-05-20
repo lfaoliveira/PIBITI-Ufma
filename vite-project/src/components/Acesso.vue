@@ -150,7 +150,11 @@ export default {
   },
   emits: ["abreAviso"],
   created() {},
-  mounted() {},
+  mounted() {
+    if (this.$store.getters.getLogado) {
+      this.$router.push("/perfil");
+    }
+  },
   data() {
     return {
       tipo: "login",

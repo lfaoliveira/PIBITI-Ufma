@@ -54,7 +54,7 @@
           <span class="numero-pagina">
             <p>{{ this.pagAtual }}</p>
             <p>de</p>
-            <p>{{ this.maxPags }}</p>
+            <p>{{ maxPags }}</p>
           </span>
 
           <button @click="fnFrente" class="but-avancar">
@@ -102,8 +102,10 @@ export default {
     this.entradas = this.ajustarEntradasTabela(res2.data.lista);
     this.nomeMedico = res2.data.nomeMedico;
     this.crm = res2.data.crm;
+    this.maxItens_Pag = parseInt(res2.data.maxItensPag);
     console.log("ENTRADAS: ", this.entradas);
-    this.maxPags = Math.ceil(this.entradas.length / this.maxItens_Pag);
+    console.log("LENGTH: ", this.entradas.length);
+    this.maxPags = Math.ceil(parseInt(this.entradas.length) / this.maxItens_Pag);
   },
   methods: {
     baixarRelatorio(evt) {
@@ -186,7 +188,7 @@ export default {
       crm: "MA-12345",
       temDiags: true,
       pagAtual: 1,
-      maxPags: "-", //esse aqui se pega do BD
+      maxPags: "1", //esse aqui se pega do BD
       header: {
         nomePaciente: "Paciente",
         diagnosticoMedico: "Diagnóstico Médico",
