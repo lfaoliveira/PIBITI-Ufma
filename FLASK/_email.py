@@ -3,10 +3,10 @@ from flask_mail import Mail, Message
 from typing import Literal
 import time
 
-SOURCE_HTML = ".\\static\\template-email.html"
+SOURCE_HTML = "./static/template-email.html"  # MUDAR COM BASE EM LINUX OU WINDOWS!!!!
 # TODO: MUDAR TITULO DO APLICATIVO!!!!!!!!!!!!!
-TITULO_APP = "<<TITULO DO APP>>"
-EMAIL_APP = 'viplab.psno@nca.ufma.br'
+TITULO_APP = "NeurOptic"
+EMAIL_APP = "viplab.psno@nca.ufma.br"
 
 CORPO = "corpo-texto"
 BOTOES = "botoes"
@@ -18,14 +18,14 @@ URL_SUPORTE = ""
 class MailHandler:
     def __init__(self, flask_mail):
         self.mailer = flask_mail
-        with open(SOURCE_HTML, 'r', encoding='utf-8') as file:
+        with open(SOURCE_HTML, "r", encoding="utf-8") as file:
             html_content = file.read()
-        self.parser = BeautifulSoup(html_content, 'html.parser')
+        self.parser = BeautifulSoup(html_content, "html.parser")
 
     def reset_parser(self):
-        with open(SOURCE_HTML, 'r', encoding='utf-8') as file:
+        with open(SOURCE_HTML, "r", encoding="utf-8") as file:
             html_content = file.read()
-        self.parser = BeautifulSoup(html_content, 'html.parser')
+        self.parser = BeautifulSoup(html_content, "html.parser")
 
     def format_html(self, class_value_mapper: dict):
         # substitui valores no HTML
@@ -62,9 +62,10 @@ class MailHandler:
                 background = "hsl(267, 81%, 37%)"
             else:
                 background = "#000000"
-            td_tag['style'] = "width: 20ch"
-            anchor_tag[
-                'style'] = f"color: #ffffff; text-align: center; margin-right:10px; padding: 2% 0.5%; background: {background}; border-radius: 17%;"
+            td_tag["style"] = "width: 20ch"
+            anchor_tag["style"] = (
+                f"color: #ffffff; text-align: center; margin-right:10px; padding: 2% 0.5%; background: {background}; border-radius: 17%;"
+            )
             td_tag.append(anchor_tag)
 
             botoes.append(td_tag)
@@ -80,33 +81,41 @@ class MailHandler:
             table_row = self.parser.new_tag("tr")
             td_tag = self.parser.new_tag("td")
             td_tag.string = str(entry)
-            td_tag['style'] = "margin: 5px;"
+            td_tag["style"] = "margin: 5px;"
             table_row.append(td_tag)
             table.append(table_row)
 
         corpo.append(table)
         return
 
-    def enviar_email_usuario(self, tipo: Literal['recuperar', 'cadastroOK', 'cadastroInvalido'], email_destino, assunto, url):
+    def enviar_email_usuario(
+        self,
+        tipo: Literal["recuperar", "cadastroOK", "cadastroInvalido"],
+        email_destino,
+        assunto,
+        url,
+    ):
         try:
             texto1 = ""
             texto2 = ""
             texto_botao = ""
             link = url
 
-            if tipo == 'recuperar':
+            if tipo == "recuperar":
                 texto1 = "Clique no link para recuperar sua senha."
                 texto2 = f"Se não foi você, por favor não clique no link e nos avise por meio deste email: {EMAIL_APP}"
                 texto_botao = "Recuperar Senha"
 
-            elif tipo == 'cadastroOK':
+            elif tipo == "cadastroOK":
                 texto1 = "Seu cadastro foi validado com sucesso!"
                 texto2 = "Agora você pode salvar seus diagnósticos em nosso site."
                 texto_botao = "Link do site"
 
-            elif tipo == 'cadastroInvalido':
+            elif tipo == "cadastroInvalido":
                 texto1 = "Seu cadastro estava inválido!"
-                texto2 = "Verifique se seu nome e CRM estavam corretos e tente novamente."
+                texto2 = (
+                    "Verifique se seu nome e CRM estavam corretos e tente novamente."
+                )
                 texto_botao = "Link do suporte"
             else:
                 raise ValueError(f"TIPO: {tipo} NAO EXISTE!")
@@ -114,8 +123,7 @@ class MailHandler:
             self.add_h2([texto1, texto2])
             self.add_anchor({texto_botao: link})
 
-            self.enviar_email(str(self.parser),
-                              email_destino, assunto)
+            self.enviar_email(str(self.parser), email_destino, assunto)
 
             with open("last_email_rendered.html", "w", encoding="utf-8") as f:
                 f.write(str(self.parser))
@@ -138,8 +146,7 @@ class MailHandler:
             # TODO: CRIAR URL de aceitacao e recusa de cadastro
             self.add_table([texto_cad, texto_email, texto_nome, texto_crm])
             self.add_anchor({"Aceitar": urlAceita, "Recusar": urlRecusa})
-            self.enviar_email(str(self.parser),
-                              EMAIL_APP, "NOVO CADASTRO")
+            self.enviar_email(str(self.parser), EMAIL_APP, "NOVO CADASTRO")
             self.reset_parser()
 
             with open("last_email_rendered.html", "w", encoding="utf-8") as f:
@@ -156,9 +163,7 @@ class MailHandler:
         try:
             # html = self.format_html(class_value_mapper)
             msg = Message(
-                subject=assunto,
-                recipients=[destino],  # List of recipients
-                html=html
+                subject=assunto, recipients=[destino], html=html  # List of recipients
             )
             self.mailer.send(msg)
             return True
