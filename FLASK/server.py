@@ -1,5 +1,11 @@
 from datetime import datetime
-from http.client import BAD_GATEWAY, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK, UNAUTHORIZED
+from http.client import (
+    BAD_GATEWAY,
+    BAD_REQUEST,
+    INTERNAL_SERVER_ERROR,
+    OK,
+    UNAUTHORIZED,
+)
 import time
 from bson import ObjectId
 import shutil
@@ -9,8 +15,27 @@ import os
 from werkzeug.utils import secure_filename
 import subprocess
 import json
-from flask import Flask, make_response, redirect, session, jsonify, request, url_for, abort, Response, stream_with_context, send_file
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask import (
+    Flask,
+    make_response,
+    redirect,
+    session,
+    jsonify,
+    request,
+    url_for,
+    abort,
+    Response,
+    stream_with_context,
+    send_file,
+)
+from dotenv import load_dotenv
+from flask_login import (
+    LoginManager,
+    login_user,
+    logout_user,
+    login_required,
+    current_user,
+)
 from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
 from flask_mail import Mail, Message
@@ -41,8 +66,7 @@ class Helper:
 
     @staticmethod
     def allowed_file(filename: str):
-        ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm",
-                              "mkv", "ogv", "ogg", "mp4", "avi"]
+        ALLOWED_EXTENSIONS = ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"]
         for ext in ALLOWED_EXTENSIONS:
             if filename.lower().endswith(ext):
                 return ext
@@ -51,7 +75,7 @@ class Helper:
     @staticmethod
     def read_ENV_VARS(arq_config):
         try:
-            with open(arq_config, 'r') as file:
+            with open(arq_config, "r") as file:
                 reader = csv.reader(file)
                 for row in reader:
                     if len(row) >= 2:  # Ensure row has key and value
@@ -67,15 +91,13 @@ class Helper:
         file_name = "trained_weights_final.h5"
         id = api.get_file_id(file_name)
         bytes_file, _ = api.download_file(id)
-        with open(file_name, 'wb') as f:
+        with open(file_name, "wb") as f:
             f.write(bytes_file)
 
     @staticmethod
     def enviar_email(mensagem, destino, assunto):
         msg = Message(
-            subject=assunto,
-            recipients=[destino],  # List of recipients
-            body=mensagem
+            subject=assunto, recipients=[destino], body=mensagem  # List of recipients
         )
         try:
             mail.send(msg)
@@ -84,7 +106,7 @@ class Helper:
             return INTERNAL_SERVER_ERROR
 
     @staticmethod
-    def traduzir_diag(diag: str, sep='+'):
+    def traduzir_diag(diag: str, sep="+"):
         splitado = diag.split(sep)
 
         esq, dir = splitado
@@ -110,47 +132,55 @@ class Helper:
     @staticmethod
     def converter_arq(input: str, output: str):
         """
-        Converte video de input em .mp4 
+        Converte video de input em .mp4
         """
         if not os.path.exists(input):
             raise FileNotFoundError(f"Input file not found: {input}")
 
         print(f"Converting {input} to {output}")
         stream = ffmpeg.input(input)
-        stream = ffmpeg.output(stream, output, vcodec='libx264', acodec='aac')
+        stream = ffmpeg.output(stream, output, vcodec="libx264", acodec="aac")
         print(stream, "\n\n")
         try:
             # Execute the conversion
-            ffmpeg.run(stream, cmd='ffmpeg')
+            ffmpeg.run(stream, cmd="ffmpeg")
             return output
         except ffmpeg.Error as e:
-            print('stdout:', e.stdout.decode('utf8'))
-            print('stderr:', e.stderr.decode('utf8'))
+            print("stdout:", e.stdout.decode("utf8"))
+            print("stderr:", e.stderr.decode("utf8"))
 
     @staticmethod
     def gerar_pdf(path_output, dict_dados):
-        """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF RENDERIZADO
+        """FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF RENDERIZADO
 
         :param dict_dados dict[str,Any]: keys: [velEsq, nomeMedico, crm, dataAgora, nomePaciente, diagAutom, velDir, diagnosticoMedico, urlGrafico, difVel]
         :param path_output str: path pro output do pdf
         """
         # mapeamento nome no BD -> tag no HTML
-        mapeamento = {'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
-                      'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
-                      'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
-                      'difVel': "dif-vel"}
+        mapeamento = {
+            "crm": "crm",
+            "velEsq": "vel-esq",
+            "nomeMedico": "nome-medico",
+            "dataAgora": "data",
+            "nomePaciente": "nome-paciente",
+            "diagAutom": "diag-auto",
+            "velDir": "vel-dir",
+            "diagnosticoMedico": "diag-medico",
+            "urlGrafico": "img-grafico",
+            "difVel": "dif-vel",
+        }
 
         print(f"DICT DADOS PDF: {dict_dados}\n")
         # ajeita strings de diagnostico
-        str_diag_autom = Helper.traduzir_diag(dict_dados['diagAutom'])
-        dict_dados['diagAutom'] = str_diag_autom
-        str_diag_medico = Helper.traduzir_diag(dict_dados['diagnosticoMedico'])
-        dict_dados['diagnosticoMedico'] = str_diag_medico
+        str_diag_autom = Helper.traduzir_diag(dict_dados["diagAutom"])
+        dict_dados["diagAutom"] = str_diag_autom
+        str_diag_medico = Helper.traduzir_diag(dict_dados["diagnosticoMedico"])
+        dict_dados["diagnosticoMedico"] = str_diag_medico
 
-        dt_object = datetime.fromtimestamp(dict_dados['dataAgora'])
+        dt_object = datetime.fromtimestamp(dict_dados["dataAgora"])
         formatted_time = dt_object.strftime("%d-%m-%Y")
-        dict_dados['dataAgora'] = formatted_time
-        print(dict_dados['dataAgora'])
+        dict_dados["dataAgora"] = formatted_time
+        print(dict_dados["dataAgora"])
 
         dict_input_weasy = {}
         for key_dado in dict_dados.keys():
@@ -158,26 +188,29 @@ class Helper:
             dict_input_weasy[nomeTag] = dict_dados[key_dado]
 
         # Serialize data to pass to the external process
-        args_pdf = {
-            "path_output": path_output,
-            "dict_input_weasy": dict_input_weasy
-        }
+        args_pdf = {"path_output": path_output, "dict_input_weasy": dict_input_weasy}
         base_url = os.path.join(app.config["WKDIR"], "static")
 
         try:
             # Execute the PDF generation as an external process
             process = subprocess.run(
-                ["python", "pdf.py", json.dumps(
-                    dict_input_weasy), path_output, base_url],
+                [
+                    "python",
+                    "pdf.py",
+                    json.dumps(dict_input_weasy),
+                    path_output,
+                    base_url,
+                ],
                 text=True,
-                capture_output=True
+                capture_output=True,
             )
 
             if process.returncode == 0:
                 print("PDF created successfully!")
             else:
                 raise Exception(
-                    f"PDF generation failed in external process {process.stderr}")
+                    f"PDF generation failed in external process {process.stderr}"
+                )
         except Exception as e:
             print(e)
 
@@ -218,9 +251,9 @@ COLLECTION_MEDICOS = "Medicos"
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 
 # Read environment variables from CSV
-arq_config = "../env.csv"
-Helper.read_ENV_VARS(arq_config)
-
+# arq_config = "./env.csv"
+# Helper.read_ENV_VARS(arq_config) NOTE: DEPRECATED
+load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -233,7 +266,7 @@ mongo = PyMongo(app)
 
 
 # SEGURANÇA
-app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.environ.get("SECRET_KEY")
 if app.secret_key is None:
     exit(1)
 alg_hash = hashlib.sha3_256
@@ -246,7 +279,7 @@ app.config.update(
     SESSION_PERMANENT=True,
     SESSION_COOKIE_SECURE=True,  # Set to True in production with HTTPS
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='None',
+    SESSION_COOKIE_SAMESITE="None",
     SESSION_USE_SIGNER=True,
     SESSION_COOKIE_PARTITIONED=True,
     PERMANENT_SESSION_LIFETIME=timedelta(days=1),
@@ -255,49 +288,59 @@ app.config.update(
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.session_protection = 'basic'
+login_manager.session_protection = "basic"
 
 
 # CONFIGS DE EMAIL
 app.config.update(
-    MAIL_SERVER=os.environ.get('MAIL_SERVER', 'smtp.example.com'),
-    MAIL_PORT=int(os.environ.get('MAIL_PORT', 587)),
-    MAIL_USE_TLS=os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true',
-    MAIL_USE_SSL=os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true',
-    MAIL_USERNAME=os.environ.get('MAIL_USERNAME'),
-    MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
-    MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER')
+    MAIL_SERVER=os.environ.get("MAIL_SERVER", "smtp.example.com"),
+    MAIL_PORT=int(os.environ.get("MAIL_PORT", 587)),
+    MAIL_USE_TLS=os.environ.get("MAIL_USE_TLS", "True").lower() == "true",
+    MAIL_USE_SSL=os.environ.get("MAIL_USE_SSL", "False").lower() == "true",
+    MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
+    MAIL_DEFAULT_SENDER=os.environ.get("MAIL_DEFAULT_SENDER"),
 )
-# OBJETO DO FLASK_MAIL
-mail = Mail(app)
-# HANDLER DE EMAILS
-MAILHANDLER = MailHandler(mail)
+
 """ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
 CORS(app, supports_credentials=True)
 # path para arquivos temporarios
 
-# print("WeasyPrint: se Aparecer erro: 'Fontconfig error: Cannot load default config file: No such file: (null)', testar se pdfs estao sendo gerados corretamente para ter deploy garantido\n")
-print("APP INICIADO")
+"""WeasyPrint: se Aparecer erro: 
+'Fontconfig error: Cannot load default config file: No such file: (null)', 
+testar se pdfs estao sendo gerados corretamente para ter deploy garantido\n")"""
 
 os.makedirs("tmp", exist_ok=True)
 
 PATH_PIBITI = os.getcwd()
+print(f"PATH_PIBITI: {PATH_PIBITI}\n")
 PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
-EMAIL_ADMIN = 'viplab.psno@nca.ufma.br'
+EMAIL_ADMIN = "viplab.psno@nca.ufma.br"
 DOMINIO_SITE = "http://localhost:5000"
 DOMINIO_FRONT_VUE = "http://localhost:5173"
 
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
+    print("SETTING WKDIR TO APP.CONFIG")
 if "PIBITI" == os.path.basename(PATH_PIBITI):
     os.chdir(app.config["WKDIR"])
+    print(f"CHANGING DIR TO {os.getcwd()}")
+
 app.config["WKDIR"] = os.getcwd()
 
 PATH_CRED = os.path.join(
-    app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json")
+    app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json"
+)
 
+# OBJETO DO FLASK_MAIL
+mail = Mail(app)
+# HANDLER DE EMAILS
+MAILHANDLER = MailHandler(mail)
+
+
+print("APP INICIADO")
 # PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE COLLECTION_MEDICOS
 ROOT_DRIVE = "ROOT_DADOS"
 drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
@@ -305,8 +348,7 @@ print("\nGOOGLE DRIVE:", end=" ")
 if not drive.file_state.empty:
     for name in drive.file_state.loc[:, "name"]:
         print(f"{name},", end=" ")
-print(
-    f"Initial drive state captured with {len(drive.file_state.index)} Objects.")
+print(f"Initial drive state captured with {len(drive.file_state.index)} Objects.")
 
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
@@ -327,23 +369,39 @@ analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 @app.route("/teste_pdf")
 def teste_pdf():
-    """ FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF renderizado
+    """FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF renderizado
 
     dict_dados: keys: `
-    [logoApp, velEsq, nomeMedico, dataAgora, nomePaciente, diagAutom, 
+    [logoApp, velEsq, nomeMedico, dataAgora, nomePaciente, diagAutom,
     velDir, diagnosticoMedico, urlGrafico, logoVip, logoUfma, logoNca, difVel]
     `
     """
     # mapeamento input da funcao -> tag no HTML
-    mapeamento = {'crm': "crm", 'velEsq': "vel-esq", 'nomeMedico': "nome-medico",
-                  'dataAgora': "data", 'nomePaciente': "nome-paciente", 'diagAutom': "diag-auto",
-                  'velDir': "vel-dir",  'diagnosticoMedico': "diag-medico", 'urlGrafico': "img-grafico",
-                  'difVel': "dif-vel"}
+    mapeamento = {
+        "crm": "crm",
+        "velEsq": "vel-esq",
+        "nomeMedico": "nome-medico",
+        "dataAgora": "data",
+        "nomePaciente": "nome-paciente",
+        "diagAutom": "diag-auto",
+        "velDir": "vel-dir",
+        "diagnosticoMedico": "diag-medico",
+        "urlGrafico": "img-grafico",
+        "difVel": "dif-vel",
+    }
 
-    dict_dados = {'velEsq': '2 mm/s', 'crm': "MA-1234", 'nomeMedico': "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak", 'dataAgora': "11/01/2001",
-                  'nomePaciente': "Paciente Doente Silva Junior", 'diagAutom': "Tem Estrabismo",
-                  'velDir': '2 mm/s', 'diagnosticoMedico': "Não Tem Estrabismo", 'urlGrafico': "file://../../vite-project/src/assets/grafico.png",
-                  'difVel': '20 %'}
+    dict_dados = {
+        "velEsq": "2 mm/s",
+        "crm": "MA-1234",
+        "nomeMedico": "Dr Fulano de Tal Silva Araujo de Oliveira ThisIsAnExampleOfAReallyLongWordThatNeedsToBreak",
+        "dataAgora": "11/01/2001",
+        "nomePaciente": "Paciente Doente Silva Junior",
+        "diagAutom": "Tem Estrabismo",
+        "velDir": "2 mm/s",
+        "diagnosticoMedico": "Não Tem Estrabismo",
+        "urlGrafico": "file://../../vite-project/src/assets/grafico.png",
+        "difVel": "20 %",
+    }
 
     dict_input_weasy = {}
     for key_dado in dict_dados.keys():
@@ -356,25 +414,23 @@ def teste_pdf():
 
         # base_url = 'file://' + app.static_folder
         base_url = app.static_folder
-        pdfOK, erro = conv.convert_html_to_pdf(
-            string_html, filename, base_url)
+        pdfOK, erro = conv.convert_html_to_pdf(string_html, filename, base_url)
 
         if pdfOK:
             print(base_url)
-            if os.path.exists(os.path.join(
-                    app.config["TEMP_FOLDER"], filename)):
-                os.remove(os.path.join(
-                    app.config["TEMP_FOLDER"], filename))
+            if os.path.exists(os.path.join(app.config["TEMP_FOLDER"], filename)):
+                os.remove(os.path.join(app.config["TEMP_FOLDER"], filename))
 
-            shutil.move(filename, os.path.join(
-                app.config["TEMP_FOLDER"], filename))
+            shutil.move(filename, os.path.join(app.config["TEMP_FOLDER"], filename))
             print("PDF created successfully!")
         else:
             raise erro
         return make_response("PDF created successfully!", OK)
     except Exception as e:
         print(e)
-        return make_response("An error occurred during PDF creation.", INTERNAL_SERVER_ERROR)
+        return make_response(
+            "An error occurred during PDF creation.", INTERNAL_SERVER_ERROR
+        )
 
 
 @app.route("/deletar_tudo")
@@ -388,7 +444,7 @@ def deletar_tudo():
             continue
         file = files.loc[id]
         print(f"ID:{id} NOME:{file.get('name')} in {file.get('parents')}")
-        if drive.get_folder_id(file.get('name')):
+        if drive.get_folder_id(file.get("name")):
             # eh folder, logo nao deleta
             continue
         if drive.delete_file(id):
@@ -404,8 +460,13 @@ def teste_folder():
     try:
         # MAILHANDLER.enviar_email_usuario(
         #     "recuperar", "luisfelipearaujo503@gmail.com", "TESTE TESTE", "http://localhost:5173/")
-        MAILHANDLER.enviar_email_admin("luisfelipearaujo503@gmail.com", "FULANO",
-                                       "MA-1234", "http://localhost:5173/", "http://localhost:5173/")
+        MAILHANDLER.enviar_email_admin(
+            "luisfelipearaujo503@gmail.com",
+            "FULANO",
+            "MA-1234",
+            "http://localhost:5173/",
+            "http://localhost:5173/",
+        )
         return make_response("OK", OK)
 
     except Exception as e:
@@ -425,7 +486,7 @@ def index():
     return "Hello World"
 
 
-@app.route('/get-file-drive/<id_file>', methods=['GET'])
+@app.route("/get-file-drive/<id_file>", methods=["GET"])
 @cross_origin(supports_credentials=True)
 # usando esse decorator pra evitar erros de TLS
 def get_file_drive(id_file):
@@ -434,23 +495,26 @@ def get_file_drive(id_file):
     """
     print("FILE ID: ", id_file)
     try:
-        limite_mega = 20*1024*1024  # (20 MB)
+        limite_mega = 20 * 1024 * 1024  # (20 MB)
         print("PEGANDO ARQUIVO!")
         file_generator, filename = drive.download_file(id_file)
         print("DEPOIS DOWNLOAD")
         return Response(
             stream_with_context(file_generator),
             headers={
-                'Content-Disposition': f'attachment; filename="{filename}"',
-                'Content-Type': mimetypes.guess_type(filename)[0] or 'application/octet-stream'
-            }
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Type": mimetypes.guess_type(filename)[0]
+                or "application/octet-stream",
+            },
         )
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
-        return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
+        return make_response(
+            {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
+        )
 
 
-@app.route('/get-file-local/<filename>', methods=['GET'])
+@app.route("/get-file-local/<filename>", methods=["GET"])
 @cross_origin(supports_credentials=True)
 # usando esse decorator pra evitar erros de TLS
 def get_file_local(filename):
@@ -461,31 +525,34 @@ def get_file_local(filename):
     try:
         if len(filename) > 0:
             # limite_mega = 20*1024*1024
-            filename = os.path.join(
-                app.config["TEMP_FOLDER"], filename)
+            filename = os.path.join(app.config["TEMP_FOLDER"], filename)
             print("FILE NAME GET_LOCAL: ", filename)
 
-            chunk_size = 1024*1024
+            chunk_size = 1024 * 1024
 
             def file_generator(file_path):
                 with open(file_path, "rb") as f:
                     # ':=' walrus operator, designa e avalia variavel 'chunk'
                     while chunk := f.read(chunk_size):  # Read in chunks of 8KB
                         yield chunk
+
             print(f"BAIXANDO ARQUIVO {filename}")
             return Response(
                 stream_with_context(file_generator(filename)),
                 headers={
-                    'Content-Disposition': f'attachment; filename="{os.path.basename(filename)}"',
-                    'Content-Type': mimetypes.guess_type(filename)[0] or 'application/octet-stream'
-                }
+                    "Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"',
+                    "Content-Type": mimetypes.guess_type(filename)[0]
+                    or "application/octet-stream",
+                },
             )
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
-        return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
+        return make_response(
+            {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
+        )
 
 
-@app.route('/get-file/<resource_uri>', methods=['GET'])
+@app.route("/get-file/<resource_uri>", methods=["GET"])
 @cross_origin(supports_credentials=True)
 # usando esse decorator pra evitar erros de TLS
 def get_file(resource_uri) -> Union[Any, Response]:
@@ -498,7 +565,8 @@ def get_file(resource_uri) -> Union[Any, Response]:
             print("PEGANDO ARQUIVO!")
             # Check local storage first
             local_path = os.path.join(
-                app.config["TEMP_FOLDER"], os.path.basename(resource_uri))
+                app.config["TEMP_FOLDER"], os.path.basename(resource_uri)
+            )
             if os.path.exists(local_path):
                 print("RETORNANDO ARQUIVO LOCAL")
                 return get_file_local(os.path.basename(resource_uri))
@@ -511,7 +579,9 @@ def get_file(resource_uri) -> Union[Any, Response]:
             raise Exception("RECURSO NULO!")
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
-        return make_response({"error": f"{str(e)}", "file_url": 'None'}, INTERNAL_SERVER_ERROR)
+        return make_response(
+            {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
+        )
 
 
 def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
@@ -523,11 +593,7 @@ def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
 
     # Update the document in the database with the new Google Drive file IDs
     mongo.db.get_collection(COLLECTION_DIAGS).update_one(
-        {"_id": ObjectId(id_diag)},
-        {"$set": {"video_in": id_in,
-                  "video": id_out
-                  }
-         }
+        {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
     )
 
     print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
@@ -549,8 +615,9 @@ def analisar():
 
     if id_diag != None:
         print(request.form)
-        diag = mongo.db.get_collection(
-            COLLECTION_DIAGS).find_one({"_id": ObjectId(id_diag)})
+        diag = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
+            {"_id": ObjectId(id_diag)}
+        )
     else:
         return make_response("INPUT NULO!", BAD_REQUEST)
 
@@ -559,17 +626,18 @@ def analisar():
         print("Incorrect file type!\n\n")
 
         return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
-    paciente = diag.get('nomePaciente', None)
+    paciente = diag.get("nomePaciente", None)
     nome_video = f"{paciente}_{str(round(timestamp, 4))}"
     nome_local = f"{nome_video}.{ext}"
     filename_arq_input = f"INPUT_{nome_local}"
     # renomeia arquivo de input na pasta temporaria para filename_arq_input
-    os.rename(os.path.join(app.config["TEMP_FOLDER"], nome_input), os.path.join(
-        app.config["TEMP_FOLDER"], filename_arq_input))
+    os.rename(
+        os.path.join(app.config["TEMP_FOLDER"], nome_input),
+        os.path.join(app.config["TEMP_FOLDER"], filename_arq_input),
+    )
 
     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
-    path_arq_input = os.path.join(
-        app.config["TEMP_FOLDER"], filename_arq_input)
+    path_arq_input = os.path.join(app.config["TEMP_FOLDER"], filename_arq_input)
 
     """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
     arq_stream = arq.stream"""
@@ -577,15 +645,14 @@ def analisar():
     EXT_OUT = "mp4"
     nome_local = f"{nome_video}.{EXT_OUT}"
     # path cujo unico proposito eh servir de temporario pras conversoes de video
-    path_aux_conv = os.path.join(
-        app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
+    path_aux_conv = os.path.join(app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
 
-    path_arq_input_conv = Helper.converter_arq(
-        path_arq_input, path_aux_conv)
+    path_arq_input_conv = Helper.converter_arq(path_arq_input, path_aux_conv)
     print("\nDEPOIS PRIMEIRA CONVER\n")
 
     path_out_antes_conv = os.path.join(
-        app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}")
+        app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}"
+    )
 
     # executando predicao
     res_tensor, dict_graf_tensor = predict(
@@ -595,26 +662,23 @@ def analisar():
     with tf.compat.v1.Session() as sess:
         # Run the session to get the tensor's value
         res_np = sess.run(res_tensor)
-        if "ERRO" in res_np.decode('utf-8'):
+        if "ERRO" in res_np.decode("utf-8"):
             return make_response(res_np, BAD_REQUEST)
         graf_np = sess.run(dict_graf_tensor)
 
     # Decode bytes to string since predict returns all output as tensor
-    str_res, dict_graf = res_np.decode('utf-8'), graf_np
+    str_res, dict_graf = res_np.decode("utf-8"), graf_np
 
-    dict_graf['vel_esq'] = np.array(
-        dict_graf['vel_esq']).tolist()
-    dict_graf['vel_dir'] = np.array(
-        dict_graf['vel_dir']).tolist()
-    dict_graf['time'] = float(dict_graf['time'])
-    dict_graf['titulo'] = str(dict_graf['titulo'])
+    dict_graf["vel_esq"] = np.array(dict_graf["vel_esq"]).tolist()
+    dict_graf["vel_dir"] = np.array(dict_graf["vel_dir"]).tolist()
+    dict_graf["time"] = float(dict_graf["time"])
+    dict_graf["titulo"] = str(dict_graf["titulo"])
 
     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
     print("ULTIMA CONVERSAO")
-    path_out = Helper.converter_arq(
-        path_out_antes_conv, path_out)
+    path_out = Helper.converter_arq(path_out_antes_conv, path_out)
 
-    '''Removendo APENAS arquivos auxiliares'''
+    """Removendo APENAS arquivos auxiliares"""
     os.remove(path_out_antes_conv)
     os.remove(path_aux_conv)
 
@@ -632,20 +696,29 @@ def analisar():
     else:
         str_diag = "false+false"
 
-    id_medico = diag.get('id_medico', None)
+    id_medico = diag.get("id_medico", None)
     # NOTE: NAO GERA PDF PRA USUARIOS ANONIMOS!
     if str(id_medico) != "None":
-        diag_medico = diag.get('diagnosticoMedico')  # string codificada
-        nome_paciente = diag.get('nomePaciente')
+        diag_medico = diag.get("diagnosticoMedico")  # string codificada
+        nome_paciente = diag.get("nomePaciente")
 
-        medico = find_one_with_id(mongo.db.get_collection(
-            COLLECTION_MEDICOS), id_medico)
-        nome_medico = medico.get('nome')
-        crm = medico.get('crm')
-        email_medico = medico.get('email')
-        dict_dados_pdf = {"velEsq": split_res[0], "velDir": split_res[1], "difVel": split_res[2],
-                          "crm": crm, "diagAutom": str_diag, "dataAgora": timestamp,
-                          "nomePaciente": nome_paciente, "nomeMedico": nome_medico, "diagnosticoMedico": diag_medico}
+        medico = find_one_with_id(
+            mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
+        )
+        nome_medico = medico.get("nome")
+        crm = medico.get("crm")
+        email_medico = medico.get("email")
+        dict_dados_pdf = {
+            "velEsq": split_res[0],
+            "velDir": split_res[1],
+            "difVel": split_res[2],
+            "crm": crm,
+            "diagAutom": str_diag,
+            "dataAgora": timestamp,
+            "nomePaciente": nome_paciente,
+            "nomeMedico": nome_medico,
+            "diagnosticoMedico": diag_medico,
+        }
     else:
         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
         dict_dados_pdf = None
@@ -653,35 +726,44 @@ def analisar():
     print("PEGANDO URLS")
 
     local_url_video_out = url_for(
-        'get_file', resource_uri=os.path.basename(path_out), _external=True)
+        "get_file", resource_uri=os.path.basename(path_out), _external=True
+    )
     print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
     local_url_video_in = url_for(
-        'get_file', resource_uri=os.path.basename(path_arq_input), _external=True)
+        "get_file", resource_uri=os.path.basename(path_arq_input), _external=True
+    )
 
-    result = {"diagAutom": str_diag, "dados_grafico": dict_graf, "dados_pdf": dict_dados_pdf,
-              "dataDiag": timestamp, "video": local_url_video_out, "ultimaModif": timestamp}
+    result = {
+        "diagAutom": str_diag,
+        "dados_grafico": dict_graf,
+        "dados_pdf": dict_dados_pdf,
+        "dataDiag": timestamp,
+        "video": local_url_video_out,
+        "ultimaModif": timestamp,
+    }
     mongo.db.get_collection(COLLECTION_DIAGS).update_one(
-        {"_id": ObjectId(id_diag)},
-        {"$set": result}
+        {"_id": ObjectId(id_diag)}, {"$set": result}
     )
 
     result["diagAutom"] = str_res
 
-    storage_dict = {"video_in": path_arq_input,
-                    "video_out": path_out}
+    storage_dict = {"video_in": path_arq_input, "video_out": path_out}
 
     def after_analise():
         # cria nova thread pra sincronizar com google drive
         thread = threading.Thread(
-            target=sync_google_drive, args=(storage_dict, id_diag, email_medico))
+            target=sync_google_drive, args=(storage_dict, id_diag, email_medico)
+        )
         thread.start()
 
-    result.pop('dados_grafico')
-    result.pop('dados_pdf')
+    result.pop("dados_grafico")
+    result.pop("dados_pdf")
     result["grafico"] = url_for(
-        'gerar_grafico', external=True, id_diag=id_diag, _external=True)
+        "gerar_grafico", external=True, id_diag=id_diag, _external=True
+    )
     result["pdf"] = url_for(
-        'gerar_relatorio', id_diag=id_diag, download=True, _external=True)
+        "gerar_relatorio", id_diag=id_diag, download=True, _external=True
+    )
     result["video"] = local_url_video_out
     resp = jsonify(result)
     resp.call_on_close(after_analise)
@@ -694,39 +776,50 @@ def analisar():
 @login_required
 def pega_perfil():
     maxItensPag = 16
-    pagAtual = request.args.get('pagAtual', None)
+    pagAtual = request.args.get("pagAtual", None)
     if pagAtual != None:
         pagAtual = int(pagAtual)
 
         email_medico = str(current_user.id)
-        medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one({
-            "email": email_medico})
-        validado = bool(medico.get('validado', None))
+        medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one(
+            {"email": email_medico}
+        )
+        validado = bool(medico.get("validado", None))
         if not validado:
             print("MEDICO NAO VALIDADADO!")
             return make_response("MEDICO NAO VALIDADO!", UNAUTHORIZED)
         id_medico = str(medico["_id"])
         print("ID MEDICO: ", id_medico)
-        res = mongo.db.get_collection(COLLECTION_DIAGS).aggregate([
-            {
-                '$match': {
-                    "id_medico": id_medico
-                }
-            },
-            {
-                '$facet': {
-                    'metadata': [{'$count': 'totalCount'}],
-                    'data': [{'$skip': (pagAtual - 1) * maxItensPag}, {'$limit': maxItensPag}],
+        res = mongo.db.get_collection(COLLECTION_DIAGS).aggregate(
+            [
+                {"$match": {"id_medico": id_medico}},
+                {
+                    "$facet": {
+                        "metadata": [{"$count": "totalCount"}],
+                        "data": [
+                            {"$skip": (pagAtual - 1) * maxItensPag},
+                            {"$limit": maxItensPag},
+                        ],
+                    },
                 },
-            },
-        ], allowDiskUse=True)
-        lista_res = list(res)[0]['data']
+            ],
+            allowDiskUse=True,
+        )
+        lista_res = list(res)[0]["data"]
         # print(f"DIAGS: \n\n{lista_res}\n\n")
 
         medico = find_one_with_id(
-            mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
+            mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
+        )
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
-        return jsonify({"nomeMedico": medico["nome"], "crm": medico["crm"], "lista": lista_res, "maxItensPag": maxItensPag})
+        return jsonify(
+            {
+                "nomeMedico": medico["nome"],
+                "crm": medico["crm"],
+                "lista": lista_res,
+                "maxItensPag": maxItensPag,
+            }
+        )
 
     else:
         print("INPUT NULO!")
@@ -741,14 +834,14 @@ def gerar_relatorio(id_diag):
     """
     download = request.args.get("download", default=False, type=bool)
 
-    diag = find_one_with_id(
-        mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
-    dados_pdf = diag.get('dados_pdf', None)
+    diag = find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
+    dados_pdf = diag.get("dados_pdf", None)
     if str(dados_pdf) == "None":
         return make_response("NAO TEM PDF!", BAD_REQUEST)
 
     path_out_pdf = os.path.join(
-        app.config["TEMP_FOLDER"], f"{dados_pdf['nomePaciente']}.pdf")
+        app.config["TEMP_FOLDER"], f"{dados_pdf['nomePaciente']}.pdf"
+    )
     relpath_output = os.path.relpath(path_out_pdf, app.config["WKDIR"])
     try:
         dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
@@ -759,9 +852,7 @@ def gerar_relatorio(id_diag):
         if download:
             print(f"BAIXANDO PDF {relpath_output}...")
             return send_file(
-                path_out_pdf,
-                as_attachment=True,
-                download_name='Relatorio.pdf'
+                path_out_pdf, as_attachment=True, download_name="Relatorio.pdf"
             )
         else:
             return get_file(uri_pdf)
@@ -776,14 +867,17 @@ def gerar_grafico(id_diag, external=True):
     Gera grafico e retorna ele como stream
     """
 
-    diag = find_one_with_id(
-        mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
-    dados_grafico = diag.get('dados_grafico', None)
+    diag = find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
+    dados_grafico = diag.get("dados_grafico", None)
     if str(dados_grafico) == "None":
         return make_response("NAO TEM GRAFICO!", BAD_REQUEST)
 
-    vel_esq, vel_dir, titulo, time = dados_grafico["vel_esq"], dados_grafico[
-        "vel_dir"], dados_grafico["titulo"], dados_grafico["time"]
+    vel_esq, vel_dir, titulo, time = (
+        dados_grafico["vel_esq"],
+        dados_grafico["vel_dir"],
+        dados_grafico["titulo"],
+        dados_grafico["time"],
+    )
 
     path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
     print(f"PATH_GRAF: {path_graf}\n\n")
@@ -815,8 +909,7 @@ def envia_diag():
 
     diagnosticoMedico = stringOlhos
     response = requests.get(
-        url_for('val_login', _external=True),
-        cookies=request.cookies
+        url_for("val_login", _external=True), cookies=request.cookies
     )
 
     if response.status_code == 200:
@@ -834,8 +927,12 @@ def envia_diag():
 
     print("ID MEDICO: ", id_medico)
     diags = mongo.db.get_collection(COLLECTION_DIAGS)
-    dados = {"nomePaciente": nomePaciente, "id_medico": str(id_medico),
-             "diagnosticoMedico": diagnosticoMedico, "desc": desc}
+    dados = {
+        "nomePaciente": nomePaciente,
+        "id_medico": str(id_medico),
+        "diagnosticoMedico": diagnosticoMedico,
+        "desc": desc,
+    }
 
     # transforma qualquer valor None em string
     for key, value in dados.items():
@@ -855,7 +952,15 @@ def envia_diag():
         f.write(video_data)
 
     print("DIAG ENVIADO!\n")
-    return make_response({"mensagem": "CARREGADO", "id_diag": id_diag_mongo, "nome_input": nome_local, "filename": filename}, OK)
+    return make_response(
+        {
+            "mensagem": "CARREGADO",
+            "id_diag": id_diag_mongo,
+            "nome_input": nome_local,
+            "filename": filename,
+        },
+        OK,
+    )
 
 
 @login_manager.user_loader
@@ -875,7 +980,10 @@ def autenticar():
         if not email or not senha:
             return make_response("Email ou senha ausentes", BAD_REQUEST)
         usuario = medicos.find_one({"email": email})
-        if usuario and usuario.get("senha") == alg_hash(senha.encode('utf-8')).hexdigest():
+        if (
+            usuario
+            and usuario.get("senha") == alg_hash(senha.encode("utf-8")).hexdigest()
+        ):
             user_obj = User(email)
             login_user(user_obj, remember=True)
             return make_response("LOGADO", OK)
@@ -893,19 +1001,24 @@ def autenticar():
         if medicos.find_one({"email": email}):
             return make_response("JA_EXISTE", OK)
 
-        senha_hash = alg_hash(senha.encode('utf-8')).hexdigest()
-        medicos.insert_one({"email": email, "nome": nome,
-                           "crm": crm, "senha": senha_hash, "validado": False})
+        senha_hash = alg_hash(senha.encode("utf-8")).hexdigest()
+        medicos.insert_one(
+            {
+                "email": email,
+                "nome": nome,
+                "crm": crm,
+                "senha": senha_hash,
+                "validado": False,
+            }
+        )
 
         # loga usuario
         user_obj = User(email)
         login_user(user_obj, remember=True)
 
         # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
-        urlAceita = url_for("aceitar_cadastro",
-                            email_medico=email, _external=True)
-        urlRecusa = url_for("recusar_cadastro",
-                            email_medico=email, _external=True)
+        urlAceita = url_for("aceitar_cadastro", email_medico=email, _external=True)
+        urlRecusa = url_for("recusar_cadastro", email_medico=email, _external=True)
         MAILHANDLER.enviar_email_admin(email, nome, crm, urlAceita, urlRecusa)
         drive.create_folder([email])
 
@@ -918,12 +1031,12 @@ def autenticar():
 def aceitar_cadastro(email_medico):
     try:
         mongo.db.get_collection(COLLECTION_MEDICOS).update_one(
-            {"email": email_medico},
-            {"$set": {"validado": True}}
+            {"email": email_medico}, {"$set": {"validado": True}}
         )
 
         a = MAILHANDLER.enviar_email_usuario(
-            'cadastroOK', email_medico, "Cadastro Validado!", DOMINIO_FRONT_VUE)
+            "cadastroOK", email_medico, "Cadastro Validado!", DOMINIO_FRONT_VUE
+        )
         if not a:
             raise Exception("Não foi possível enviar email!!!")
 
@@ -937,11 +1050,11 @@ def aceitar_cadastro(email_medico):
 def recusar_cadastro(email_medico):
     try:
         a = MAILHANDLER.enviar_email_usuario(
-            'cadastroInvalido', email_medico, "Cadastro Inválido!", EMAIL_ADMIN)
+            "cadastroInvalido", email_medico, "Cadastro Inválido!", EMAIL_ADMIN
+        )
         if not a:
             raise Exception("Não foi possível enviar email!!!")
-        mongo.db.get_collection(COLLECTION_MEDICOS).delete_one(
-            {"email": email_medico})
+        mongo.db.get_collection(COLLECTION_MEDICOS).delete_one({"email": email_medico})
 
         return make_response(f"EMAIL ENVIADO!", OK)
     except Exception as e:
@@ -951,8 +1064,8 @@ def recusar_cadastro(email_medico):
 
 @app.route("/esqueci_senha", methods=["POST"])
 def esqueci():
-    emailDestino = request.form.get('email', None)
-    url_front = request.form.get('url_front', None)
+    emailDestino = request.form.get("email", None)
+    url_front = request.form.get("url_front", None)
 
     print(f"URL FRONT: {url_front}")
     if emailDestino:
@@ -963,8 +1076,7 @@ def esqueci():
             return make_response("Email Inválido!", UNAUTHORIZED)
 
         assunto = "Recuperação de Senha"
-        MAILHANDLER.enviar_email_usuario(
-            'recuperar', emailDestino, assunto, url_front)
+        MAILHANDLER.enviar_email_usuario("recuperar", emailDestino, assunto, url_front)
 
         return make_response("OK", OK)
     else:
@@ -973,13 +1085,13 @@ def esqueci():
 
 @app.route("/mudar_senha", methods=["POST"])
 def mudar_senha():
-    email = request.form.get('email', None)
-    novaSenha = request.form.get('novaSenha', None)
+    email = request.form.get("email", None)
+    novaSenha = request.form.get("novaSenha", None)
     print("COMECANDO MUDANCA")
     if novaSenha is None or email is None:
         print("INPUT NULO")
         return make_response(f"INPUT NULO!", UNAUTHORIZED)
-    novaSenha = alg_hash(novaSenha.encode('utf-8')).hexdigest()
+    novaSenha = alg_hash(novaSenha.encode("utf-8")).hexdigest()
 
     medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
     medico = medicos.find_one({"email": email})
@@ -987,10 +1099,7 @@ def mudar_senha():
     if medico == None:
         return make_response("EMAIL NAO EXISTE", BAD_REQUEST)
     else:
-        medicos.update_one(
-            {"email": email},
-            {"$set": {"senha": novaSenha}}
-        )
+        medicos.update_one({"email": email}, {"$set": {"senha": novaSenha}})
         print("SENHA ATUALIZADA")
         return make_response("SENHA ATUALIZADA!", OK)
 
@@ -1005,7 +1114,7 @@ def val_login():
         print("USUÁRIO NÃO AUTENTICADO OU SESSÃO EXPIRADA")
         return make_response("False", UNAUTHORIZED)
     else:
-        '''
+        """
         # Check if user exists in database
         usuario = find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), str(current_user.id))
@@ -1014,7 +1123,7 @@ def val_login():
         else:
             print("USUARIO INEXISTE OU SESSAO EXPIRADA!!!!!")
             return make_response("False", INTERNAL_SERVER_ERROR)
-        '''
+        """
         return make_response("LOGADO", OK)
 
 
@@ -1024,11 +1133,19 @@ def val_login():
 def logout():
     try:
         logout_user()
-        response = make_response(redirect(url_for('val_login')))
+        response = make_response(redirect(url_for("val_login")))
         # Overwrite cookie with expired date to remove it from browser
-        response.set_cookie('session', '', expires=0, path='/', secure=True,
-                            httponly=True, samesite='None', partitioned=True)
-        response.delete_cookie('remember_token')
+        response.set_cookie(
+            "session",
+            "",
+            expires=0,
+            path="/",
+            secure=True,
+            httponly=True,
+            samesite="None",
+            partitioned=True,
+        )
+        response.delete_cookie("remember_token")
         return response
 
     except Exception as e:
@@ -1038,4 +1155,4 @@ def logout():
 
 if __name__ == "__main__":
     # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
