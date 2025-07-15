@@ -89,8 +89,10 @@ class Helper:
     @staticmethod
     def get_peso(api: GoogleDrive):
         file_name = "trained_weights_final.h5"
+        print("PEGANDO ID DO ARQUIVO A BAIXAR")
         id = api.get_file_id(file_name)
         bytes_file, _ = api.download_file(id)
+        print("BYTES BAIXADOS")
         with open(file_name, "wb") as f:
             f.write(bytes_file)
 
