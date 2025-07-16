@@ -356,9 +356,10 @@ print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
-    print(" NÃO REINICIE O SERVIDOR!!!!!!!\nBaixando pesos do modelo YOLOv3...")
+    raise Exception(
+        f"PESO YOLOv3 NAO EXISTE!!! BAIXE O ARQUIVO: trained_weights_final.h5 PARA PROSSEGUIR"
+    )
 
-    Helper.get_peso(drive)
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
 os.makedirs(app.config["TEMP_FOLDER"], exist_ok=True)
