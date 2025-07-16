@@ -1159,4 +1159,4 @@ def logout():
 
 if __name__ == "__main__":
     # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0")

@@ -4,6 +4,8 @@ services:
         build: 
           context: .
           dockerfile: ./DOCKER/flask/dockerfile
+        depends_on:
+          - db
         ports:
         - '5000:5000'
         environment:
@@ -13,8 +15,7 @@ services:
           - teste
         volumes:
           - flask:/FLASK
-        restart:
-          unless_stopped
+        restart: unless-stopped
     frontend: #Vue + Vite
         build: 
           context: .
@@ -24,12 +25,13 @@ services:
         ports:
         - '5173:5173'
         environment:
-          VITE_API_URL: https://31.97.84.210:5000
+          VITE_API_URL: http://31.97.84.210:5000
           NODE_ENV: development
         networks:
           - teste
         volumes:
           - frontend:/frontend
+        restart: unless-stopped
     db: # MongoDB
       image: mongo@sha256:936020698d1b62b73f6bd40d52f172eb90e2a79e955aa4de26975100e5e991c6
       ports: [27017:27017]
@@ -37,6 +39,8 @@ services:
           - db:/data/db
       networks:
         - teste
+      restart: unless-stopped
+
 networks:
   teste:
 
