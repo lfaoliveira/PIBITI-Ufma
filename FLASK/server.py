@@ -307,7 +307,7 @@ app.config.update(
 """ALERTA!!!!!!!!!! somente usar CORS em producao, ja que isso habilita requisicoes de qualquer origem
 Possível risco de segurança!
 """
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, expose_headers=["Set-Cookie"])
 # path para arquivos temporarios
 
 """WeasyPrint: se Aparecer erro: 

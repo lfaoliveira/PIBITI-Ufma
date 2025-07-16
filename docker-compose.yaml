@@ -7,7 +7,7 @@ services:
         ports:
         - '5000:5000'
         environment:
-          FLASK_ENV: development
+          FLASK_ENV: production
         networks:
           - teste
         volumes:
@@ -16,11 +16,13 @@ services:
         build: 
           context: .
           dockerfile: ./DOCKER/frontend/dockerfile
+        depends_on:
+          flask
         ports:
         - '5173:5173'
         environment:
-          - VITE_API_URL: http://31.97.84.210:5000
-          - NODE_ENV: development
+          VITE_API_URL: https://31.97.84.210:5000
+          NODE_ENV: development
         networks:
           - teste
         volumes:

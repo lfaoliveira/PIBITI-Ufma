@@ -16,10 +16,9 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libsm6 \
     libxext6 \
     libgl1-mesa-glx \
-    #PARTE PRO WEASYPRINT!
+    #PARTE DO WEASYPRINT!
     python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-    
     # Copy requirements and install Python dependencies
 
 RUN python3 -m venv /opt/venv  
@@ -63,4 +62,5 @@ RUN test -f ./.env || (echo ".env file not found in FLASK directory" && exit 1)
 # RUN weasyprint https://weasyprint.org /tmp/weasyprint-website.pdf
 
 EXPOSE 5000
-CMD ["python", "-m", "server"]
+# CMD ["python", "-m", "server"] COMANDO ANTIGO PARA RODAR SERVIDOR DO FLASK
+CMD ["gunicorn", "-w", "4", "--bind", "0.0.0.0:5000", "server:app"]
