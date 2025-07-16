@@ -8,16 +8,19 @@ services:
         - '5000:5000'
         environment:
           FLASK_ENV: production
+          MONGO_URI: mongodb://31.97.84.210:27017/PARALISIA6_NERVO
         networks:
           - teste
         volumes:
           - flask:/FLASK
+        restart:
+          unless_stopped
     frontend: #Vue + Vite
         build: 
           context: .
           dockerfile: ./DOCKER/frontend/dockerfile
         depends_on:
-          flask
+          - flask
         ports:
         - '5173:5173'
         environment:

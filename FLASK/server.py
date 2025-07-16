@@ -260,7 +260,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app.config["MONGO_URI"] = "mongodb://localhost:27017/PARALISIA6_NERVO"
+app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 
 mongo = PyMongo(app)
 
