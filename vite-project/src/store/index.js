@@ -10,7 +10,7 @@ import { useCookies } from 'vue3-cookies';
 
 const store = createStore({
     state:{
-        urlBackend: "http://127.0.0.1:5000",
+        urlBackend: import.meta.env.VITE_API_URL,
         sharedData: null,
         logado: false,
         formDiag: null,
