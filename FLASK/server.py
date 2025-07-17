@@ -55,6 +55,7 @@ from pdf import Converter
 from drive import GoogleDrive
 from _email import MailHandler
 from user import User
+import logging
 
 
 class Helper:
@@ -1159,4 +1160,7 @@ def logout():
 
 if __name__ == "__main__":
     # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
-    app.run(host="0.0.0.0")
+    # app.run(host="0.0.0.0")
+    gunicorn_logger = logging.getLogger("gunicorn.error")
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
