@@ -1158,7 +1158,7 @@ def logout():
         return make_response(f"{e}", INTERNAL_SERVER_ERROR)
 
 
-if __name__ == "__main__":
+if __name__ != "__main__":
     # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
     # app.run(host="0.0.0.0")
     gunicorn_logger = logging.getLogger("gunicorn.error")
