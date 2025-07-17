@@ -10,9 +10,9 @@ services:
         - '5000:5000'
         environment:
           FLASK_ENV: production
-          MONGO_URI: mongodb://31.97.84.210:27017/PARALISIA6_NERVO
+          MONGO_URI: mongodb://db:27017/PARALISIA6_NERVO #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
         networks:
-          - teste
+          - projeto
         volumes:
           - flask:/FLASK
         restart: unless-stopped
@@ -25,10 +25,10 @@ services:
         ports:
         - '5173:5173'
         environment:
-          VITE_API_URL: http://31.97.84.210:5000
+          BACKEND_URL: http://31.97.84.210:5000
           NODE_ENV: development
         networks:
-          - teste
+          - projeto
         volumes:
           - frontend:/frontend
         restart: unless-stopped
@@ -38,11 +38,11 @@ services:
       volumes:
           - db:/data/db
       networks:
-        - teste
+        - projeto
       restart: unless-stopped
 
 networks:
-  teste:
+  projeto:
 
 volumes:
     db: 
