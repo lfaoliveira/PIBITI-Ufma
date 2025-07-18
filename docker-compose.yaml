@@ -9,8 +9,8 @@ services:
         ports:
         - '5000:5000'
         environment:
-          FLASK_ENV: production
-          MONGO_URI: mongodb://db:27017/PARALISIA6_NERVO #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
+          - FLASK_ENV=production
+          - MONGO_URI=mongodb://db:27017/PARALISIA6_NERVO #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
         networks:
           - projeto
         volumes:
@@ -44,6 +44,7 @@ services:
 
 networks:
   projeto:
+    driver: bridge
 
 volumes:
     db: 

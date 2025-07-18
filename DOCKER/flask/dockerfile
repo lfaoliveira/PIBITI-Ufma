@@ -63,4 +63,4 @@ RUN test -f ./.env || (echo ".env file not found in FLASK directory" && exit 1)
 
 EXPOSE 5000
 # CMD ["python", "-m", "server"] COMANDO ANTIGO PARA RODAR SERVIDOR DO FLASK
-CMD ["gunicorn", "--timeout", "120",  "--access-logfile", "-", "--error-logfile", "-", "--capture-output", "--log-level", "debug", "--bind", "0.0.0.0:5000", "server:app"]
+CMD ["gunicorn", "--timeout", "30",  "--access-logfile", "-", "--error-logfile", "-", "--capture-output", "--log-level", "debug", "--bind", "0.0.0.0:5000", "server:app"]

@@ -261,7 +261,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app.config["MONGO_URI"] = os.getenv("MONGO_URI")
+app.config["MONGO_URI"] = os.environ("MONGO_URI")
 
 mongo = PyMongo(app)
 
@@ -1129,6 +1129,8 @@ def val_login():
             print("USUARIO INEXISTE OU SESSAO EXPIRADA!!!!!")
             return make_response("False", INTERNAL_SERVER_ERROR)
         """
+        print("LOGADO")
+
         return make_response("LOGADO", OK)
 
 
