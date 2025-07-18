@@ -261,7 +261,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app.config["MONGO_URI"] = os.environ("MONGO_URI")
+app.config["MONGO_URI"] = os.environ["MONGO_URI"]
 
 mongo = PyMongo(app)
 
@@ -1115,6 +1115,7 @@ def val_login():
     """
     Valida cookies de sessao do usuario usando flask-login
     """
+    print(current_user)
     if not current_user.is_authenticated:
         print("USUÁRIO NÃO AUTENTICADO OU SESSÃO EXPIRADA")
         return make_response("False", UNAUTHORIZED)
