@@ -48,7 +48,8 @@ import tensorflow as tf
 import threading
 
 import ffmpeg
-import requests
+from celery import Celery
+
 import csv
 import numpy as np
 from pdf import Converter
@@ -267,6 +268,7 @@ mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
 
+celery = Celery("tasks", broker="redis://redis:6379/0", backend="redis://redis:6379/0")
 
 # SEGURANÇA
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -609,7 +611,7 @@ def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
 def analisar():
     """
     Pega video  input, executa o model e and retorna JSON
-    # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
+    ### servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
     """
     timestamp = time.time()
     print(f"KEYS FORM: {request.form.keys()}\n")
@@ -629,8 +631,8 @@ def analisar():
     ext = Helper.allowed_file(filename)
     if ext is None:
         print("Incorrect file type!\n\n")
-
         return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
+
     paciente = diag.get("nomePaciente", None)
     nome_video = f"{paciente}_{str(round(timestamp, 4))}"
     nome_local = f"{nome_video}.{ext}"
@@ -978,6 +980,7 @@ def autenticar():
     medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
 
     if tipo == "login":
+        session.permanent = True
         if not email or not senha:
             return make_response("Email ou senha ausentes", BAD_REQUEST)
         usuario = medicos.find_one({"email": email})
