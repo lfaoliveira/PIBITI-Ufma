@@ -267,7 +267,7 @@ app.config["CELERY_RESULT_BACKEND"] = os.environ["CELERY_RESULT_BACKEND"]
 app.config["CELERY_BROKER_URL"] = os.environ["CELERY_BROKER_URL"]
 
 # Flask app config example:
-app.config.update()
+# app.config.update()
 mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
@@ -294,6 +294,7 @@ def make_celery(app):
 
 
 celery = make_celery(app)
+print("DEPOIS DO CELERY")
 
 
 # SEGURANÇA
