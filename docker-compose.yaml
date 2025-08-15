@@ -51,7 +51,9 @@ services:
 
 
     celery_worker:
-      build: ./FLASK
+      build: 
+          context: .
+          dockerfile: ./DOCKER/celery/dockerfile
       command: celery -A worker.tasks worker --loglevel=info
       volumes:
         - ./worker:/app/worker

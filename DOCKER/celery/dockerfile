@@ -2,6 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir -r 
+RUN python3 -m venv /opt/venv  
+ENV PATH="/opt/venv/bin:$PATH"
 
-COPY worker/ ./worker/
+COPY FLASK/requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
+
+CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
