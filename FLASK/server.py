@@ -266,6 +266,8 @@ app.config["MONGO_URI"] = os.environ["MONGO_URI"]
 app.config["CELERY_RESULT_BACKEND"] = os.environ["CELERY_RESULT_BACKEND"]
 app.config["CELERY_BROKER_URL"] = os.environ["CELERY_BROKER_URL"]
 
+# Flask app config example:
+app.config.update()
 mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
@@ -291,14 +293,11 @@ def make_celery(app):
     return celery
 
 
-# Flask app config example:
-app.config.update()
-
 celery = make_celery(app)
 
 
 # SEGURANÇA
-app.secret_key = os.environ.get("SECRET_KEY")
+app.secret_key = os.environ.get("SECRET_KEY", None)
 if app.secret_key is None:
     exit(1)
 alg_hash = hashlib.sha3_256
