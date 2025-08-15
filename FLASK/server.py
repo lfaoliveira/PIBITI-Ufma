@@ -268,7 +268,32 @@ mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
 
-celery = Celery("tasks", broker="redis://redis:6379/0", backend="redis://redis:6379/0")
+
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        backend=app.config["CELERY_RESULT_BACKEND"],
+        broker=app.config["CELERY_BROKER_URL"],
+    )
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
+
+# Flask app config example:
+app.config.update()
+
+celery = make_celery(app)
+
 
 # SEGURANÇA
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -591,6 +616,7 @@ def get_file(resource_uri) -> Union[Any, Response]:
         )
 
 
+@celery.task
 def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
     print(f"STORAGE: {storage_strings}, ID: {id_diag}")
     path_video_in = storage_strings["video_in"]
@@ -604,6 +630,31 @@ def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
     )
 
     print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
+
+
+@app.route("/analise", methods=["GET, POST"])
+@cross_origin(supports_credentials=True)
+def analisar():
+    if request.method == "POST":
+            
+        id_diag = request.form.get("id_diag", None)
+        nome_input = request.form.get("nome_input", None)
+        filename = request.form.get("filename", None)
+
+        ext = Helper.allowed_file(filename)
+        if ext is None:
+            print("Incorrect file type!\n\n")
+            return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
+
+        if id_diag is None:
+            return make_response("INPUT NULO!", BAD_REQUEST)
+
+        task = processamento_analise.apply_async(args=[id_diag, nome_input, filename])
+
+        return jsonify({"task_id": task.id, "status": "Processing started"})
+
+    elif request.method == "GET":
+        
 
 
 @app.route("/analise", methods=["POST"])

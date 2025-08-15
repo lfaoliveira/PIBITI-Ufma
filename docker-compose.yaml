@@ -10,14 +10,17 @@ services:
         - '5000:5000'
         environment:
           - FLASK_ENV=production
-          - MONGO_URI=mongodb://db:27017/PARALISIA6_NERVO #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
+          #USANDO MESMAS CREDENCIAIS DO DB!
+          - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
+          - CELERY_BROKER_URL=redis://localhost:6379/0
+          - CELERY_RESULT_BACKEND=redis://localhost:6379/0
         networks:
           - projeto
         volumes:
           - flask:/FLASK
         restart: unless-stopped
 
-    
+
     frontend: #Vue + Vite
         build: 
           context: .
@@ -48,10 +51,8 @@ services:
 
 
     celery_worker:
-      build:
-        context: .
-        dockerfile: Dockerfile
-        command: celery -A worker.tasks worker --loglevel=info
+      build: ./flask
+      command: celery -A worker.tasks worker --loglevel=info
       volumes:
         - ./worker:/app/worker
       depends_on:
@@ -64,10 +65,13 @@ services:
     db: # MongoDB
       image: mongo@sha256:936020698d1b62b73f6bd40d52f172eb90e2a79e955aa4de26975100e5e991c6
       ports: [27017:27017]
+      environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=Lf123456
       volumes:
-          - db:/data/db
+        - db:/data/db
       networks:
-        - projeto
+      - projeto
       restart: unless-stopped
 
 networks:
