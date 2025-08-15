@@ -35,18 +35,10 @@ from flask_login import (
     current_user,
 )
 from flask_pymongo import PyMongo
-from flask_cors import CORS, cross_origin
-from flask_mail import Mail, Message
 
-import mimetypes
-import hashlib
-from datetime import timedelta
 from typing import Any, Union
 import tensorflow as tf
-import threading
-
-import ffmpeg
-from celery import Celery
+import celery
 
 import csv
 import numpy as np
