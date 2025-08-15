@@ -608,7 +608,7 @@ def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
 @cross_origin(supports_credentials=True)
 def analisar():
     """
-    Takes video  input, executa the model e and returns result as JSON
+    Pega video  input, executa o model e and retorna JSON
     # servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
     """
     timestamp = time.time()
