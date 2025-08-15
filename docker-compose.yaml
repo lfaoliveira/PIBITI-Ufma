@@ -51,7 +51,7 @@ services:
 
 
     celery_worker:
-      build: ./flask
+      build: ./FLASK
       command: celery -A worker.tasks worker --loglevel=info
       volumes:
         - ./worker:/app/worker
