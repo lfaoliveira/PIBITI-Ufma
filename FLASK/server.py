@@ -913,11 +913,8 @@ def envia_diag():
         return make_response("INPUT NULO!", BAD_REQUEST)
 
     diagnosticoMedico = stringOlhos
-    response = requests.get(
-        url_for("val_login", _external=True), cookies=request.cookies
-    )
-
-    if response.status_code == 200:
+    # Check if user is authenticated directly
+    if current_user.is_authenticated:
         # caso pra usuario logado
         email_medico = current_user.id
         medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
@@ -925,7 +922,6 @@ def envia_diag():
         if medico_atual is None:
             return make_response("MEDICO LOGADO NAO ENCONTRADO", INTERNAL_SERVER_ERROR)
         id_medico = medico_atual.get("_id", None)
-
     else:
         # padronizar dados nulos no BD como None e erros de preenchimento como null
         id_medico = None
