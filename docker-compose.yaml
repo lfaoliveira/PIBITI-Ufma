@@ -6,6 +6,7 @@ services:
           dockerfile: ./DOCKER/flask/dockerfile
         depends_on:
           - db
+          - redis
         ports:
         - '5000:5000'
         environment:
@@ -19,6 +20,7 @@ services:
         volumes:
           - flask:/FLASK
         restart: unless-stopped
+
 
 
     frontend: #Vue + Vite
