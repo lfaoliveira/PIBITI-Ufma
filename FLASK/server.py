@@ -58,7 +58,11 @@ from _email import MailHandler
 from user import User
 import logging
 
-from FLASK.celery.tasks import CeleryTaskWrapper
+from celery_worker.tasks import (
+    envia_diag_task,
+    processamento_analise,
+    sync_google_drive,
+)
 
 
 class Helper:
@@ -223,6 +227,77 @@ class Helper:
     @staticmethod
     def find_one_with_id(collection, id_string):
         return collection.find_one({"_id": ObjectId(id_string)})
+
+
+class CeleryTaskWrapper:
+    def __init__(
+        self, mongo: Any, COLLECTION_DIAGS: str, COLLECTION_MEDICOS: str, app, drive
+    ) -> None:
+
+        self.mongo_inst = mongo
+        self.coll_diags = COLLECTION_DIAGS
+        self.coll_meds = COLLECTION_MEDICOS
+        self.flask_app = app
+        self.drive_inst = drive
+        print("CELERY WRAPPER INICIADO")
+
+    def sync_google_drive(
+        storage_strings: dict,
+        id_diag: str,
+        email: str,
+        drive_inst,
+        mongo_inst,
+        coll_diags,
+    ):
+        return sync_google_drive.apply_async(
+            args=[storage_strings, id_diag, email, drive_inst, mongo_inst, coll_diags]
+        )
+
+    def processamento_analise(
+        self,
+        id_diag,
+        nome_input,
+        filename,
+    ):
+        return processamento_analise.apply_async(
+            args=[
+                id_diag,
+                nome_input,
+                filename,
+                self.mongo_inst,
+                self.coll_diags,
+                self.coll_meds,
+                self.flask_app,
+                predict,
+                analisador,
+                Helper,
+            ]
+        )
+
+    def envia_diag_task(
+        self,
+        video_data,
+        filename,
+        nomePaciente,
+        stringOlhos,
+        desc,
+        user_id,
+    ):
+
+        return envia_diag_task.apply_async(
+            args=[
+                video_data,
+                filename,
+                nomePaciente,
+                stringOlhos,
+                desc,
+                user_id,
+                self.mongo_inst,
+                self.flask_app,
+                self.coll_diags,
+                self.coll_meds,
+            ]
+        )
 
 
 def get_modelo():

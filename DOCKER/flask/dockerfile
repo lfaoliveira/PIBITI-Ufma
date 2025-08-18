@@ -33,7 +33,6 @@ COPY ./.env ./
 
 
 FROM python:3.9-slim-bullseye AS runner_flask
-# FROM python:3.9-slim AS runner_flask
 
 WORKDIR /FLASK
 

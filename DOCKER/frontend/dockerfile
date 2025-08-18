@@ -1,5 +1,5 @@
 # Use the official Node.js image from the Docker Hub
-from node:18 as builder
+FROM node:18 as builder
 
 # Set the working directory in the container
 WORKDIR /frontend
