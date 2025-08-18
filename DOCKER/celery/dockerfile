@@ -11,5 +11,3 @@ COPY ./FLASK/celery ./celery
 # CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
 # CMD ["celery", "-A", "celery.celery", "worker", "-l", "INFO"]
 
-
-
