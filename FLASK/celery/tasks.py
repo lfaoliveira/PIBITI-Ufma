@@ -22,11 +22,13 @@ from flask import (
     stream_with_context,
     send_file,
 )
-
 from typing import Any, Union
 import tensorflow as tf
 import celery
 import numpy as np
+
+
+from .celery import app
 
 
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
@@ -43,7 +45,7 @@ class CeleryTaskWrapper:
         self.drive_inst = drive
         print("CELERY WRAPPER INICIADO")
 
-    @celery.task
+    @app.task
     def sync_google_drive(self, storage_strings: dict, id_diag: str, email: str):
         print(f"STORAGE: {storage_strings}, ID: {id_diag}")
         path_video_in = storage_strings["video_in"]
@@ -59,7 +61,7 @@ class CeleryTaskWrapper:
         print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
 
     # NAO RETIRAR SELF!
-    @celery.task(bind=True)
+    @app.task
     def processamento_analise(
         self, id_diag, nome_input, filename, predict, analisador, Helper
     ):
@@ -228,7 +230,7 @@ class CeleryTaskWrapper:
             "video_url": local_url_video_out,
         }
 
-    @celery.task
+    @app.task
     def envia_diag_task(
         self, video_data, filename, nomePaciente, stringOlhos, desc, user_id
     ):
@@ -278,10 +280,10 @@ class CeleryTaskWrapper:
         }
 
 
-from celery import Celery
+# from celery import Celery
 
-app = Celery(
-    "tasks",
-    backend=os.environ["CELERY_RESULT_BACKEND"],
-    broker=os.environ["CELERY_BROKER_URL"],
-)
+# app = Celery(
+#     "tasks",
+#     backend=os.environ["CELERY_RESULT_BACKEND"],
+#     broker=os.environ["CELERY_BROKER_URL"],
+# )

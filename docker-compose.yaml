@@ -55,7 +55,7 @@ services:
           dockerfile: ./DOCKER/celery/dockerfile
       command: celery -A worker.tasks worker --loglevel=info
       volumes:
-        - ./worker:/app/worker
+        - celery:/app
       depends_on:
         - redis
       environment:
@@ -86,3 +86,4 @@ volumes:
     db: 
     flask: 
     frontend: 
+    celery:

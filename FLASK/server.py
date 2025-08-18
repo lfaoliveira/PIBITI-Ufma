@@ -58,7 +58,7 @@ from _email import MailHandler
 from user import User
 import logging
 
-from tasks import CeleryTaskWrapper
+from FLASK.celery.tasks import CeleryTaskWrapper
 
 
 class Helper:
