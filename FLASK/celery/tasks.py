@@ -34,6 +34,11 @@ from .celery import app
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 
 
+@app.task
+def add(a, b):
+    return a + b
+
+
 class CeleryTaskWrapper:
     def __init__(
         self, mongo: Any, COLLECTION_DIAGS: str, COLLECTION_MEDICOS: str, app, drive
