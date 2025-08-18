@@ -53,7 +53,7 @@ services:
       build: 
           context: .
           dockerfile: ./DOCKER/celery/dockerfile
-      command: celery -A worker.tasks worker --loglevel=info
+      command: celery -A app worker --loglevel=info
       volumes:
         - celery:/app
       depends_on:
