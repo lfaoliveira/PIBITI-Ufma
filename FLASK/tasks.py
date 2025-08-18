@@ -1,4 +1,3 @@
-from datetime import datetime
 from http.client import (
     BAD_GATEWAY,
     BAD_REQUEST,
@@ -10,9 +9,6 @@ import time
 from bson import ObjectId
 import shutil
 import os
-from werkzeug.utils import secure_filename
-import subprocess
-import json
 from flask import (
     Flask,
     make_response,
@@ -26,23 +22,11 @@ from flask import (
     stream_with_context,
     send_file,
 )
-from dotenv import load_dotenv
-from flask_login import (
-    LoginManager,
-    login_user,
-    logout_user,
-    login_required,
-    current_user,
-)
-from flask_pymongo import PyMongo
 
 from typing import Any, Union
 import tensorflow as tf
 import celery
-
-import csv
 import numpy as np
-import logging
 
 
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
@@ -296,4 +280,8 @@ class CeleryTaskWrapper:
 
 from celery import Celery
 
-app = Celery("tasks", broker="pyamqp://guest@localhost//")
+app = Celery(
+    "tasks",
+    backend=os.environ["CELERY_RESULT_BACKEND"],
+    broker=os.environ["CELERY_BROKER_URL"],
+)
