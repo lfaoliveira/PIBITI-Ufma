@@ -1,5 +1,7 @@
 FROM python:3.9-slim-bullseye AS builder
 
+RUN mkdir ./app
+WORKDIR /app
 
 RUN python3 -m venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
@@ -8,6 +10,4 @@ COPY FLASK/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
 COPY ./FLASK/celery ./celery 
 # CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
-WORKDIR /
-RUN mkdir ./app
-CMD ["celery", "-A", "app", "worker", "-l", "INFO"]
+CMD ["celery", "-A", "celery", "worker", "-l", "INFO"]
