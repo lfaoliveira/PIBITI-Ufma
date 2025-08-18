@@ -55,7 +55,7 @@ services:
           dockerfile: ./DOCKER/celery/dockerfile
       command: celery -A worker.tasks worker --loglevel=info
       volumes:
-        - celery:/app
+        - celery:/
       depends_on:
         - redis
       environment:
