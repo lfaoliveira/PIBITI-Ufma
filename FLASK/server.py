@@ -277,7 +277,7 @@ mongo = PyMongo(app)
 
 def make_celery(app):
     celery = Celery(
-        app.import_name,
+        "tasks",
         backend=app.config["CELERY_RESULT_BACKEND"],
         broker=app.config["CELERY_BROKER_URL"],
     )

@@ -292,3 +292,8 @@ class CeleryTaskWrapper:
             "nome_input": nome_local,
             "filename": filename,
         }
+
+
+from celery import Celery
+
+app = Celery("tasks", broker="pyamqp://guest@localhost//")
