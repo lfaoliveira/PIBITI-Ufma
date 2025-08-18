@@ -7,7 +7,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 COPY FLASK/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
-COPY ./FLASK/celery ./celery 
+COPY ./FLASK/celery_worker ./celery_worker 
 # CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
 # CMD ["celery", "-A", "celery.celery", "worker", "-l", "INFO"]
 
