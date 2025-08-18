@@ -21,9 +21,7 @@ services:
         volumes:
           - flask:/FLASK
         restart: unless-stopped
-
-
-
+        
     frontend: #Vue + Vite
         build: 
           context: .

@@ -58,6 +58,8 @@ from _email import MailHandler
 from user import User
 import logging
 
+from tasks import CeleryTaskWrapper
+
 
 class Helper:
     def __init__(self):
@@ -218,9 +220,9 @@ class Helper:
         except Exception as e:
             print(e)
 
-
-def find_one_with_id(collection, id_string):
-    return collection.find_one({"_id": ObjectId(id_string)})
+    @staticmethod
+    def find_one_with_id(collection, id_string):
+        return collection.find_one({"_id": ObjectId(id_string)})
 
 
 def get_modelo():
@@ -293,7 +295,7 @@ def make_celery(app):
     return celery
 
 
-celery = make_celery(app)
+# celery = make_celery(app)
 print("DEPOIS DO CELERY")
 
 
@@ -383,6 +385,11 @@ if not drive.file_state.empty:
 print(f"Initial drive state captured with {len(drive.file_state.index)} Objects.")
 
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
+
+celery_wrapper = CeleryTaskWrapper(
+    mongo, COLLECTION_DIAGS, COLLECTION_MEDICOS, app, drive
+)
+
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
@@ -618,49 +625,12 @@ def get_file(resource_uri) -> Union[Any, Response]:
         )
 
 
-@celery.task
-def sync_google_drive(storage_strings: dict, id_diag: str, email: str):
-    print(f"STORAGE: {storage_strings}, ID: {id_diag}")
-    path_video_in = storage_strings["video_in"]
-    path_video_out = storage_strings["video_out"]
-    id_in = drive.upload_to_drive(path_video_in, [email])
-    id_out = drive.upload_to_drive(path_video_out, [email])
-
-    # Update the document in the database with the new Google Drive file IDs
-    mongo.db.get_collection(COLLECTION_DIAGS).update_one(
-        {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
-    )
-
-    print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
+from celery.result import AsyncResult
 
 
-@app.route("/task_status/<task_id>", methods=["GET"])
-def get_task_status(task_id):
-    task = processamento_analise.AsyncResult(task_id)
-    if task.state == "PENDING":
-        response = {"state": task.state, "status": "Pending..."}
-    elif task.state != "FAILURE":
-        response = {
-            "state": task.state,
-            "result": task.info.get("result", {}) if task.info else {},
-        }
-        if "error" in response["result"]:
-            response["status"] = response["result"]["error"]
-        else:
-            response["status"] = "Task completed"
-    else:
-        # something went wrong in the background job
-        response = {
-            "state": task.state,
-            "status": str(task.info),  # exception raised
-        }
-    return jsonify(response)
-
-
-@app.route("/analise", methods=["GET, POST"])
+@app.route("/analise", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def analisar():
-
     id_diag = request.form.get("id_diag", None)
     nome_input = request.form.get("nome_input", None)
     filename = request.form.get("filename", None)
@@ -676,6 +646,17 @@ def analisar():
     task = processamento_analise.apply_async(args=[id_diag, nome_input, filename])
 
     return jsonify({"task_id": task.id, "status": "Processing started"})
+
+
+@app.route("/status/<task_id>", methods=["GET"])
+def task_status(task_id):
+    task = AsyncResult(task_id)
+    if task.state == "PENDING":
+        return "Task is still pending"
+    elif task.state == "SUCCESS":
+        return f"Task completed successfully: {task.result}"
+    else:
+        return f"Task failed with state: {task.state}"
 
 
 # @app.route("/analise", methods=["POST"])
@@ -781,7 +762,7 @@ def analisar():
 #         diag_medico = diag.get("diagnosticoMedico")  # string codificada
 #         nome_paciente = diag.get("nomePaciente")
 
-#         medico = find_one_with_id(
+#         medico = Helper.find_one_with_id(
 #             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
 #         )
 #         nome_medico = medico.get("nome")
@@ -887,7 +868,7 @@ def pega_perfil():
         lista_res = list(res)[0]["data"]
         # print(f"DIAGS: \n\n{lista_res}\n\n")
 
-        medico = find_one_with_id(
+        medico = Helper.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
         )
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
@@ -913,7 +894,7 @@ def gerar_relatorio(id_diag):
     """
     download = request.args.get("download", default=False, type=bool)
 
-    diag = find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
+    diag = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
     dados_pdf = diag.get("dados_pdf", None)
     if str(dados_pdf) == "None":
         return make_response("NAO TEM PDF!", BAD_REQUEST)
@@ -946,7 +927,7 @@ def gerar_grafico(id_diag, external=True):
     Gera grafico e retorna ele como stream
     """
 
-    diag = find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
+    diag = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
     dados_grafico = diag.get("dados_grafico", None)
     if str(dados_grafico) == "None":
         return make_response("NAO TEM GRAFICO!", BAD_REQUEST)
@@ -1217,7 +1198,7 @@ def val_login():
     else:
         """
         # Check if user exists in database
-        usuario = find_one_with_id(
+        usuario = Helper.find_one_with_id(
             mongo.db.get_collection(COLLECTION_MEDICOS), str(current_user.id))
         if usuario is not None and current_user.is_authenticated:
 
