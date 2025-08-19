@@ -233,7 +233,9 @@ class CeleryTaskWrapper:
     def __init__(
         self, mongo: Any, COLLECTION_DIAGS: str, COLLECTION_MEDICOS: str, app, drive
     ) -> None:
+        from .celery_worker.celery import app
 
+        self.cel_app = app
         self.mongo_inst = mongo
         self.coll_diags = COLLECTION_DIAGS
         self.coll_meds = COLLECTION_MEDICOS
@@ -348,26 +350,6 @@ app.config["CELERY_BROKER_URL"] = os.environ["CELERY_BROKER_URL"]
 mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
-
-
-def make_celery(app):
-    celery = Celery(
-        "tasks",
-        backend=app.config["CELERY_RESULT_BACKEND"],
-        broker=app.config["CELERY_BROKER_URL"],
-    )
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
 
 
 # celery = make_celery(app)
@@ -640,9 +622,32 @@ print(f"Initial drive state captured with {len(drive.file_state.index)} Objects.
 
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
+
+def make_celery(cel_wrap: CeleryTaskWrapper, app: Flask):
+    """
+    Modifica app celery pra ter mesmo contexto de excucao que o aplicativo Flask
+    """
+    celery = cel_wrap.cel_app
+
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    cel_wrap.cel_app = celery
+    return cel_wrap
+
+
 celery_wrapper = CeleryTaskWrapper(
     mongo, COLLECTION_DIAGS, COLLECTION_MEDICOS, app, drive
 )
+celery_wrapper = make_celery(celery_wrapper, app)
 
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
