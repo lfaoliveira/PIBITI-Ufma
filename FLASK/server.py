@@ -243,7 +243,7 @@ class CeleryTaskWrapper:
         self.drive_inst = drive
         print("CELERY WRAPPER INICIADO")
 
-    def sync_google_drive(
+    def sync_drive(
         storage_strings: dict,
         id_diag: str,
         email: str,
@@ -255,7 +255,7 @@ class CeleryTaskWrapper:
             args=[storage_strings, id_diag, email, drive_inst, mongo_inst, coll_diags]
         )
 
-    def processamento_analise(
+    def process_analise(
         self,
         id_diag,
         nome_input,
@@ -276,7 +276,7 @@ class CeleryTaskWrapper:
             ]
         )
 
-    def envia_diag_task(
+    def envia_diag(
         self,
         video_data,
         filename,
@@ -326,28 +326,6 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 
         return str_res, dict_graf
 
-
-# ------------- VARIAVEIS GLOBAIS--------------#
-COLLECTION_DIAGS = "Diagnosticos"
-COLLECTION_MEDICOS = "Medicos"
-
-PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
-
-# Read environment variables from CSV
-# arq_config = "./env.csv"
-# Helper.read_ENV_VARS(arq_config) NOTE: DEPRECATED
-load_dotenv()
-
-app = Flask(__name__)
-app.config.from_object(__name__)
-
-app.config["MONGO_URI"] = os.environ["MONGO_URI"]
-app.config["CELERY_RESULT_BACKEND"] = os.environ["CELERY_RESULT_BACKEND"]
-app.config["CELERY_BROKER_URL"] = os.environ["CELERY_BROKER_URL"]
-
-# Flask app config example:
-# app.config.update()
-mongo = PyMongo(app)
 
 # objeto que vai fazer logica de armazenamento de arquivos no MongoDB
 
@@ -530,6 +508,29 @@ mongo = PyMongo(app)
 #         ),
 #         "video_url": local_url_video_out,
 #     }
+
+
+# ------------- VARIAVEIS GLOBAIS--------------#
+COLLECTION_DIAGS = "Diagnosticos"
+COLLECTION_MEDICOS = "Medicos"
+
+PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
+
+# Read environment variables from CSV
+# arq_config = "./env.csv"
+# Helper.read_ENV_VARS(arq_config) NOTE: DEPRECATED
+load_dotenv()
+
+app = Flask(__name__)
+app.config.from_object(__name__)
+
+app.config["MONGO_URI"] = os.environ["MONGO_URI"]
+app.config["CELERY_RESULT_BACKEND"] = os.environ["CELERY_RESULT_BACKEND"]
+app.config["CELERY_BROKER_URL"] = os.environ["CELERY_BROKER_URL"]
+
+# Flask app config example:
+# app.config.update()
+mongo = PyMongo(app)
 
 
 print("DEPOIS DO CELERY")
@@ -899,7 +900,7 @@ def analisar():
     if id_diag is None:
         return make_response("INPUT NULO!", BAD_REQUEST)
 
-    task = celery_wrapper.processamento_analise(id_diag, nome_input, filename)
+    task = celery_wrapper.process_analise(id_diag, nome_input, filename)
 
     return jsonify({"task_id": task.id, "status": "Processing started"})
 
@@ -1224,7 +1225,7 @@ def envia_diag():
     user_id = current_user.id if current_user.is_authenticated else None
 
     # Enqueue the Celery task
-    task = celery_wrapper.envia_diag_task(
+    task = celery_wrapper.envia_diag(
         video_data, filename, nomePaciente, stringOlhos, desc, user_id
     )
 
