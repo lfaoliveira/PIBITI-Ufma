@@ -2,10 +2,10 @@ from celery import Celery
 import os
 
 app = Celery(
-    "celery",
+    "celery_worker",  # DEVE SER O NOME DA PASTA QUE ESTAO OS ARQUIVOS
     backend=os.environ["CELERY_RESULT_BACKEND"],
     broker=os.environ["CELERY_BROKER_URL"],
-    include=["celery.tasks"],
+    include=["celery_worker.tasks"],  # pasta.tasks
 )
 
 if __name__ == "__main__":
