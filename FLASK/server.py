@@ -879,9 +879,6 @@ def get_file(resource_uri) -> Union[Any, Response]:
         )
 
 
-from celery.result import AsyncResult
-
-
 @app.route("/analise", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def analisar():
@@ -897,9 +894,12 @@ def analisar():
     if id_diag is None:
         return make_response("INPUT NULO!", BAD_REQUEST)
 
-    task = processamento_analise.apply_async(args=[id_diag, nome_input, filename])
+    task = celery_wrapper.processamento_analise(id_diag, nome_input, filename)
 
     return jsonify({"task_id": task.id, "status": "Processing started"})
+
+
+from celery.result import AsyncResult
 
 
 @app.route("/status/<task_id>", methods=["GET"])
@@ -1216,12 +1216,11 @@ def envia_diag():
 
     filename = video.filename
     video_data = video.read()
-
     user_id = current_user.id if current_user.is_authenticated else None
 
     # Enqueue the Celery task
-    task = envia_diag_task.apply_async(
-        args=[video_data, filename, nomePaciente, stringOlhos, desc, user_id]
+    task = celery_wrapper.envia_diag_task(
+        video_data, filename, nomePaciente, stringOlhos, desc, user_id
     )
 
     return jsonify({"task_id": task.id, "status": "Upload queued"})
