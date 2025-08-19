@@ -41,19 +41,11 @@ services:
         restart: unless-stopped
 
 
-    redis:
-        image: redis:7-alpine
-        ports:
-          - "6379:6379"
-        networks:
-          - projeto
-        restart: unless-stopped
-
     celery_worker:
       build: 
           context: .
           dockerfile: ./DOCKER/celery/dockerfile
-      command: celery -A celery_worker.celery worker -l INFO
+      command: bash -c "ls && pwd && celery -A celery_worker worker -l INFO"
       volumes:
         - celery:/app
       depends_on:
@@ -64,6 +56,15 @@ services:
       networks:
         - projeto
       restart: unless-stopped
+
+
+    redis:
+        image: redis:7-alpine
+        ports:
+          - "6379:6379"
+        networks:
+          - projeto
+        restart: unless-stopped
 
 
     db: # MongoDB
