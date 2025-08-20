@@ -16,6 +16,7 @@ services:
           - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
           - CELERY_BROKER_URL=redis://redis:6379/0
           - CELERY_RESULT_BACKEND=redis://redis:6379/0
+          - VUE_FRONT_URL=http://31.97.84.210:5173
         networks:
           - projeto
         volumes:

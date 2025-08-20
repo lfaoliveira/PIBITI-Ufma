@@ -26,7 +26,8 @@ class AnaliseParalisia:
 
         try:
             olhoEsquerdo, olhoDireito, frames = self.detectaOlhos(
-                videoEntrada, videoSaida)
+                videoEntrada, videoSaida
+            )
             print("DETECCAO DOS OLHOS OK")
         except Exception as e:
             print("ERRO:FALHA NA DETECÇÃO DOS OLHOS: ", e)
@@ -38,8 +39,7 @@ class AnaliseParalisia:
             xE = leftEye[:, 0] - min(leftEye[:, 0])
             xD = rightEye[:, 0] - min(rightEye[:, 0])
             xEsquerdo, xDireito = self.getHampel(xE, xD)
-            xEsquerdoFinal, xDireitaFinal = self.removeOutliers(
-                xEsquerdo, xDireito)
+            xEsquerdoFinal, xDireitaFinal = self.removeOutliers(xEsquerdo, xDireito)
             # print("\n\nXESQUERDO: ", xEsquerdoFinal, "\n\n")
             print("FILTRAGEM DE PONTOS OK")
         except Exception as e:
@@ -48,8 +48,12 @@ class AnaliseParalisia:
 
         try:
             titulo = "Grafico de Velocidade dos Olhos"
-            dict_graf = {"vel_esq": xEsquerdoFinal, "vel_dir": xDireitaFinal,
-                         "titulo": titulo, "time": timestamp}
+            dict_graf = {
+                "vel_esq": xEsquerdoFinal,
+                "vel_dir": xDireitaFinal,
+                "titulo": titulo,
+                "time": timestamp,
+            }
 
             """ path_graf = self.plotHampelFinal(
                 xEsquerdoFinal,
@@ -57,10 +61,12 @@ class AnaliseParalisia:
             ) """
 
             velE, velD = self.calculaVelocidadeEspacoPercorrido(
-                xEsquerdoFinal, xDireitaFinal)
+                xEsquerdoFinal, xDireitaFinal
+            )
 
             velE2, velD2 = self.calculaVelocidade(
-                xEsquerdoFinal, xDireitaFinal, frames, timestamp)
+                xEsquerdoFinal, xDireitaFinal, frames, timestamp
+            )
             print(
                 f"Velocidade do olho esquerdo: {velE:.2f}\nVelocidade do olho direito: {velD:.2f}"
             )
@@ -139,11 +145,9 @@ class AnaliseParalisia:
                                     center = getCenter(a)
                                     pontosCentro.append(center)
                                     cv2.rectangle(
-                                        resized, start_point, end_point, (
-                                            0, 0, 255), 3
+                                        resized, start_point, end_point, (0, 0, 255), 3
                                     )
-                                    cv2.circle(resized, center,
-                                               5, (0, 255, 0), -1)
+                                    cv2.circle(resized, center, 5, (0, 255, 0), -1)
                                 cv2.putText(
                                     resized,
                                     text="Olhos " + str(len(numbers)),
@@ -171,8 +175,7 @@ class AnaliseParalisia:
     def escrever_olhos(self, olhos, frames, videoEntrada):
         for idx_olho, olho in enumerate(olhos):
             ordem = "Esquerdo" if idx_olho == 0 else "Direito"
-            pupilaOlho = open(videoEntrada.split(
-                ".")[0] + f"{ordem}.txt", "w+")
+            pupilaOlho = open(videoEntrada.split(".")[0] + f"{ordem}.txt", "w+")
             for i in range(len(olho)):
                 pupilaOlho.write("\n%d," % (frames[i]))
                 pupilaOlho.write("%d," % (olho[i][0]))
@@ -185,9 +188,9 @@ class AnaliseParalisia:
         k = 1.4826
         indices = []
         for i in range((window_size), (n - window_size)):
-            x0 = np.median(input_series[(i - window_size): (i + window_size)])
+            x0 = np.median(input_series[(i - window_size) : (i + window_size)])
             S0 = k * np.median(
-                np.abs(input_series[(i - window_size): (i + window_size)] - x0)
+                np.abs(input_series[(i - window_size) : (i + window_size)] - x0)
             )
             if np.abs(input_series[i] - x0) > n_sigmas * S0:
                 new_series[i] = x0
@@ -215,15 +218,13 @@ class AnaliseParalisia:
             anterior = abs(xEsquerdo[j] - xEsquerdo[j - 1])
             proximo = abs(xEsquerdo[j] - xEsquerdo[j + 1])
             if (anterior > (fator / 7)) and (proximo > (fator / 7)):
-                xEsquerdoFinal.append(
-                    int((xEsquerdo[j + 1] + xEsquerdo[j - 1]) / 2))
+                xEsquerdoFinal.append(int((xEsquerdo[j + 1] + xEsquerdo[j - 1]) / 2))
             else:
                 xEsquerdoFinal.append(xEsquerdo[j])
             anterior = abs(xDireita[j] - xDireita[j - 1])
             proximo = abs(xDireita[j] - xDireita[j + 1])
             if (anterior > (fator / 7)) and (proximo > (fator / 7)):
-                xDireitaFinal.append(
-                    int((xDireita[j + 1] + xDireita[j - 1]) / 2))
+                xDireitaFinal.append(int((xDireita[j + 1] + xDireita[j - 1]) / 2))
             else:
                 xDireitaFinal.append(xDireita[j])
         xDireitaFinal.append(xDireita[len(xDireita) - 1])
