@@ -33,15 +33,10 @@ from FLASK.analise import AnaliseParalisia
 from FLASK.server import PATH_CRED, ROOT_DRIVE, COLLECTION_DIAGS, COLLECTION_MEDICOS
 from .celery import app
 from drive import GoogleDrive
-from server import Helper
+from server import Helper, get_modelo
 
 
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
-
-
-@app.task
-def add(a, b):
-    return a + b
 
 
 # classe abstrata pra instanciar GoogleDrive e Mongo
@@ -109,12 +104,21 @@ class SyncDriveTask(MainTask):
 class AnaliseTask(MainTask):
 
     _helper = None
+    _analisador = None
 
     @property
     def helper(self):
         if self._helper is None:
             self._helper = Helper()
         return self._helper
+
+    @property
+    def analisador(self):
+        if self._analisador is None:
+            modelo = get_modelo()
+            # NOTE: MODELO DEVE TER FUNCAO detect_image implementada
+            self._analisador = AnaliseParalisia(modelo, None)
+        return self._analisador
 
     def run(
         self,
@@ -128,7 +132,7 @@ class AnaliseTask(MainTask):
         diag = self.mongo.db.get_collection(self.coll_diags).find_one(
             {"_id": ObjectId(id_diag)}
         )
-
+        self.analisador.path_temp = TEMP_FOLDER
         ext = self.helper.allowed_file(filename)
 
         if ext is None:
@@ -162,7 +166,7 @@ class AnaliseTask(MainTask):
 
         # executando predicao
         res_tensor, dict_graf_tensor = predict(
-            analisador, path_arq_input_conv, path_out_antes_conv, timestamp
+            self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp
         )
 
         with tf.compat.v1.Session() as sess:
@@ -282,68 +286,67 @@ class AnaliseTask(MainTask):
 
 
 class EnviaDiagTask(MainTask):
-    pass
+    def run(
+        self,
+        video_data,
+        filename,
+        nomePaciente,
+        stringOlhos,
+        desc,
+        user_id,
+        TEMP_FOLDER: str,
+    ):
+        import os
+
+        timestamp = time.time()
+
+        diagnosticoMedico = stringOlhos
+        if user_id:
+            medicos = self.mongo.db.get_collection(self.coll_meds)
+            medico_atual = medicos.find_one({"email": user_id})
+            if medico_atual is None:
+                return {"error": "MEDICO LOGADO NAO ENCONTRADO"}
+            id_medico = medico_atual.get("_id", None)
+        else:
+            id_medico = None
+
+        dados = {
+            "nomePaciente": nomePaciente,
+            "id_medico": str(id_medico),
+            "diagnosticoMedico": diagnosticoMedico,
+            "desc": desc,
+        }
+
+        # Convert None to string "None"
+        for key, value in dados.items():
+            if value is None:
+                dados[key] = "None"
+
+        diags = self.mongo.db.get_collection(self.coll_diags)
+        result = diags.insert_one(dados)
+        id_diag_mongo = str(result.inserted_id)
+
+        nome_local = f"{str(round(timestamp, 4))}_{filename}"
+        path_temp_videoLabel = os.path.join(TEMP_FOLDER, nome_local)
+
+        with open(path_temp_videoLabel, "wb") as f:
+            f.write(video_data)
+
+        return {
+            "mensagem": "CARREGADO",
+            "id_diag": id_diag_mongo,
+            "nome_input": nome_local,
+            "filename": filename,
+        }
 
 
 sync_google_drive = SyncDriveTask()
 processamento_analise = AnaliseTask()
+envia_diag_task = EnviaDiagTask()
+
 app.tasks.register(sync_google_drive)
 app.tasks.register(processamento_analise)
-app.tasks.register(my_task_instance)
-
-
-@app.task
-def envia_diag_task(
-    video_data,
-    filename,
-    nomePaciente,
-    stringOlhos,
-    desc,
-    user_id,
-    TEMP_FOLDER: str,
-):
-    import os
-
-    timestamp = time.time()
-
-    diagnosticoMedico = stringOlhos
-    if user_id:
-        medicos = self.mongo.db.get_collection(self.coll_meds)
-        medico_atual = medicos.find_one({"email": user_id})
-        if medico_atual is None:
-            return {"error": "MEDICO LOGADO NAO ENCONTRADO"}
-        id_medico = medico_atual.get("_id", None)
-    else:
-        id_medico = None
-
-    dados = {
-        "nomePaciente": nomePaciente,
-        "id_medico": str(id_medico),
-        "diagnosticoMedico": diagnosticoMedico,
-        "desc": desc,
-    }
-
-    # Convert None to string "None"
-    for key, value in dados.items():
-        if value is None:
-            dados[key] = "None"
-
-    diags = self.mongo.db.get_collection(self.coll_diags)
-    result = diags.insert_one(dados)
-    id_diag_mongo = str(result.inserted_id)
-
-    nome_local = f"{str(round(timestamp, 4))}_{filename}"
-    path_temp_videoLabel = os.path.join(TEMP_FOLDER, nome_local)
-
-    with open(path_temp_videoLabel, "wb") as f:
-        f.write(video_data)
-
-    return {
-        "mensagem": "CARREGADO",
-        "id_diag": id_diag_mongo,
-        "nome_input": nome_local,
-        "filename": filename,
-    }
+app.tasks.register(envia_diag_task)
 
 
 # from celery import Celery

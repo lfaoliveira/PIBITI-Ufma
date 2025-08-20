@@ -404,9 +404,6 @@ os.makedirs(app.config["TEMP_FOLDER"], exist_ok=True)
 video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
 # --------------------- MODELO --------------------------#
-modelo = get_modelo()
-# NOTE: MODELO DEVE TER FUNCAO detect_image implementada
-analisador = AnaliseParalisia(modelo, app.config["TEMP_FOLDER"])
 
 
 @app.route("/teste_pdf")
