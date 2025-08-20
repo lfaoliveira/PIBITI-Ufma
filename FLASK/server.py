@@ -353,7 +353,8 @@ print(f"PATH_PIBITI: {PATH_PIBITI}\n")
 PATH_FLASK = os.path.join(PATH_PIBITI, "FLASK")
 EMAIL_ADMIN = "viplab.psno@nca.ufma.br"
 DOMINIO_SITE = "http://localhost:5000"
-DOMINIO_FRONT_VUE = "http://localhost:5173"
+# DOMINIO_FRONT_VUE = "http://localhost:5173"
+DOMINIO_FRONT_VUE = os.environ.get("VUE_FRONT_URL")
 
 if "WKDIR" not in app.config.keys():
     app.config["WKDIR"] = PATH_FLASK
