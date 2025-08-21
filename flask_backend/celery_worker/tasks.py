@@ -29,7 +29,7 @@ import numpy as np
 
 from pymongo import MongoClient
 
-from analise import AnaliseParalisia
+from flask_backend.analise import AnaliseParalisia
 from server import PATH_CRED, ROOT_DRIVE, COLLECTION_DIAGS, COLLECTION_MEDICOS
 from .celery import app
 from drive import GoogleDrive
