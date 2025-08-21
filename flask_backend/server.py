@@ -602,6 +602,9 @@ app.config["WKDIR"] = os.getcwd()
 PATH_CRED = os.path.join(
     app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json"
 )
+if not os.path.exists(PATH_CRED):
+    raise FileNotFoundError("\n\nSEM CHAVE DE API DO GOOGLE DRIVE!\n\n")
+    exit(1)
 
 # OBJETO DO FLASK_MAIL
 mail = Mail(app)

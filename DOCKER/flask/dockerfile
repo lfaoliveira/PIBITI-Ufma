@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r re
 
 # Copy application files
 COPY ./flask_backend ./
-COPY ./.env ./
+# COPY ./.env ./
 
 
 FROM python:3.9-slim-bullseye AS runner_flask
@@ -53,9 +53,11 @@ RUN apt-get update -y \
     python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+#tirando esses testes pq essa validacao vai ser feita ou no Flask ou no docker-compose 
+#RUN test -f ./permalink-googleDrive-pibiti6-nervo.json || (echo "permalink-googleDrive-pibiti6-nervo.json file not found in flask_backend directory" && exit 1)
+
 # Verify required files exist
-RUN test -f ./permalink-googleDrive-pibiti6-nervo.json || (echo "permalink-googleDrive-pibiti6-nervo.json file not found in flask_backend directory" && exit 1)
-RUN test -f ./.env || (echo ".env file not found in flask_backend directory" && exit 1)
+#RUN test -f ./.env || (echo ".env file not found in flask_backend directory" && exit 1)
 
 # SO PRA TESTAR WEASYPRINT (retirar em producao)
 # RUN weasyprint https://weasyprint.org /tmp/weasyprint-website.pdf

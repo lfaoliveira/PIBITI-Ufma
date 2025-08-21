@@ -22,6 +22,8 @@ services:
           - projeto
         volumes:
           - flask:/flask_backend
+        env_file:
+          - .env
         restart: unless-stopped
         
     frontend: #Vue + Vite
