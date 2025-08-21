@@ -18,12 +18,20 @@ services:
           - CELERY_BROKER_URL=redis://redis:6379/0
           - CELERY_RESULT_BACKEND=redis://redis:6379/0
           - VUE_FRONT_URL=http://31.97.84.210:5173
+          - MAIL_USERNAME=viplab.psno@nca.ufma.br
+          - MAIL_DEFAULT_SENDER=viplab.psno@nca.ufma.br
+          - MAIL_PASSWORD=lndd gxkj sdlh sgfo
+          - MAIL_SERVER=smtp.gmail.com
+          - MAIL_PORT=587
+          - MAIL_USE_TLS=True
+          - SECRET_KEY=9074578ec4e99fa85eb1267e52861d11356d7b8651172a5eeae6bb85f8928e5e
+          - ID_ROOT_FOLDER_GDRIVE=1HGQRjShCSWINVeIjzizpupv9gHmQJi-B
         networks:
           - projeto
         volumes:
           - flask:/flask_backend
-        env_file:
-          - .env
+        # env_file:
+        #   - .env
         restart: unless-stopped
         
     frontend: #Vue + Vite

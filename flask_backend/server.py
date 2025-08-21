@@ -518,7 +518,7 @@ PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 # Read environment variables from CSV
 # arq_config = "./env.csv"
 # Helper.read_ENV_VARS(arq_config) NOTE: DEPRECATED
-load_dotenv()
+# load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(__name__)
