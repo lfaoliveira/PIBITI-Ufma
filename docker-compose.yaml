@@ -1,6 +1,7 @@
 name: pibiti
 services:
     flask: # Flask + Tensorflow
+        image: lfaoliveira/flask:latest
         build: 
           context: .
           dockerfile: ./DOCKER/flask/dockerfile
@@ -24,6 +25,8 @@ services:
         restart: unless-stopped
         
     frontend: #Vue + Vite
+        image: lfaoliveira/frontend:latest
+
         build: 
           context: .
           dockerfile: ./DOCKER/frontend/dockerfile
@@ -43,6 +46,7 @@ services:
 
 
     celery_worker:
+      image: lfaoliveira/celery_worker:latest
       build: 
           context: .
           dockerfile: ./DOCKER/celery/dockerfile
@@ -58,7 +62,6 @@ services:
         - projeto
       restart: unless-stopped
 
-
     redis:
         image: redis:7-alpine
         ports:
@@ -69,7 +72,7 @@ services:
 
 
     db: # MongoDB
-      image: mongo@sha256:936020698d1b62b73f6bd40d52f172eb90e2a79e955aa4de26975100e5e991c6
+      image: mongo:7.0.23
       ports: [27017:27017]
       environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
