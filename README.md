@@ -20,7 +20,7 @@ Kubernetes XXXXXXX
 `npm install package.json
 cd vite-project
 npm install package.json
-cd ../FLASK
+cd ../flask_backend
 pip install requirements.txt
 `
 4. Execute o aplicativo front-end Vue:

@@ -20,7 +20,7 @@ if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
     Restart-Computer
 }
 
-if (-not (Test-Path "./FLASK/permalink-googleDrive-pibiti6-nervo.json")) {
+if (-not (Test-Path "./flask_backend/permalink-googleDrive-pibiti6-nervo.json")) {
     Write-Error "permalink-googleDrive-pibiti6-nervo.json file not found in FLASK directory"
     exit 1
 }
@@ -107,4 +107,4 @@ if (-not (Test-Path "./env.csv")) {
     exit 1
 }
 # Start Flask server
-Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "FLASK"
+Start-Process -FilePath "python" -ArgumentList "server.py" -WorkingDirectory "flask_backend"

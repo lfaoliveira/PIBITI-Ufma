@@ -1,4 +1,4 @@
-@celery.task(bind=True)
+'''@celery.task(bind=True)
 def process_analysis_task(self, id_diag, nome_input, filename):
     import time, os, numpy as np, tensorflow as tf
     from bson import ObjectId
@@ -241,3 +241,6 @@ def processamento_analise(self, id_diag, nome_input, filename):
         ),
         "video_url": local_url_video_out,
     }
+'''
+
+from FLASK.analise import AnaliseParalisia

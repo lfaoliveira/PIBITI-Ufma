@@ -8,4 +8,4 @@ dependencies:
   - tensorflow<=2.8.0
   - weasyprint
   - pip:
-    - -r ./FLASK/requirements.txt
+    - -r ./flask_backend/requirements.txt
