@@ -243,4 +243,4 @@ def processamento_analise(self, id_diag, nome_input, filename):
     }
 '''
 
-from FLASK.analise import AnaliseParalisia
+# from flask_backend.analise import AnaliseParalisia
