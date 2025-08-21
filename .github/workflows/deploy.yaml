@@ -3,7 +3,7 @@ name: Deploy to Local Linux VM
 on:
   push:
     branches:
-      - main  # trigger workflow on push to main branch
+      - main
       - dev
 
 jobs:
@@ -24,6 +24,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         context: .
+        file: ./Dockerfile          # Explicitly specify Dockerfile location
         push: true
         tags: lfaoliveira/sistema_pibiti:latest
 
@@ -35,5 +36,5 @@ jobs:
         key: ${{ secrets.PIBITI_SSH_KEY }}
         script: |
           docker pull lfaoliveira/sistema_pibiti:latest
-          docker compose down
-          docker-compose -f ./docker-compose.yml up -d --build
+          docker-compose down
+          docker-compose up -d --build

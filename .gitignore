@@ -39,3 +39,6 @@ trained_weights_final.*
 tmp
 db
 flask_session
+
+
+.github\workflows\deploy.yaml
