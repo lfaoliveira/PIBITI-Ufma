@@ -37,5 +37,5 @@ jobs:
         key: ${{ secrets.PIBITI_SSH_KEY }}
         script: |
           docker pull lfaoliveira/sistema_pibiti:latest
-          docker-compose down
-          docker-compose up -d --build
+          docker compose down
+          docker compose up -d --build
