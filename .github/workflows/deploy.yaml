@@ -29,6 +29,8 @@ jobs:
         docker compose -f docker-compose.yaml build
         docker compose -f docker-compose.yaml push
 
+    
+
     - name: SSH to remote server and deploy
       uses: appleboy/ssh-action@v0.1.7
       with:
@@ -36,6 +38,12 @@ jobs:
         username: ${{ secrets.PIBITI_USER }}
         key: ${{ secrets.PIBITI_SSH_KEY }}
         script: |
+          cd ~/PIBITI-Ufma
+
+          # Fetch the latest code
+          git fetch origin
+          git pull origin
+
           docker pull 
           docker compose down
           docker compose up -d --build
