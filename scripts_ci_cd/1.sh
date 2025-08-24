@@ -24,7 +24,7 @@ fi
 eval "$(ssh-agent -s)"
 
 # Add the key to SSH agent
-ssh-add "$KEY_PATH"
+# ssh-add "$KEY_PATH"
 
 # Display the public key
 # echo -e "\nYour public SSH key:"
