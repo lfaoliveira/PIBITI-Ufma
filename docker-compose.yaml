@@ -5,7 +5,7 @@ services:
         build: 
           context: .
           dockerfile: ./DOCKER/flask/dockerfile
-        command: "ls && pwd"
+        command: "ls && pwd && gunicorn --timeout 30 --access-logfile - --error-logfile - --capture-output --log-level debug --bind 0.0.0.0:5000 server:app"
         depends_on:
           - db
           - redis
