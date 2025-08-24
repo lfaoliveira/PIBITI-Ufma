@@ -5,6 +5,7 @@ services:
         build: 
           context: .
           dockerfile: ./DOCKER/flask/dockerfile
+        command: "ls && pwd"
         depends_on:
           - db
           - redis
