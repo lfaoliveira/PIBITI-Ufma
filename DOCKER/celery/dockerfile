@@ -1,12 +1,12 @@
 FROM python:3.9-slim-bullseye AS builder
 
-WORKDIR /app
+WORKDIR /flask_backend
 
 RUN python3 -m venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY ./flask_backend ./flask_backend 
-RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r  flask_backend/requirements.txt
+COPY ./flask_backend . 
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r  ./requirements.txt
 # CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
 # CMD ["celery", "-A", "celery.celery", "worker", "-l", "INFO"]
 
