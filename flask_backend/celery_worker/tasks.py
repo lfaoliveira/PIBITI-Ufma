@@ -357,9 +357,9 @@ sync_google_drive = SyncDriveTask()
 processamento_analise = AnaliseTask()
 envia_diag_task = EnviaDiagTask()
 
-app.tasks.register(sync_google_drive)
-app.tasks.register(processamento_analise)
-app.tasks.register(envia_diag_task)
+app.register_task(sync_google_drive)
+app.register_task(processamento_analise)
+app.register_task(envia_diag_task)
 
 
 # from celery import Celery
