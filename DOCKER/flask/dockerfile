@@ -36,14 +36,14 @@ COPY ./flask_backend ./
 
 FROM python:3.9-slim-bullseye AS runner_flask
 
-WORKDIR /flask_backend
+WORKDIR /app
 
 # VOLUME ["/flask_backend"]
 # Copy the virtualenv from builder
 COPY --from=builder /opt/venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
 # Copy only necessary files from the builder stage
-COPY --from=builder /flask_backend /flask_backend
+COPY --from=builder /flask_backend ./flask_backend
 
 # Reinstall only runtime libs (no gcc, no weasyprint build deps)
 RUN apt-get update -y \
