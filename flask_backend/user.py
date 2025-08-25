@@ -1,6 +1,6 @@
-
 from flask_login import LoginManager, UserMixin
-from pymongo.database import Collection
+
+# from pymongo.database import Collection
 
 
 class User(UserMixin):

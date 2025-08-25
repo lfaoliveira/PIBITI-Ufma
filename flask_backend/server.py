@@ -9,7 +9,7 @@ from http.client import (
 import time
 from bson import ObjectId
 import shutil
-from analise import AnaliseParalisia
+from flask_backend.analise import AnaliseParalisia
 from yolo import YOLO
 import os
 from werkzeug.utils import secure_filename
@@ -52,13 +52,13 @@ from celery import Celery
 
 import csv
 import numpy as np
-from pdf import Converter
-from drive import GoogleDrive
-from _email import MailHandler
-from user import User
+from flask_backend.pdf import Converter
+from flask_backend.drive import GoogleDrive
+from flask_backend._email import MailHandler
+from flask_backend.user import User
 import logging
 
-from celery_worker.tasks import envia_diag_task, processamento_analise
+from flask_backend.celery_worker.tasks import envia_diag_task, processamento_analise
 
 
 class Helper:
@@ -510,7 +510,7 @@ def processamento_analise(self, id_diag, nome_input, filename):
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
-from . import (
+from flask_backend import (
     COLLECTION_DIAGS,
     COLLECTION_MEDICOS,
     PASTA_USUARIO_ANONIMO_GDRIVE,

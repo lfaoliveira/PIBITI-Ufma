@@ -29,16 +29,16 @@ import numpy as np
 
 from pymongo import MongoClient
 
-from analise import AnaliseParalisia
+from flask_backend.analise import AnaliseParalisia
 from flask_backend import (
     COLLECTION_DIAGS,
     COLLECTION_MEDICOS,
     PASTA_USUARIO_ANONIMO_GDRIVE,
 )
 
-from .celery import app
-from drive import GoogleDrive
-from server import Helper, get_modelo
+from celery_worker.celery import app
+from flask_backend.drive import GoogleDrive
+from flask_backend.server import Helper, get_modelo
 
 
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
