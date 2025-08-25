@@ -510,10 +510,11 @@ def processamento_analise(self, id_diag, nome_input, filename):
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
-COLLECTION_DIAGS = "Diagnosticos"
-COLLECTION_MEDICOS = "Medicos"
-
-PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
+from flask_backend import (
+    COLLECTION_DIAGS,
+    COLLECTION_MEDICOS,
+    PASTA_USUARIO_ANONIMO_GDRIVE,
+)
 
 # Read environment variables from CSV
 # arq_config = "./env.csv"

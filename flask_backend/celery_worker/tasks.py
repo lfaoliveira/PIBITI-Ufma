@@ -29,8 +29,13 @@ import numpy as np
 
 from pymongo import MongoClient
 
-from flask_backend.analise import AnaliseParalisia
-from server import PATH_CRED, ROOT_DRIVE, COLLECTION_DIAGS, COLLECTION_MEDICOS
+from analise import AnaliseParalisia
+from flask_backend import (
+    COLLECTION_DIAGS,
+    COLLECTION_MEDICOS,
+    PASTA_USUARIO_ANONIMO_GDRIVE,
+)
+
 from .celery import app
 from drive import GoogleDrive
 from server import Helper, get_modelo

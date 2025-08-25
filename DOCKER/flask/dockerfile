@@ -43,8 +43,6 @@ WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
 # Copy only necessary files from the builder stage
-COPY --from=builder /flask_backend ./flask_backend
-
 # Reinstall only runtime libs (no gcc, no weasyprint build deps)
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
@@ -54,6 +52,9 @@ RUN apt-get update -y \
     libgl1-mesa-glx \
     python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /flask_backend ./flask_backend
+
 
 #tirando esses testes pq essa validacao vai ser feita ou no Flask ou no docker-compose 
 #RUN test -f ./permalink-googleDrive-pibiti6-nervo.json || (echo "permalink-googleDrive-pibiti6-nervo.json file not found in flask_backend directory" && exit 1)
