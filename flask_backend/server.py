@@ -58,8 +58,7 @@ from flask_backend.user import User
 
 import logging
 
-from celery_worker.tasks import envia_diag_task, processamento_analise
-
+from flask_backend.celery_worker.tasks import envia_diag_task, processamento_analise
 
 """ 
 class CeleryTaskWrapper:

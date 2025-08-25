@@ -36,7 +36,7 @@ from flask_backend import (
     PASTA_USUARIO_ANONIMO_GDRIVE,
 )
 
-from celery_worker.celery import app
+from .celery import app
 from flask_backend.drive import GoogleDrive
 from flask_backend.helpers import Helper, get_modelo
 
@@ -67,6 +67,8 @@ class MainTask(Task):
     @property
     def drive(self):
         if self._drive is None:
+            from flask_backend.server import PATH_CRED, ROOT_DRIVE
+
             self._drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
         return self._drive
 
@@ -88,8 +90,10 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         return str_res, dict_graf
 
 
-# TODO: ARGUMENTOS DEVEM SER APENAS OBJETOS SERIALIZAVEIS (SEM SER OBJETOS COMPLEXOS)
+# NOTE: ARGUMENTOS DEVEM SER APENAS OBJETOS SERIALIZAVEIS (SEM SER OBJETOS COMPLEXOS)
 class SyncDriveTask(MainTask):
+    name = "sync_google_drive"
+
     def run(self, storage_strings: dict, id_diag: str, email: str):
         print(f"STORAGE: {storage_strings}, ID: {id_diag}")
         path_video_in = storage_strings["video_in"]
@@ -110,6 +114,8 @@ class AnaliseTask(MainTask):
 
     _helper = None
     _analisador = None
+
+    name = "processamento_analise"
 
     @property
     def helper(self):
@@ -291,6 +297,8 @@ class AnaliseTask(MainTask):
 
 
 class EnviaDiagTask(MainTask):
+    name = "envia_diag_task"
+
     def run(
         self,
         video_data,
