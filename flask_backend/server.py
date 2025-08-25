@@ -510,7 +510,7 @@ def processamento_analise(self, id_diag, nome_input, filename):
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
-from flask_backend import (
+from . import (
     COLLECTION_DIAGS,
     COLLECTION_MEDICOS,
     PASTA_USUARIO_ANONIMO_GDRIVE,
