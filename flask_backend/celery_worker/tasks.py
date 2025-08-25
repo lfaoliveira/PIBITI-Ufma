@@ -38,10 +38,10 @@ from flask_backend import (
 
 from celery_worker.celery import app
 from flask_backend.drive import GoogleDrive
-from flask_backend.server import Helper, get_modelo
+from flask_backend.helpers import Helper, get_modelo
 
 
-PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
+# PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 
 
 # classe abstrata pra instanciar GoogleDrive e Mongo
