@@ -419,7 +419,7 @@ if "PIBITI" == os.path.basename(PATH_PIBITI):
     os.chdir(app.config["WKDIR"])
     print(f"CHANGING DIR TO {os.getcwd()}")
 
-app.config["WKDIR"] = os.getcwd()
+# app.config["WKDIR"] = os.getcwd()
 
 PATH_CRED = os.path.join(
     app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json"
