@@ -2,8 +2,11 @@ from bs4 import BeautifulSoup
 from flask_mail import Mail, Message
 from typing import Literal
 import time
+import os
+from pathlib import Path
 
-SOURCE_HTML = "./static/template-email.html"  # MUDAR COM BASE EM LINUX OU WINDOWS!!!!
+SOURCE_HTML = str(Path(__file__).parent / "static" / "template-email.html")
+
 # TODO: MUDAR TITULO DO APLICATIVO!!!!!!!!!!!!!
 TITULO_APP = "NeurOptic"
 EMAIL_APP = "viplab.psno@nca.ufma.br"

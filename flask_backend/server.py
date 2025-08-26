@@ -352,9 +352,6 @@ app.config["MONGO_URI"] = os.environ["MONGO_URI"]
 mongo = PyMongo(app)
 
 
-print("DEPOIS DO CELERY")
-
-
 # SEGURANÇA
 app.secret_key = os.environ.get("SECRET_KEY", None)
 if app.secret_key is None:

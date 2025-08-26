@@ -5,8 +5,7 @@ services:
         build: 
           context: .
           dockerfile: ./DOCKER/flask/dockerfile
-        command: bash -c "ls && pwd && 
-                      gunicorn --timeout 30 --access-logfile - --error-logfile - --capture-output --log-level debug --bind 0.0.0.0:5000 flask_backend.server:app"
+        command: bash -c "gunicorn --timeout 30 --access-logfile - --error-logfile - --capture-output --log-level debug --bind 0.0.0.0:5000 flask_backend.server:app"
         working_dir: /app
         depends_on:
           - db
