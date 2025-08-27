@@ -7,7 +7,6 @@ from http.client import (
 )
 import time
 from bson import ObjectId
-import shutil
 import os
 from flask import (
     Flask,
@@ -22,7 +21,6 @@ from flask import (
     stream_with_context,
     send_file,
 )
-from typing import Any, Union
 import tensorflow as tf
 from celery import Task
 import numpy as np
@@ -145,6 +143,7 @@ class AnaliseTask(MainTask):
         )
         self.analisador.path_temp = TEMP_FOLDER
         ext = self.helper.allowed_file(filename)
+        print(self.helper.allowed_file, "\n\n\n")
 
         if ext is None:
             return {"error": "Incorrect file type"}

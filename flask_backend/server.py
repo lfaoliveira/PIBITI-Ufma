@@ -1,4 +1,3 @@
-from datetime import datetime
 from http.client import (
     BAD_GATEWAY,
     BAD_REQUEST,
@@ -11,7 +10,6 @@ from bson import ObjectId
 import shutil
 from flask_backend.analise import AnaliseParalisia
 import os
-from werkzeug.utils import secure_filename
 
 from flask import (
     Flask,
@@ -43,13 +41,8 @@ import hashlib
 from datetime import timedelta
 from typing import Any, Union
 import tensorflow as tf
-import threading
-
-import ffmpeg
-from celery import Celery
-
-import csv
 import numpy as np
+
 
 from flask_backend.pdf import Converter
 from flask_backend.drive import GoogleDrive
@@ -443,35 +436,6 @@ print(f"Initial drive state captured with {len(drive.file_state.index)} Objects.
 
 print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
-
-''' def make_celery(cel_wrap: CeleryTaskWrapper, app: Flask):
-    """
-    Modifica app celery pra ter mesmo contexto de excucao que o aplicativo Flask
-    """
-    celery = cel_wrap.cel_app
-
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    cel_wrap.cel_app = celery
-    return cel_wrap
-'''
-
-
-""" celery_wrapper = CeleryTaskWrapper(
-    mongo, COLLECTION_DIAGS, COLLECTION_MEDICOS, app, drive
-)
-celery_wrapper = make_celery(celery_wrapper, app)
-"""
-
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
     raise Exception(
@@ -488,7 +452,7 @@ video_demo = os.path.join(app.config["WKDIR"], "demoInput.mp4")
 
 @app.route("/teste_pdf")
 def teste_pdf():
-    """FUNCAO QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF renderizado
+    """FUNCAO DE TESTE QUE DEVE PEGAR DADOS DO DIAGNOSTICO E RETORNAR PDF renderizado
 
     dict_dados: keys: `
     [logoApp, velEsq, nomeMedico, dataAgora, nomePaciente, diagAutom,
@@ -709,11 +673,6 @@ def analisar():
     id_diag = request.form.get("id_diag", None)
     nome_input = request.form.get("nome_input", None)
     filename = request.form.get("filename", None)
-
-    ext = Helper.allowed_file(filename)
-    if ext is None:
-        print("Incorrect file type!\n\n")
-        return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
 
     if id_diag is None:
         return make_response("INPUT NULO!", BAD_REQUEST)
@@ -1331,6 +1290,7 @@ if __name__ != "__main__":
     # app.run(host="0.0.0.0")
     from flask_backend.helpers import Helper
 
+    print("\n\n SERVIDOR INICIADO!\n\n")
     gunicorn_logger = logging.getLogger("gunicorn.error")
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
