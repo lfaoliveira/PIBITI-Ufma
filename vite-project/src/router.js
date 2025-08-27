@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Homepage from './components/inicio/HomePage.vue';
+import Homepage from './components/home/HomePage.vue';
 import AnaliseVideo from './components/analise/AnaliseVideo.vue';
 import Loading from "./components/analise/Loading.vue";
-import Termos from './components/inicio/Termos.vue';
-import Metodo from './components/inicio/Metodo.vue';
-import Duvidas from './components/inicio/Duvidas.vue';
-import Equipe from './components/inicio/Equipe.vue';
+import Termos from './components/home/Termos.vue';
+import Metodo from './components/home/Metodo.vue';
+import Duvidas from './components/home/Duvidas.vue';
+import Equipe from './components/home/Equipe.vue';
 import Acesso from './components/Acesso.vue';
 import FichaDiag from './components/analise/FichaDiag.vue';
 import Perfil from './components/nav/Perfil.vue';
