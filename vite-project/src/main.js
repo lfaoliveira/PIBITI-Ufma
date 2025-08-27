@@ -7,6 +7,10 @@ import store from './store/index'; // Import your Vuex store
 import 'video.js/dist/video-js.css';
 import axios from 'axios';
 
+import './style.css'
+
+
+
 axios.defaults.withCredentials = true;
 
 
