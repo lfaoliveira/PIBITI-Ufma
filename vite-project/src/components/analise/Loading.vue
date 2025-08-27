@@ -90,7 +90,7 @@ export default {
       formData.append("nome_input", String(this.objResposta.nome_input));
 
       axios
-        .post(this.$store.getters.getAnalise, formData, {
+        .put(this.$store.getters.getAnalise, formData, {
           withCredentials: true,
         })
         .then((res) => {

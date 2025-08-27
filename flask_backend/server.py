@@ -667,17 +667,18 @@ def get_file(resource_uri) -> Union[Any, Response]:
         )
 
 
-@app.route("/analise", methods=["POST"])
+@app.route("/analise", methods=["PUT"])
 @cross_origin(supports_credentials=True)
 def analisar():
-    id_diag = request.form.get("id_diag", None)
-    nome_input = request.form.get("nome_input", None)
-    filename = request.form.get("filename", None)
+    data = request.form
+    id_diag = data.get("id_diag", None)
+    nome_input = data.get("nome_input", None)
+    filename = data.get("filename", None)
 
     if id_diag is None:
         return make_response("INPUT NULO!", BAD_REQUEST)
 
-    # task = celery_wrapper.process_analise(id_diag, nome_input, filename)
+    # Enqueue the celery task
     task = processamento_analise.delay(
         id_diag, nome_input, filename, app.config["TEMP_FOLDER"]
     )
