@@ -53,7 +53,7 @@ services:
         networks:
           - projeto
         volumes:
-          - frontend:/frontend
+          - /root/pibiti/vite-project:/frontend #TODO: MUDAR ISSO PRO VOLUME DO FRONTEND
         restart: unless-stopped
 
 

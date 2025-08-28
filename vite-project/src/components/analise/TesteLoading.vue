@@ -7,7 +7,7 @@
         :titulo="msgErro"
         :subtexto="'Tente novamente!'"
         :srcImg="'src/assets/alert_circle.png'"
-        :rota="'/ficha'"
+        :rota="'/teste'"
     />
     <main class="secao-main">
         <figure class="overlay">
