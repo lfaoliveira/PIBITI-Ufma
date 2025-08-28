@@ -54,7 +54,9 @@ services:
           - projeto
         volumes:
           - /root/pibiti/vite-project:/frontend #TODO: MUDAR ISSO PRO VOLUME DO FRONTEND
+          - /frontend/node_modules
         restart: unless-stopped
+        command: "npm run dev -- --host"
 
 
     celery_worker:
