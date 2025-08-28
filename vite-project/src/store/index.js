@@ -58,6 +58,7 @@ const store = createStore({
         getAnalise: (state) => (state.urlBackend + "/analise"),
         getLogado: (state) => (state.logado),
         getFormDiag: (state) => (state.formDiag),
+        getTaskStatus: (state) => (state.urlBackend + "/status/")
     }
 });
 

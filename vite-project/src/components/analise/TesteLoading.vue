@@ -12,23 +12,20 @@
     <main class="secao-main">
         <figure class="overlay">
             <section class="progresso">
-                <div class="progresso-barra">
-                    <!-- <div
+                <!-- <div
                         class="progresso-barra barra-menor"
                         :style="{ width: `${percent}%` }"
                     ></div> -->
+                <div
+                    role="status"
+                    aria-label="Carregando"
+                    class="flex items-center justify-center"
+                >
                     <div
-                        role="status"
-                        aria-label="Carregando"
-                        class="flex items-center justify-center"
-                    >
-                        <div
-                            class="w-12 h-12 border-4 border-[#792359] border-t-transparent rounded-full animate-spin"
-                        />
-                        <span class="sr-only">Carregando...</span>
-                    </div>
+                        class="w-14 h-14 border-3 border-[#792359] border-t-transparent rounded-full animate-spin"
+                    />
                 </div>
-                <div class="progresso-texto">{{ parseInt(this.percent) }}% Completo</div>
+                <div class="progresso-texto">Carregando...</div>
             </section>
         </figure>
     </main>
@@ -65,6 +62,70 @@ export default {
     },
     props: {},
     methods: {
+        async checkTaskStatus(taskId, intervaloMS) {
+            return new Promise((resolve, reject) => {
+                const interval = setInterval(async () => {
+                    try {
+                        const res = await fetch(
+                            this.$store.getters.getTaskStatus + `${taskId}`
+                        );
+                        const response = await res.json();
+                        const codigo = res.status;
+
+                        // ✅ Task completed successfully
+                        if (codigo === 200 && response.message == "SUCCESS") {
+                            clearInterval(interval);
+                            resolve(response); // {status: "SUCCESS", result: ...}
+                        }
+
+                        // ⏳ Task still pending
+                        else if (codigo === 304) {
+                            // do nothing, keep polling
+                            console.log("ESPERANDO");
+                        }
+
+                        // ❌ Task failed
+                        else if (codigo === 500 || response.message === "FAILURE") {
+                            clearInterval(interval);
+                            const err = new Error(response.error || "Task failed");
+                            console.log("ERRO" + JSON.stringify(err));
+                            reject(err);
+                        }
+
+                        // 🚫 Task ID not found
+                        else if (codigo === 404) {
+                            clearInterval(interval);
+                            console.log("ERRO" + JSON.stringify(err));
+                            const err = new Error("Task not found");
+                            reject(err);
+                        }
+
+                        // ⚠️ Unexpected status
+                        else {
+                            clearInterval(interval);
+                            const err = new Error(
+                                `Unexpected response: ${JSON.stringify(response)}`
+                            );
+                            console.log("ERRO" + JSON.stringify(err));
+                            reject(err);
+                        }
+                    } catch (err) {
+                        clearInterval(interval);
+                        console.log("ERRO" + JSON.stringify(err));
+                        reject(err);
+                    }
+                }, intervaloMS); // poll every X ms
+            });
+        },
+
+        async esperarUploadVideo(taskId) {
+            const intervalo = 500; //500ms
+            const res = await this.checkTaskStatus(taskId, intervalo);
+            console.log("DEU CERTO");
+            //retorna tag dados retornada pelo servidor
+            return res.dados;
+        },
+
         async progressoIntervaloMs(tempoTotalms, targetPercent, signal) {
             return new Promise((resolve, reject) => {
                 const startTime = Date.now();
@@ -130,7 +191,7 @@ export default {
         console.log("FORM: ", formDiag, typeof formDiag);
 
         const controller = new AbortController();
-        const signal = controller.signal;
+        // const signal = controller.signal;
 
         let res = "None";
 
@@ -139,18 +200,18 @@ export default {
         });
 
         try {
-            res = await Promise.all([
-                // this.progressoIntervaloMs(tempoLoad, 50, signal),
-                promiseEnviaDiag,
-            ]);
-            this.objResposta = res[1].data;
-            console.log("RESPOSTA BEM SUCEDIDA: ");
+            res = await promiseEnviaDiag;
+            this.objResposta = res.json();
+            console.log("TAREFA INICIADA COM SUCESSO!: ");
         } catch (error) {
             this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
             emitter.emit(this.erroOverlay);
         }
 
         console.log("MOUNTED RESPONSE: ", this.objResposta);
+        const taskId = this.objResposta?.task_id;
+        this.esperarUploadVideo(taskId);
+        console.log("MANDANDO PRA ANALISE");
         //logica de barra de progresso e req de analise
         // this.mudarLoading(controller);
         //1 MB = 1s
@@ -167,4 +228,58 @@ export default {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.page-title {
+    color: #3a0d75;
+    font-size: clamp(39px, 2.5em, 4vmin);
+    margin: clamp(30px, 6vmin, 120px) auto 0px auto;
+}
+
+.secao-main {
+    height: 80vmin;
+}
+
+.overlay {
+    transition-duration: 4ms;
+    background-color: black;
+    width: auto;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.overlay-aviso {
+    margin: 2vmin 0vmin;
+    align-self: center;
+    background: white;
+}
+
+.progresso {
+    color: white;
+    width: clamp(110px, 30vmin, 400px);
+    height: auto;
+}
+
+.progresso-barra {
+    background-color: #f0f0f0;
+    height: clamp(10px, 2vmin, 20px);
+    width: 100%;
+    border-radius: 12px;
+    margin: 10px 0;
+}
+
+.barra-menor {
+    margin: 0px;
+    padding: 0px;
+    transition: width 0.3s ease-out;
+    background-color: #792359;
+    height: 100%;
+    width: 2%;
+    border-radius: 12px;
+}
+
+.progresso-texto {
+    display: flex;
+    justify-content: center;
+}
 </style>
