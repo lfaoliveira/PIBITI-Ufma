@@ -11,6 +11,7 @@ import FichaDiag from './components/analise/FichaDiag.vue';
 import Perfil from './components/nav/Perfil.vue';
 import EsqueciSenha from './components/auxiliares/EsqueciSenha.vue';
 import MudarSenha from './components/auxiliares/MudarSenha.vue';
+import TesteLoading from './components/analise/TesteLoading.vue';
 
 
 
@@ -51,6 +52,9 @@ const routes = [
     },
     {
         name: 'MudarSenha', path: '/mudarSenha',  component: MudarSenha
+    },
+    {
+        name: 'PaginaDETESTE', path: '/teste', component: TesteLoading,
     },
 ];
 

@@ -152,13 +152,13 @@ export default {
 
         console.log("MOUNTED RESPONSE: ", this.objResposta);
         //logica de barra de progresso e req de analise
-        this.mudarLoading(controller);
+        // this.mudarLoading(controller);
         //1 MB = 1s
-        await this.progressoIntervaloMs(
+        /* await this.progressoIntervaloMs(
             this.estimativaTotal - tempoLoad + sizeMB,
             100,
             signal
-        );
+        ); */
     },
 };
 </script>
@@ -167,58 +167,4 @@ export default {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.page-title {
-    color: #3a0d75;
-    font-size: clamp(39px, 2.5em, 4vmin);
-    margin: clamp(30px, 6vmin, 120px) auto 0px auto;
-}
-
-.secao-main {
-    height: 80vmin;
-}
-
-.overlay {
-    transition-duration: 4ms;
-    background-color: black;
-    width: auto;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.overlay-aviso {
-    margin: 2vmin 0vmin;
-    align-self: center;
-    background: white;
-}
-
-.progresso {
-    color: white;
-    width: clamp(110px, 30vmin, 400px);
-    height: auto;
-}
-
-.progresso-barra {
-    background-color: #f0f0f0;
-    height: clamp(10px, 2vmin, 20px);
-    width: 100%;
-    border-radius: 12px;
-    margin: 10px 0;
-}
-
-.barra-menor {
-    margin: 0px;
-    padding: 0px;
-    transition: width 0.3s ease-out;
-    background-color: #792359;
-    height: 100%;
-    width: 2%;
-    border-radius: 12px;
-}
-
-.progresso-texto {
-    display: flex;
-    justify-content: center;
-}
 </style>

@@ -1,21 +1,19 @@
 <template>
-  <router-view></router-view>
+    <router-view></router-view>
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
-  name: "App",
-  props: {},
-  data() {
-    return {
-      _: 0,
-    };
-  },
-  mounted() {
-    // console.log("LOGADO: ", this.$store.getters.getLogado);
-  },
+    name: "App",
+    props: {},
+    data() {
+        return {
+            _: 0,
+        };
+    },
+    mounted() {
+        // console.log("LOGADO: ", this.$store.getters.getLogado);
+    },
 };
 </script>
 
