@@ -4,6 +4,8 @@ from http.client import (
     INTERNAL_SERVER_ERROR,
     OK,
     UNAUTHORIZED,
+    NOT_MODIFIED,
+    NOT_FOUND,
 )
 import time
 from bson import ObjectId
@@ -691,13 +693,27 @@ from celery.result import AsyncResult
 
 @app.route("/status/<task_id>", methods=["GET"])
 def task_status(task_id):
-    task = AsyncResult(task_id)
-    if task.state == "PENDING":
-        return "Task is still pending"
-    elif task.state == "SUCCESS":
-        return f"Task completed successfully: {task.result}"
-    else:
-        return f"Task failed with state: {task.state}"
+    try:
+        task = AsyncResult(task_id)
+        if task.state == "PENDING":
+            return make_response(
+                jsonify({"dados": "", "message": "PENDING"}), NOT_MODIFIED
+            )
+        elif task.state == "SUCCESS":
+            return make_response(
+                jsonify({"dados": task.result, "message": "SUCCESS"}), OK
+            )
+        else:
+            return make_response(
+                jsonify({"dados": task.result, "message": "FAILED"}),
+                INTERNAL_SERVER_ERROR,
+            )
+    except Exception as e:
+        print(f"EXCEPTION NO STATUS DA TASK: {e}\n")
+        return make_response(
+            f"TASK DOESNT EXIST! OR SOMETHING ELSE FAILED!:\n",
+            NOT_FOUND,
+        )
 
 
 # @app.route("/analise", methods=["POST"])
