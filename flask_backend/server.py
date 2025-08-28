@@ -996,6 +996,8 @@ def gerar_grafico(id_diag, external=True):
         dados_grafico["time"],
     )
 
+    # Instantiate the analyzer from the task to access its methods
+    analisador = processamento_analise.analisador
     path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
     print(f"PATH_GRAF: {path_graf}\n\n")
     uri_graf = path_graf

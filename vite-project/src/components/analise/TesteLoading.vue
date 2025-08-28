@@ -62,6 +62,8 @@ export default {
     },
     props: {},
     methods: {
+        //BUG: Uncaught (in promise) SyntaxError: Unexpected token 'T', "Task compl"... is not valid JSON
+        //AJEITAR ISSO PRA CONTINUAR DESENVOLVENDO!!!!!!!!!!!!!
         async checkTaskStatus(taskId, intervaloMS) {
             return new Promise((resolve, reject) => {
                 const interval = setInterval(async () => {
@@ -72,46 +74,46 @@ export default {
                         const response = await res.json();
                         const codigo = res.status;
 
-                        // ✅ Task completed successfully
+                        // Task completed successfully
                         if (codigo === 200 && response.message == "SUCCESS") {
                             clearInterval(interval);
                             resolve(response); // {status: "SUCCESS", result: ...}
                         }
 
-                        // ⏳ Task still pending
+                        // Task still pending
                         else if (codigo === 304) {
                             // do nothing, keep polling
                             console.log("ESPERANDO");
                         }
 
-                        // ❌ Task failed
+                        // Task failed
                         else if (codigo === 500 || response.message === "FAILURE") {
                             clearInterval(interval);
                             const err = new Error(response.error || "Task failed");
-                            console.log("ERRO" + JSON.stringify(err));
+                            console.log("ERRO " + String(err));
                             reject(err);
                         }
 
-                        // 🚫 Task ID not found
+                        //  Task ID not found
                         else if (codigo === 404) {
                             clearInterval(interval);
-                            console.log("ERRO" + JSON.stringify(err));
+                            console.log("ERRO " + String(err));
                             const err = new Error("Task not found");
                             reject(err);
                         }
 
-                        // ⚠️ Unexpected status
+                        //  Unexpected status
                         else {
                             clearInterval(interval);
                             const err = new Error(
                                 `Unexpected response: ${JSON.stringify(response)}`
                             );
-                            console.log("ERRO" + JSON.stringify(err));
+                            console.log("ERRO " + String(err));
                             reject(err);
                         }
                     } catch (err) {
                         clearInterval(interval);
-                        console.log("ERRO" + JSON.stringify(err));
+                        console.log("ERRO " + String(err));
                         reject(err);
                     }
                 }, intervaloMS); // poll every X ms
@@ -120,6 +122,7 @@ export default {
 
         async esperarUploadVideo(taskId) {
             const intervalo = 500; //500ms
+            console.log("BOTANDO PRA ESPERAR");
             const res = await this.checkTaskStatus(taskId, intervalo);
             console.log("DEU CERTO");
             //retorna tag dados retornada pelo servidor
@@ -201,16 +204,19 @@ export default {
 
         try {
             res = await promiseEnviaDiag;
-            this.objResposta = res.json();
-            console.log("TAREFA INICIADA COM SUCESSO!: ");
+            this.objResposta = res.data;
+            console.log(
+                "TAREFA INICIADA COM SUCESSO!: " + JSON.stringify(this.objResposta)
+            );
         } catch (error) {
             this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
+            console.log("DEU MERDA: " + JSON.stringify(this.msgErro));
             emitter.emit(this.erroOverlay);
         }
 
         console.log("MOUNTED RESPONSE: ", this.objResposta);
         const taskId = this.objResposta?.task_id;
-        this.esperarUploadVideo(taskId);
+        await this.esperarUploadVideo(taskId);
         console.log("MANDANDO PRA ANALISE");
         //logica de barra de progresso e req de analise
         // this.mudarLoading(controller);
