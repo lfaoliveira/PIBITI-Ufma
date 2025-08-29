@@ -49,6 +49,7 @@ export default {
         Rodape,
         HeaderSistema,
         OverlayAviso,
+        Estrela,
     },
     created() {},
     data() {

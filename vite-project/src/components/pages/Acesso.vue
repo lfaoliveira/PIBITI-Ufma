@@ -171,10 +171,10 @@
 </template>
 
 <script>
-import HeaderSistema from "../../layout/HeaderSistema.vue";
-import Button from "../../navigation/Button.vue";
-import Rodape from "../../layout/Rodape.vue";
-import OverlayAviso from "../../layout/OverlayAviso.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
+import Button from "../navigation/Button.vue";
+import Rodape from "../layout/Rodape.vue";
+import OverlayAviso from "../layout/OverlayAviso.vue";
 
 import axios from "axios";
 import emitter from "../../eventBus";
