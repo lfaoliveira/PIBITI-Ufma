@@ -27,6 +27,7 @@
                 </div>
                 <div class="progresso-texto">Carregando...</div>
             </section>
+            <Estrela></Estrela>
         </figure>
     </main>
 
@@ -38,6 +39,7 @@ import Rodape from "../layout/Rodape.vue";
 import axios from "axios";
 import HeaderSistema from "../layout/HeaderSistema.vue";
 import OverlayAviso from "../layout/OverlayAviso.vue";
+import Estrela from "../icons/Estrela.vue";
 
 import emitter from "../../eventBus";
 
