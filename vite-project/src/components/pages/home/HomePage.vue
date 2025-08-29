@@ -9,7 +9,7 @@
                 preload="auto"
                 autoplay
                 loop
-                src="../../assets/video-oftalmo.mp4"
+                src="../../../assets/video-oftalmo.mp4"
             />
             <figure class="overlay" />
         </div>

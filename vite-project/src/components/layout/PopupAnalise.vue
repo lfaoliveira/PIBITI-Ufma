@@ -8,6 +8,9 @@ import Estrela from "../icons/Estrela.vue";
 
 export default {
     name: "Popup",
+    components: {
+        Estrela,
+    },
     created() {},
     data() {
         return {};
