@@ -1,28 +1,28 @@
 <template>
-  <main class="secao-landing">
-    <HeaderSistema :activeIndex="0"></HeaderSistema>
+    <main class="secao-landing">
+        <HeaderSistema :activeIndex="0"></HeaderSistema>
 
-    <div id="div-video-home">
-      <video
-        alt="Header background"
-        class="video-background"
-        preload="auto"
-        autoplay
-        loop
-        src="../../assets/video-oftalmo.mp4"
-      />
-      <figure class="overlay" />
-    </div>
-    <div class="div-titulo">
-      <h1 class="section-title" id="titulo">
-        Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
-      </h1>
-    </div>
-    <div class="botoes">
-      <Button @click="fnDuvidas" texto="Como Funciona?" :ativo="true"> </Button>
-      <Button @click="fnFicha" texto="Fazer Análise" :ativo="true"> </Button>
-    </div>
-  </main>
+        <div id="div-video-home">
+            <video
+                alt="Header background"
+                class="video-background"
+                preload="auto"
+                autoplay
+                loop
+                src="../../assets/video-oftalmo.mp4"
+            />
+            <figure class="overlay" />
+        </div>
+        <div class="div-titulo">
+            <h1 class="section-title" id="titulo">
+                Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
+            </h1>
+        </div>
+        <div class="botoes">
+            <Button @click="fnDuvidas" texto="Como Funciona?" :ativo="true"> </Button>
+            <Button @click="fnFicha" texto="Fazer Análise" :ativo="true"> </Button>
+        </div>
+    </main>
 </template>
 
 <style lang="scss" scoped>
@@ -30,119 +30,119 @@ $fonte-titulo: clamp(14px, 5.33vmin, 41px);
 $height-video: 100%;
 
 .secao-landing {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: clamp(30px, 13vmin, 100px);
-  flex-shrink: 0;
-  align-self: stretch;
-  width: 100%;
-  height: clamp(100%, 100%, 100%);
-  justify-content: center;
-  margin-top: 0px;
-  align-self: center;
-  flex-wrap: wrap;
-  margin: 0px;
-  max-width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: clamp(30px, 13vmin, 100px);
+    flex-shrink: 0;
+    align-self: stretch;
+    width: 100%;
+    height: clamp(100%, 100%, 100%);
+    justify-content: center;
+    margin-top: 0px;
+    align-self: center;
+    flex-wrap: wrap;
+    margin: 0px;
+    max-width: 100%;
 }
 
 #div-video-home {
-  width: clamp(92%, 100%, 100%);
-  display: flex;
-  align-self: center;
-  height: 100%;
-  /* margin: 5vmin 0vmin 0vmin 0vmin; */
-  position: absolute;
+    width: clamp(92%, 100%, 100%);
+    display: flex;
+    align-self: center;
+    height: 100%;
+    /* margin: 5vmin 0vmin 0vmin 0vmin; */
+    position: absolute;
 
-  bottom: 0px;
-  flex-wrap: wrap;
-  justify-content: start;
+    bottom: 0px;
+    flex-wrap: wrap;
+    justify-content: start;
 }
 
 .overlay {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  pointer-events: none;
-  background-color: rgba(18, 18, 18.1, 0.41);
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    pointer-events: none;
+    background-color: rgba(18, 18, 18.1, 0.41);
 }
 
 .video-background {
-  width: 100%;
-  height: $height-video;
-  position: absolute;
-  object-fit: cover;
-  z-index: 0;
-  align-self: center;
+    width: 100%;
+    height: $height-video;
+    position: absolute;
+    object-fit: cover;
+    z-index: 0;
+    align-self: center;
 }
 
 /* MUDAR CONTAINER PRA GRID */
 
 .div-titulo {
-  margin: auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  height: auto;
-  width: clamp(290px, 64ch, 100%);
-  margin: 0vmin auto;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: auto;
+    width: clamp(290px, 64ch, 100%);
+    margin: 0vmin auto;
 }
 
 #titulo {
-  color: #fff;
-  font-weight: 600;
-  font-size: $fonte-titulo;
-  text-align: start;
-  @media (max-width: 500px) {
-    text-align: center;
-  }
-  width: auto;
-  margin: 0vmin auto;
+    color: #fff;
+    font-weight: 600;
+    font-size: $fonte-titulo;
+    text-align: start;
+    @media (max-width: 500px) {
+        text-align: center;
+    }
+    width: auto;
+    margin: 0vmin auto;
 }
 
 .botoes {
-  display: flex;
-  width: 30vmin;
-  align-items: flex-start;
-  flex-direction: column;
-  align-items: center;
-  gap: 5vmin;
+    display: flex;
+    width: 30vmin;
+    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
+    gap: 5vmin;
 
-  flex-shrink: 0;
-  z-index: 1;
+    flex-shrink: 0;
+    z-index: 1;
 }
 
 input {
-  display: none;
+    display: none;
 }
 </style>
 
 <script>
-import HeaderSistema from "../layout/HeaderSistema.vue";
-import Button from "../navigation/Button.vue";
+import HeaderSistema from "../../layout/HeaderSistema.vue";
+import Button from "../../navigation/Button.vue";
 
 export default {
-  name: "HomePage",
-  components: {
-    HeaderSistema,
-    Button,
-  },
-  setup() {},
-  methods: {
-    fnDuvidas() {
-      this.$router.push("/duvidas");
+    name: "HomePage",
+    components: {
+        HeaderSistema,
+        Button,
     },
-    fnFicha() {
-      this.$router.push("/ficha");
+    setup() {},
+    methods: {
+        fnDuvidas() {
+            this.$router.push("/duvidas");
+        },
+        fnFicha() {
+            this.$router.push("/ficha");
+        },
     },
-  },
-  props: {},
-  data() {
-    return {};
-  },
-  mounted() {
-    console.log("MONTADO HOMEPAGE");
-  },
+    props: {},
+    data() {
+        return {};
+    },
+    mounted() {
+        console.log("MONTADO HOMEPAGE");
+    },
 };
 </script>

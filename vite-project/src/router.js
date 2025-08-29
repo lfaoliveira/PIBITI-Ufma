@@ -9,8 +9,8 @@ import Equipe from './components/pages/home/Equipe.vue';
 import Acesso from './components/pages/Acesso.vue';
 import FichaDiag from './components/analise/FichaDiag.vue';
 import Perfil from './components/navigation/Perfil.vue';
-import EsqueciSenha from './components/auxiliares/EsqueciSenha.vue';
-import MudarSenha from './components/auxiliares/MudarSenha.vue';
+import EsqueciSenha from './components/helper/EsqueciSenha.vue';
+import MudarSenha from './components/helper/MudarSenha.vue';
 import TesteLoading from './components/analise/TesteLoading.vue';
 
 

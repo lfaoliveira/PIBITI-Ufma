@@ -40,8 +40,8 @@
 </template>
 
 <script>
-import HeaderSistema from "../layout/HeaderSistema.vue";
-import Rodape from "../layout/Rodape.vue";
+import HeaderSistema from "../../layout/HeaderSistema.vue";
+import Rodape from "../../layout/Rodape.vue";
 
 export default {
     name: "duvidas",
