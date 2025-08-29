@@ -16,7 +16,7 @@
 
 <script>
 import Voltar from "../icons/Voltar.vue";
-import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
 
 export default {
   name: "termosComp",

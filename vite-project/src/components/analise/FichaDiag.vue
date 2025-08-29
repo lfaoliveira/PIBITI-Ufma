@@ -136,10 +136,10 @@
 <script>
 import axios from "axios";
 import mime from "mime-types";
-import HeaderSistema from "../auxiliares/HeaderSistema.vue";
-import Button from "../auxiliares/Button.vue";
-import Rodape from "../auxiliares/Rodape.vue";
-import OverlayAviso from "../auxiliares/OverlayAviso.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
+import Button from "../navigation/Button.vue";
+import Rodape from "../layout/Rodape.vue";
+import OverlayAviso from "../layout/OverlayAviso.vue";
 import emitter from "../../eventBus";
 
 const eventoFormatoErrado = "formatoErrado";

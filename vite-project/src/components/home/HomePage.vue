@@ -119,8 +119,8 @@ input {
 </style>
 
 <script>
-import HeaderSistema from "../auxiliares/HeaderSistema.vue";
-import Button from "../auxiliares/Button.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
+import Button from "../navigation/Button.vue";
 
 export default {
   name: "HomePage",

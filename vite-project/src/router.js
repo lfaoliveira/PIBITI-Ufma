@@ -8,7 +8,7 @@ import Duvidas from './components/home/Duvidas.vue';
 import Equipe from './components/home/Equipe.vue';
 import Acesso from './components/Acesso.vue';
 import FichaDiag from './components/analise/FichaDiag.vue';
-import Perfil from './components/nav/Perfil.vue';
+import Perfil from './components/navigation/Perfil.vue';
 import EsqueciSenha from './components/auxiliares/EsqueciSenha.vue';
 import MudarSenha from './components/auxiliares/MudarSenha.vue';
 import TesteLoading from './components/analise/TesteLoading.vue';

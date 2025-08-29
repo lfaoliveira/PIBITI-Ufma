@@ -58,10 +58,10 @@
 </template>
 
 <script>
-import Button from "./Button.vue";
-import HeaderSistema from "./HeaderSistema.vue";
-import OverlayAviso from "./OverlayAviso.vue";
-import Rodape from "./Rodape.vue";
+import Button from "../navigation/Button.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
+import OverlayAviso from "../layout/OverlayAviso.vue";
+import Rodape from "../layout/Rodape.vue";
 
 import axios from "axios";
 import emitter from "../../eventBus";

@@ -110,8 +110,8 @@
 </template>
 
 <script>
-import Rodape from "../auxiliares/Rodape.vue";
-import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+import Rodape from "../layout/Rodape.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
 
 export default {
   name: "autores",

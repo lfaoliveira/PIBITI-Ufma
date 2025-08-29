@@ -29,9 +29,9 @@
 </template>
 
 <script>
-import Rodape from "../auxiliares/Rodape.vue";
+import Rodape from "../layout/Rodape.vue";
 import VideoPlayer from "./VideoPlayer.vue";
-import HeaderSistema from "../auxiliares/HeaderSistema.vue";
+import HeaderSistema from "../layout/HeaderSistema.vue";
 
 import axios from "axios";
 
