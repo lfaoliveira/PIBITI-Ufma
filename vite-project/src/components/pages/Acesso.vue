@@ -177,7 +177,7 @@ import Rodape from "./layout/Rodape.vue";
 import OverlayAviso from "./layout/OverlayAviso.vue";
 
 import axios from "axios";
-import emitter from "../eventBus";
+import emitter from "../../eventBus";
 
 const cadSucesso = "cadastroSucesso";
 const cadRepetido = "cadastroRepetido";
