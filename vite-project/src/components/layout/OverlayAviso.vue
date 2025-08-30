@@ -28,7 +28,7 @@ export default {
         emitter.on(this.eventoAviso, this.openOverlay);
     },
     mounted() {
-        console.log("MONTADO AVISO");
+        console.log("MONTADO AVISo");
     },
     beforeUnmount() {
         // Clean up the event listener

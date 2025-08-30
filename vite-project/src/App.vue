@@ -1,10 +1,25 @@
 <template>
     <router-view></router-view>
+    <Modal />
+    <button @click="openExampleModal">Open Popup</button>
 </template>
 
 <script>
+import Modal from "./components/Modal.vue";
+import { mapActions } from "vuex";
+
 export default {
     name: "App",
+    components: { Modal },
+    methods: {
+        ...mapActions("modal", ["openModal"]),
+        openExampleModal() {
+            this.openModal({
+                component: "ExamplePopup", // name of registered component
+                props: { message: "Hello, this is a popup!" },
+            });
+        },
+    },
     props: {},
     data() {
         return {
