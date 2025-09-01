@@ -1,17 +1,17 @@
 <!-- Modal.vue -->
 <template>
     <Teleport to="#modal" v-if="isOpen">
-        <div class="modal-overlay" @click.self="close">
-            <div class="modal-content">
+        <div class="absolute inset-0" @click.self="close">
+            <div class="">
                 <component :is="content.component" v-bind="content.props" />
-                <button @click="close">Close</button>
+                <button @click="close">&times;</button>
             </div>
         </div>
     </Teleport>
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 export default {
     props: {
@@ -19,13 +19,16 @@ export default {
     },
     computed: {
         ...mapState("modal", {
-            modalState: (state) => state.modals[this.name],
+            modals: (state) => state.modals,
         }),
+        modalState() {
+            return this.modals[this.name] || {};
+        },
         isOpen() {
-            return this.modalState?.isOpen;
+            return this.modalState.isOpen;
         },
         content() {
-            return this.modalState?.content || {};
+            return this.modalState.content || {};
         },
     },
     methods: {
@@ -37,21 +40,4 @@ export default {
 };
 </script>
 
-<style>
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-}
-</style>
+<style></style>
