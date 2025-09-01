@@ -1,6 +1,7 @@
 // src/store/index.js
 import { createStore } from 'vuex';
 import { useCookies } from 'vue3-cookies';
+import { modal } from './modules/modal';
 
 
 
@@ -9,6 +10,9 @@ import { useCookies } from 'vue3-cookies';
 //gerência de estados do vuex
 
 const store = createStore({
+    modules:{
+        modal,
+    },
     state:{
         urlBackend: import.meta.env.VITE_BACKEND_URL,
         sharedData: null,
