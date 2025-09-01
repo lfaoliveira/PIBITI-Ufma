@@ -1,11 +1,10 @@
 <!-- Modal.vue -->
 <template>
     <Teleport to="#modal" v-if="isOpen">
-        <div class="modal-overlay" @click.self="closeModal">
+        <div class="modal-overlay" @click.self="close">
             <div class="modal-content">
-                <!-- Render dynamic content passed via store -->
-                <component :is="contentComponent" v-bind="contentProps" />
-                <button @click="closeModal">Close</button>
+                <component :is="content.component" v-bind="content.props" />
+                <button @click="close">Close</button>
             </div>
         </div>
     </Teleport>
@@ -15,18 +14,25 @@
 import { mapState, mapActions } from "vuex";
 
 export default {
+    props: {
+        name: { type: String, required: true },
+    },
     computed: {
-        ...mapState("modal", ["isOpen", "content"]),
-        contentComponent() {
-            // content can be a component or string identifier
-            return this.content?.component || null;
+        ...mapState("modal", {
+            modalState: (state) => state.modals[this.name],
+        }),
+        isOpen() {
+            return this.modalState?.isOpen;
         },
-        contentProps() {
-            return this.content?.props || {};
+        content() {
+            return this.modalState?.content || {};
         },
     },
     methods: {
         ...mapActions("modal", ["closeModal"]),
+        close() {
+            this.closeModal(this.name);
+        },
     },
 };
 </script>

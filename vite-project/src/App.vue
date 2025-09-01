@@ -5,8 +5,11 @@
 </template>
 
 <script>
-import Modal from "./components/Modal.vue";
+import Modal from "./components/layout/Modal.vue";
 import { mapActions } from "vuex";
+
+const popup = "popup";
+const overlay = "overlay";
 
 export default {
     name: "App",
@@ -15,7 +18,8 @@ export default {
         ...mapActions("modal", ["openModal"]),
         openExampleModal() {
             this.openModal({
-                component: "ExamplePopup", // name of registered component
+                name: popup,
+                component: "Popup", // name of registered component
                 props: { message: "Hello, this is a popup!" },
             });
         },
