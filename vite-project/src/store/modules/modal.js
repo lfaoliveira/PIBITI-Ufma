@@ -3,9 +3,9 @@ export const modal = {
   state: () => ({
     openList: [],  // e.g. ['popup','overlay','notice']
     modals: {
-      popup: { content: null },
-      overlay: { content: null },
-      notice: { content: null }
+      popup: { content: null, isOpen: false },
+      overlay: { content: null, isOpen: false },
+      notice: { content: null, isOpen: false }
     }
   }),
   mutations: {
@@ -13,18 +13,22 @@ export const modal = {
       if (!state.openList.includes(name) && state.modals[name]) {
         state.openList.push(name);
         state.modals[name].content = content;
+        state.modals[name].isOpen = true; // Set isOpen to true
       }
     },
-    closeOne(state, name) {
+    close(state, name) {
       const idx = state.openList.indexOf(name);
       if (idx !== -1) {
         state.openList.splice(idx, 1);
         state.modals[name].content = null;
+        state.modals[name].isOpen = false; // Set isOpen to true
       }
     },
     closeAll(state) {
       state.openList.forEach(name => {
         state.modals[name].content = null;
+        state.modals[name].isOpen = false; // Set isOpen to true
+
       });
       state.openList = [];
     }
@@ -34,7 +38,7 @@ export const modal = {
       commit('open', payload);
     },
     closeModal({ commit }, name) {
-      commit('closeOne', name);
+      commit('close', name);
     },
     closeAllModals({ commit }) {
       commit('closeAll');

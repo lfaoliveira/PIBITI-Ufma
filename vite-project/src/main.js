@@ -9,7 +9,8 @@ import axios from 'axios';
 
 import './style.css'
 
-
+import Popup from "./components/Popup.vue";
+import OverlayAviso from './components/layout/OverlayAviso.vue';
 
 axios.defaults.withCredentials = true;
 
@@ -17,6 +18,10 @@ axios.defaults.withCredentials = true;
 import App from './App.vue'
 
 const app = createApp(App);
+app.component("Popup", Popup); // <-- make "Popup" resolvable globally
+app.component("Overlay", OverlayAviso); 
+
+
 
 router.beforeEach(async (_to, _from, next) => {
   try {

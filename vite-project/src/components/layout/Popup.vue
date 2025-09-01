@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import { mapActions, mapState } from "vuex";
+
 import Estrela from "../icons/Estrela.vue";
 
 export default {
@@ -39,11 +41,28 @@ export default {
     components: {
         Estrela,
     },
-    created() {},
-    data() {
-        return {};
+    props: {
+        name: "popup",
     },
-    props: {},
+    computed: {
+        ...mapState("modal", ["modals"]),
+        modalState() {
+            console.log(
+                "LOAD MODAL STATE POPUP.vue: " + JSON.stringify(this.modals[this.name])
+            );
+            return this.modals[this.name] || {};
+        },
+        isOpen() {
+            console.log("Popup.vue ABERTO: " + String(this.modalState.isOpen));
+            return this.modalState.isOpen;
+        },
+        content() {
+            return this.modalState.content || {};
+        },
+    },
+    // mounted() {
+    //     console.log(this.modals.isOpen);
+    // },
     methods: {},
 };
 </script>

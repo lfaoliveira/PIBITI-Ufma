@@ -4,7 +4,7 @@
         <div class="absolute inset-0" @click.self="close">
             <div class="">
                 <component :is="content.component" v-bind="content.props" />
-                <button @click="close">&times;</button>
+                <!-- <button @click="close">&times;</button> -->
             </div>
         </div>
     </Teleport>
@@ -18,13 +18,13 @@ export default {
         name: { type: String, required: true },
     },
     computed: {
-        ...mapState("modal", {
-            modals: (state) => state.modals,
-        }),
+        ...mapState("modal", ["modals"]),
         modalState() {
+            console.log("LOAD MODAL STATE: " + JSON.stringify(this.modals[this.name]));
             return this.modals[this.name] || {};
         },
         isOpen() {
+            console.log("MODAL ABERTO: " + String(this.modalState.isOpen));
             return this.modalState.isOpen;
         },
         content() {
@@ -32,7 +32,7 @@ export default {
         },
     },
     methods: {
-        ...mapActions("modal", ["closeModal"]),
+        ...mapActions("modal", ["closeModal", "openModal", "closeAllModals"]),
         close() {
             this.closeModal(this.name);
         },

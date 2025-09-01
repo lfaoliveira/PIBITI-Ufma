@@ -1,7 +1,7 @@
 <template>
     <section class="frame-pagina">
         <HeaderSistema :activeIndex="4" />
-        <button @click="openExampleModal">ABRIR</button>
+        <button @click.self="openPopup">ABRIR</button>
         <h1>Etapa 1 de 3: Ficha do Diagnóstico</h1>
 
         <OverlayAviso
@@ -193,13 +193,19 @@ export default {
         },
     },
     methods: {
-        ...mapActions("modal", ["openModal"]),
-        openExampleModal() {
-            this.openModal({
+        openPopup() {
+            this.$store.dispatch("modal/openModal", {
                 name: "popup",
-                component: "Popup", // name of registered component
-                props: { message: "Hello, this is a popup!" },
+                content: {
+                    component: "Popup",
+                    props: {
+                        titulo: "Popup Aberto!",
+                        subtexto: "Você abriu via Button.vue!",
+                        srcImg: "src/assets/alert_circle.png",
+                    },
+                },
             });
+            console.log("DEPOIS DISPTACH");
         },
         async enviaDiag() {
             //envia dados pro banco de dados e comeca logica de processamento
