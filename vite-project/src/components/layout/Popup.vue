@@ -1,8 +1,8 @@
 <template>
     <div
         :class="
-            posCSS +
-            'flex items-start justify-between w-[490px] p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
+            String(posCSS) +
+            ' flex items-start justify-between w-[490px] p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
         "
     >
         <!-- Left Section -->
@@ -32,6 +32,7 @@
 
         <!-- Close Button -->
         <button
+            @click="this.close()"
             class="flex items-center justify-center aspect-square w-6 bg-gray-300 !border-0 hover:border-4 hover:bg-gray-200 hover:border-black hover:brightness-100 transition-all duration-200 rounded-full"
         >
             <img src="../../assets/x.png" class="relative aspect-square w-1/2" />
@@ -52,12 +53,21 @@ export default {
         X,
     },
     props: {
-        link: { type: String, default: "#" },
-        posCSS: { type: String, default: "absolute top:0 right:0 size-16" },
+        link: { type: String, default: "#", required: true },
+        posCSS: {
+            type: String,
+            required: true,
+        },
     },
     computed: {},
 
-    methods: {},
+    methods: {
+        ...mapActions("modal", ["closeModal", "openModal", "closeAllModals"]),
+        close() {
+            this.$emit("close");
+            this.closeModal("popup");
+        },
+    },
 };
 </script>
 

@@ -205,7 +205,7 @@ export default {
                         subtexto: "Você abriu via Button.vue!",
                         srcImg: "src/assets/alert_circle.png",
                         link: "https://google.com",
-                        posCSS: "absolute top-0 right-0 size-16",
+                        posCSS: "absolute top-22 right-0 w-28 h-auto",
                     },
                 },
             });
