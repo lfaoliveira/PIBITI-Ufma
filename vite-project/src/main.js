@@ -9,7 +9,7 @@ import axios from 'axios';
 
 import './style.css'
 
-import Popup from "./components/Popup.vue";
+import Popup from "./components/layout/Popup.vue";
 import OverlayAviso from './components/layout/OverlayAviso.vue';
 
 axios.defaults.withCredentials = true;

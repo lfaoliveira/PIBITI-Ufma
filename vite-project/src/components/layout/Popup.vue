@@ -37,10 +37,8 @@
         </div>
 
         <!-- Close Button -->
-        <button
-            class="flex items-center justify-center w-6 h-6 bg-[#E5E5E5] rounded-full"
-        >
-            <X></X>
+        <button class="flex items-center justify-center w-6 h-6 bg-gray-300 rounded-full">
+            <img src="../../assets/x.png" class="w-10 h-10 bg-black img" />
         </button>
     </div>
 </template>

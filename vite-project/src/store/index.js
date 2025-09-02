@@ -18,7 +18,7 @@ const store = createStore({
         sharedData: null,
         logado: false,
         formDiag: null,
-},
+    },
     mutations: {
         setSharedData(state, data) {
             state.sharedData = data;
