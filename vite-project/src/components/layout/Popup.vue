@@ -1,33 +1,47 @@
 <template>
     <div
-        class="bg-[#fff] rounded-xl p-6 text-white shadow-lg w-11/12 max-w-sm font-sans text-center"
+        class="flex items-start justify-between w-[490px] p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]"
     >
-        <div class="flex items-center justify-center mb-4 relative">
-            <div
-                class="w-8 h-8 mr-3 bg-white rounded-full flex items-center justify-center"
-            >
-                <Estrela></Estrela>
+        <!-- Left Section -->
+        <div class="flex gap-3">
+            <!-- Icon -->
+            <div class="flex items-center justify-center w-8 h-8 bg-[#2C006F] rounded-lg">
+                <!-- Star Icon -->
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.782 1.402 8.174L12 18.896l-7.336 3.856 1.402-8.174L.132 9.211l8.2-1.193z"
+                    />
+                </svg>
             </div>
-            <h2 class="text-xl text-black font-extrabold m-0">
-                Vídeo Analisado com Sucesso!
-            </h2>
-            <button
-                class="absolute -top-3 -right-3 bg-transparent border-none text-gray-400 text-1xl cursor-pointer p-1"
-                @click="$emit('close')"
-            >
-                &times;
-            </button>
+
+            <!-- Text Content -->
+            <div class="flex flex-col gap-2">
+                <h2 class="font-montserrat font-semibold text-xl leading-6 text-black">
+                    Vídeo Analisado com Sucesso!
+                </h2>
+                <p class="font-montserrat text-sm leading-[140%] text-[#792359]">
+                    Clique no link abaixo para visualizar seu vídeo
+                </p>
+                <a
+                    href="#"
+                    class="font-inter font-bold text-sm leading-6 underline text-black"
+                >
+                    Clique Aqui
+                </a>
+            </div>
         </div>
-        <p class="text-[#c080c0] text-sm underline mb-6">
-            Clique no link abaixo para visualizar seu vídeo
-        </p>
-        <a
-            href="#"
-            class="text-white text-base font-medium underline cursor-pointer"
-            @click.prevent="$emit('view-video')"
+
+        <!-- Close Button -->
+        <button
+            class="flex items-center justify-center w-6 h-6 bg-[#E5E5E5] rounded-full"
         >
-            Clique Aqui
-        </a>
+            <X></X>
+        </button>
     </div>
 </template>
 
@@ -35,34 +49,17 @@
 import { mapActions, mapState } from "vuex";
 
 import Estrela from "../icons/Estrela.vue";
+import X from "../icons/X.vue";
 
 export default {
     name: "Popup",
     components: {
         Estrela,
+        X,
     },
-    props: {
-        name: "popup",
-    },
-    computed: {
-        ...mapState("modal", ["modals"]),
-        modalState() {
-            console.log(
-                "LOAD MODAL STATE POPUP.vue: " + JSON.stringify(this.modals[this.name])
-            );
-            return this.modals[this.name] || {};
-        },
-        isOpen() {
-            console.log("Popup.vue ABERTO: " + String(this.modalState.isOpen));
-            return this.modalState.isOpen;
-        },
-        content() {
-            return this.modalState.content || {};
-        },
-    },
-    // mounted() {
-    //     console.log(this.modals.isOpen);
-    // },
+    props: {},
+    computed: {},
+
     methods: {},
 };
 </script>

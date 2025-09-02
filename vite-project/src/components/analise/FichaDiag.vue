@@ -1,7 +1,9 @@
 <template>
     <section class="frame-pagina">
         <HeaderSistema :activeIndex="4" />
-        <button @click.self="openPopup">ABRIR</button>
+        <button class="relative bg-amber-500 m-5 mr-5" @click.self="openPopup">
+            ABRIR
+        </button>
         <h1>Etapa 1 de 3: Ficha do Diagnóstico</h1>
 
         <OverlayAviso
@@ -197,7 +199,7 @@ export default {
             this.$store.dispatch("modal/openModal", {
                 name: "popup",
                 content: {
-                    component: "Popup",
+                    component: "Overlay",
                     props: {
                         titulo: "Popup Aberto!",
                         subtexto: "Você abriu via Button.vue!",
