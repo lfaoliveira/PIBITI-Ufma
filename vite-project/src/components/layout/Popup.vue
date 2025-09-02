@@ -7,21 +7,18 @@
             <!-- Icon -->
             <div class="flex items-center justify-center w-8 h-8 bg-[#2C006F] rounded-lg">
                 <!-- Star Icon -->
-                <svg
+                <img
+                    src="../../assets/estrela_roxa.png"
                     xmlns="http://www.w3.org/2000/svg"
                     class="w-5 h-5 text-white"
                     fill="currentColor"
                     viewBox="0 0 24 24"
-                >
-                    <path
-                        d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.782 1.402 8.174L12 18.896l-7.336 3.856 1.402-8.174L.132 9.211l8.2-1.193z"
-                    />
-                </svg>
+                />
             </div>
 
             <!-- Text Content -->
             <div class="flex flex-col gap-2">
-                <h2 class="font-montserrat font-semibold text-xl leading-6 text-black">
+                <h2 class="font-montserrat !font-bold text-xl leading-6 text-black">
                     Vídeo Analisado com Sucesso!
                 </h2>
                 <p class="font-montserrat text-sm leading-[140%] text-[#792359]">
@@ -29,7 +26,7 @@
                 </p>
                 <a
                     href="#"
-                    class="font-inter font-bold text-sm leading-6 underline text-black"
+                    class="!font-inter !font-bold !text-sm !underline !text-black"
                 >
                     Clique Aqui
                 </a>
@@ -37,8 +34,10 @@
         </div>
 
         <!-- Close Button -->
-        <button class="flex items-center justify-center w-6 h-6 bg-gray-300 rounded-full">
-            <img src="../../assets/x.png" class="w-10 h-10 bg-black img" />
+        <button
+            class="flex items-center justify-center aspect-square w-10 bg-gray-300 rounded-full"
+        >
+            <img src="../../assets/x.png" class="relative aspect-square w-4/8" />
         </button>
     </div>
 </template>
@@ -55,7 +54,9 @@ export default {
         Estrela,
         X,
     },
-    props: {},
+    props: {
+        link: { type: String, default: "#" },
+    },
     computed: {},
 
     methods: {},
