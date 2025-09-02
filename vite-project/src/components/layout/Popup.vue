@@ -1,19 +1,16 @@
 <template>
     <div
-        class="flex items-start justify-between w-[490px] p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]"
+        :class="
+            posCSS +
+            'flex items-start justify-between w-[490px] p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
+        "
     >
         <!-- Left Section -->
         <div class="flex gap-3">
             <!-- Icon -->
-            <div class="flex items-center justify-center w-8 h-8 bg-[#2C006F] rounded-lg">
+            <div class="flex items-center justify-center w-8 h-8 bg-[#fff] rounded-lg">
                 <!-- Star Icon -->
-                <img
-                    src="../../assets/estrela_roxa.png"
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                />
+                <img src="../../assets/estrela_roxa.png" class="w-8 h-8 text-white" />
             </div>
 
             <!-- Text Content -->
@@ -25,7 +22,7 @@
                     Clique no link abaixo para visualizar seu vídeo
                 </p>
                 <a
-                    href="#"
+                    :href="link"
                     class="!font-inter !font-bold !text-sm !underline !text-black"
                 >
                     Clique Aqui
@@ -35,9 +32,9 @@
 
         <!-- Close Button -->
         <button
-            class="flex items-center justify-center aspect-square w-10 bg-gray-300 rounded-full"
+            class="flex items-center justify-center aspect-square w-6 bg-gray-300 !border-0 hover:border-4 hover:bg-gray-200 hover:border-black hover:brightness-100 transition-all duration-200 rounded-full"
         >
-            <img src="../../assets/x.png" class="relative aspect-square w-4/8" />
+            <img src="../../assets/x.png" class="relative aspect-square w-1/2" />
         </button>
     </div>
 </template>
@@ -56,6 +53,7 @@ export default {
     },
     props: {
         link: { type: String, default: "#" },
+        posCSS: { type: String, default: "absolute top:0 right:0 size-16" },
     },
     computed: {},
 

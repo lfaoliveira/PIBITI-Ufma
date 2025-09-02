@@ -199,11 +199,13 @@ export default {
             this.$store.dispatch("modal/openModal", {
                 name: "popup",
                 content: {
-                    component: "Overlay",
+                    component: "Popup",
                     props: {
                         titulo: "Popup Aberto!",
                         subtexto: "Você abriu via Button.vue!",
                         srcImg: "src/assets/alert_circle.png",
+                        link: "https://google.com",
+                        posCSS: "absolute top-0 right-0 size-16",
                     },
                 },
             });
