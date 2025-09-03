@@ -1310,6 +1310,10 @@ if __name__ != "__main__":
     from flask_backend.helpers import Helper
 
     print("\n\n SERVIDOR INICIADO!\n\n")
-    gunicorn_logger = logging.getLogger("gunicorn.error")
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
+    # LEGACY: GUnicorn nao sendo mais usado
+    from asgiref.wsgi import WsgiToAsgi
+
+    app = WsgiToAsgi(app)
+    # gunicorn_logger = logging.getLogger("gunicorn.error")
+    # app.logger.handlers = gunicorn_logger.handlers
+    # app.logger.setLevel(gunicorn_logger.level)
