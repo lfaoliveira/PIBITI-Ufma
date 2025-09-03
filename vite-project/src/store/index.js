@@ -14,7 +14,7 @@ const store = createStore({
         modal,
     },
     state:{
-        urlBackend: import.meta.env.VITE_BACKEND_URL,
+        urlBackend: import.meta.env.VITE_BACKEND_URL + "/api",
         sharedData: null,
         logado: false,
         formDiag: null,

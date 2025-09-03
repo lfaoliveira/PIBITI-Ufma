@@ -836,6 +836,15 @@ starlette_app = Starlette(
         WebSocketRoute("/ws", websocket_endpoint),
     ]
 )
+from starlette.middleware.cors import CORSMiddleware
+
+starlette_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # ⚠️ adjust in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 if __name__ != "__main__":
@@ -846,14 +855,14 @@ if __name__ != "__main__":
     print("\n\n SERVIDOR INICIADO!\n\n")
     # LEGACY: GUnicorn nao sendo mais usado
     from asgiref.wsgi import WsgiToAsgi
+    from starlette.middleware.wsgi import WSGIMiddleware
 
     flask_app = WsgiToAsgi(app)
     # --- Combine both ---
     # Mount Flask under /api, WebSockets under /
-    from starlette.middleware.wsgi import WSGIMiddleware
 
     starlette_app.mount("/api", WSGIMiddleware(flask_app))
-    app = starlette_app
+    asgi_app = starlette_app
 
     # gunicorn_logger = logging.getLogger("gunicorn.error")
     # app.logger.handlers = gunicorn_logger.handlers
