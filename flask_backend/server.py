@@ -38,6 +38,13 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS, cross_origin
 from flask_mail import Mail, Message
 
+
+### IMPORTS PRA WEBSOCKET
+from starlette.applications import Starlette
+from starlette.routing import Route, WebSocketRoute
+from starlette.responses import PlainTextResponse
+
+
 import mimetypes
 import hashlib
 from datetime import timedelta
@@ -55,80 +62,6 @@ import logging
 
 from flask_backend.celery_worker.tasks import envia_diag_task, processamento_analise
 
-""" 
-class CeleryTaskWrapper:
-    def __init__(
-        self, mongo: Any, COLLECTION_DIAGS: str, COLLECTION_MEDICOS: str, app, drive
-    ) -> None:
-        from .celery_worker.celery import app
-
-        self.cel_app = app
-        self.mongo_inst = mongo
-        self.coll_diags = COLLECTION_DIAGS
-        self.coll_meds = COLLECTION_MEDICOS
-        self.flask_app = app
-        self.drive_inst = drive
-        print("CELERY WRAPPER INICIADO")
-
-    def sync_drive(
-        storage_strings: dict,
-        id_diag: str,
-        email: str,
-        drive_inst,
-        mongo_inst,
-        coll_diags,
-    ):
-        return sync_google_drive.apply_async(
-            args=[storage_strings, id_diag, email, drive_inst, mongo_inst, coll_diags]
-        )
-
-    def process_analise(
-        self,
-        id_diag,
-        nome_input,
-        filename,
-    ):
-        return processamento_analise.apply_async(
-            args=[
-                id_diag,
-                nome_input,
-                filename,
-                self.mongo_inst,
-                self.coll_diags,
-                self.coll_meds,
-                self.flask_app,
-                predict,
-                analisador,
-                Helper,
-            ]
-        )
-
-    def envia_diag(
-        self,
-        video_data,
-        filename,
-        nomePaciente,
-        stringOlhos,
-        desc,
-        user_id,
-    ):
-
-        return envia_diag_task.apply_async(
-            args=[
-                video_data,
-                filename,
-                nomePaciente,
-                stringOlhos,
-                desc,
-                user_id,
-                self.mongo_inst,
-                self.flask_app,
-                self.coll_diags,
-                self.coll_meds,
-            ]
-        )
- """
-
 
 @tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
@@ -139,190 +72,6 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         )
 
         return str_res, dict_graf
-
-
-# objeto que vai fazer logica de armazenamento de arquivos no MongoDB
-
-
-''' celery = make_celery(app)
-
-
-@celery.task
-def sync_google_drive(self, storage_strings: dict, id_diag: str, email: str):
-    print(f"STORAGE: {storage_strings}, ID: {id_diag}")
-    path_video_in = storage_strings["video_in"]
-    path_video_out = storage_strings["video_out"]
-    id_in = self.drive_inst.upload_to_drive(path_video_in, [email])
-    id_out = self.drive_inst.upload_to_drive(path_video_out, [email])
-
-    # Update the document in the database with the new Google Drive file IDs
-    self.mongo_inst.db.get_collection(self.coll_diags).update_one(
-        {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
-    )
-
-    print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
-
-
-@celery.task(bind=True)
-def processamento_analise(self, id_diag, nome_input, filename):
-
-    timestamp = time.time()
-    diag = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
-        {"_id": ObjectId(id_diag)}
-    )
-
-    ext = Helper.allowed_file(filename)
-    if ext is None:
-        return {"error": "Incorrect file type"}
-
-    paciente = diag.get("nomePaciente", None)
-    nome_video = f"{paciente}_{str(round(timestamp, 4))}"
-    nome_local = f"{nome_video}.{ext}"
-    filename_arq_input = f"INPUT_{nome_local}"
-    # renomeia arquivo de input na pasta temporaria para filename_arq_input
-    os.rename(
-        os.path.join(app.config["TEMP_FOLDER"], nome_input),
-        os.path.join(app.config["TEMP_FOLDER"], filename_arq_input),
-    )
-
-    # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
-    path_arq_input = os.path.join(app.config["TEMP_FOLDER"], filename_arq_input)
-
-    """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
-    arq_stream = arq.stream"""
-
-    EXT_OUT = "mp4"
-    nome_local = f"{nome_video}.{EXT_OUT}"
-    # path cujo unico proposito eh servir de temporario pras conversoes de video
-    path_aux_conv = os.path.join(app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
-
-    path_arq_input_conv = Helper.converter_arq(path_arq_input, path_aux_conv)
-    print("\nDEPOIS PRIMEIRA CONVER\n")
-
-    path_out_antes_conv = os.path.join(
-        app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}"
-    )
-
-    # executando predicao
-    res_tensor, dict_graf_tensor = predict(
-        analisador, path_arq_input_conv, path_out_antes_conv, timestamp
-    )
-
-    with tf.compat.v1.Session() as sess:
-        # Run the session to get the tensor's value
-        res_np = sess.run(res_tensor)
-        if "ERRO" in res_np.decode("utf-8"):
-            return make_response(res_np, BAD_REQUEST)
-        graf_np = sess.run(dict_graf_tensor)
-
-    # Decode bytes to string since predict returns all output as tensor
-    str_res, dict_graf = res_np.decode("utf-8"), graf_np
-
-    dict_graf["vel_esq"] = np.array(dict_graf["vel_esq"]).tolist()
-    dict_graf["vel_dir"] = np.array(dict_graf["vel_dir"]).tolist()
-    dict_graf["time"] = float(dict_graf["time"])
-    dict_graf["titulo"] = str(dict_graf["titulo"])
-
-    path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
-    print("ULTIMA CONVERSAO")
-    path_out = Helper.converter_arq(path_out_antes_conv, path_out)
-
-    """Removendo APENAS arquivos auxiliares"""
-    os.remove(path_out_antes_conv)
-    os.remove(path_aux_conv)
-
-    # path_pdf = os.path.join(
-    #     app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
-
-    # str_res no formato "velE,velD,percentDif,olho_doente"
-    split_res = str_res.split(",")
-    olho_doente = str_res.split(",")[3]
-
-    if olho_doente == "Esquerdo":
-        str_diag = "true+false"
-    elif olho_doente == "Direito":
-        str_diag = "false+true"
-    else:
-        str_diag = "false+false"
-
-    id_medico = diag.get("id_medico", None)
-    # NOTE: NAO GERA PDF PRA USUARIOS ANONIMOS!
-    if str(id_medico) != "None":
-        diag_medico = diag.get("diagnosticoMedico")  # string codificada
-        nome_paciente = diag.get("nomePaciente")
-
-        medico = Helper.find_one_with_id(
-            mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
-        )
-        nome_medico = medico.get("nome")
-        crm = medico.get("crm")
-        email_medico = medico.get("email")
-        dict_dados_pdf = {
-            "velEsq": split_res[0],
-            "velDir": split_res[1],
-            "difVel": split_res[2],
-            "crm": crm,
-            "diagAutom": str_diag,
-            "dataAgora": timestamp,
-            "nomePaciente": nome_paciente,
-            "nomeMedico": nome_medico,
-            "diagnosticoMedico": diag_medico,
-        }
-    else:
-        email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
-        dict_dados_pdf = None
-
-    print("PEGANDO URLS")
-
-    local_url_video_out = url_for(
-        "get_file", resource_uri=os.path.basename(path_out), _external=True
-    )
-    print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
-    local_url_video_in = url_for(
-        "get_file", resource_uri=os.path.basename(path_arq_input), _external=True
-    )
-
-    result = {
-        "diagAutom": str_diag,
-        "dados_grafico": dict_graf,
-        "dados_pdf": dict_dados_pdf,
-        "dataDiag": timestamp,
-        "video": local_url_video_out,
-        "ultimaModif": timestamp,
-    }
-    # seta resultado no BD
-    mongo.db.get_collection(COLLECTION_DIAGS).update_one(
-        {"_id": ObjectId(id_diag)}, {"$set": result}
-    )
-
-    result["diagAutom"] = str_res
-
-    storage_dict = {"video_in": path_arq_input, "video_out": path_out}
-
-    sync_google_drive.delay(storage_dict, id_diag, email_medico)
-
-    result.pop("dados_grafico")
-    result.pop("dados_pdf")
-    result["grafico"] = url_for(
-        "gerar_grafico", external=True, id_diag=id_diag, _external=True
-    )
-    result["pdf"] = url_for(
-        "gerar_relatorio", id_diag=id_diag, download=True, _external=True
-    )
-    result["video"] = local_url_video_out
-    print("\nANALISE FINALZIADA!")
-
-    return {
-        "result": result,
-        "grafico_url": url_for(
-            "gerar_grafico", external=True, id_diag=id_diag, _external=True
-        ),
-        "pdf_url": url_for(
-            "gerar_relatorio", id_diag=id_diag, download=True, _external=True
-        ),
-        "video_url": local_url_video_out,
-    } 
-    '''
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
@@ -716,178 +465,6 @@ def task_status(task_id):
         )
 
 
-# @app.route("/analise", methods=["POST"])
-# @cross_origin(supports_credentials=True)
-# def analisar():
-#     """
-#     Pega video  input, executa o model e and retorna JSON
-#     ### servidor DEVE retorna JSON com string contendo as métricas, pdf de res, VIDEO DE SAIDA e grafico
-#     """
-#     timestamp = time.time()
-#     print(f"KEYS FORM: {request.form.keys()}\n")
-#     id_diag = request.form.get("id_diag", None)
-#     nome_input = request.form.get("nome_input", None)
-#     filename = request.form.get("filename", None)
-#     diag = None
-
-#     if id_diag != None:
-#         print(request.form)
-#         diag = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
-#             {"_id": ObjectId(id_diag)}
-#         )
-#     else:
-#         return make_response("INPUT NULO!", BAD_REQUEST)
-
-#     ext = Helper.allowed_file(filename)
-#     if ext is None:
-#         print("Incorrect file type!\n\n")
-#         return make_response("TIPO de ARQUIVO INCORRETO!", BAD_REQUEST)
-
-#     paciente = diag.get("nomePaciente", None)
-#     nome_video = f"{paciente}_{str(round(timestamp, 4))}"
-#     nome_local = f"{nome_video}.{ext}"
-#     filename_arq_input = f"INPUT_{nome_local}"
-#     # renomeia arquivo de input na pasta temporaria para filename_arq_input
-#     os.rename(
-#         os.path.join(app.config["TEMP_FOLDER"], nome_input),
-#         os.path.join(app.config["TEMP_FOLDER"], filename_arq_input),
-#     )
-
-#     # video deve ser armazenado usando ID do usuario e timestamp, pra garantir multiplicidade
-#     path_arq_input = os.path.join(app.config["TEMP_FOLDER"], filename_arq_input)
-
-#     """ se eu nao me engano, logica utilizada para fazer streaming de arquivos grandes
-#     arq_stream = arq.stream"""
-
-#     EXT_OUT = "mp4"
-#     nome_local = f"{nome_video}.{EXT_OUT}"
-#     # path cujo unico proposito eh servir de temporario pras conversoes de video
-#     path_aux_conv = os.path.join(app.config["TEMP_FOLDER"], f"CONVERT_{nome_local}")
-
-#     path_arq_input_conv = Helper.converter_arq(path_arq_input, path_aux_conv)
-#     print("\nDEPOIS PRIMEIRA CONVER\n")
-
-#     path_out_antes_conv = os.path.join(
-#         app.config["TEMP_FOLDER"], f"OUT_PRE_{nome_local}"
-#     )
-
-#     # executando predicao
-#     res_tensor, dict_graf_tensor = predict(
-#         analisador, path_arq_input_conv, path_out_antes_conv, timestamp
-#     )
-
-#     with tf.compat.v1.Session() as sess:
-#         # Run the session to get the tensor's value
-#         res_np = sess.run(res_tensor)
-#         if "ERRO" in res_np.decode("utf-8"):
-#             return make_response(res_np, BAD_REQUEST)
-#         graf_np = sess.run(dict_graf_tensor)
-
-#     # Decode bytes to string since predict returns all output as tensor
-#     str_res, dict_graf = res_np.decode("utf-8"), graf_np
-
-#     dict_graf["vel_esq"] = np.array(dict_graf["vel_esq"]).tolist()
-#     dict_graf["vel_dir"] = np.array(dict_graf["vel_dir"]).tolist()
-#     dict_graf["time"] = float(dict_graf["time"])
-#     dict_graf["titulo"] = str(dict_graf["titulo"])
-
-#     path_out = os.path.join(app.config["TEMP_FOLDER"], f"OUT_{nome_local}")
-#     print("ULTIMA CONVERSAO")
-#     path_out = Helper.converter_arq(path_out_antes_conv, path_out)
-
-#     """Removendo APENAS arquivos auxiliares"""
-#     os.remove(path_out_antes_conv)
-#     os.remove(path_aux_conv)
-
-#     # path_pdf = os.path.join(
-#     #     app.config["TEMP_FOLDER"], f"RELATORIO_{nome_video}.pdf")
-
-#     # str_res no formato "velE,velD,percentDif,olho_doente"
-#     split_res = str_res.split(",")
-#     olho_doente = str_res.split(",")[3]
-
-#     if olho_doente == "Esquerdo":
-#         str_diag = "true+false"
-#     elif olho_doente == "Direito":
-#         str_diag = "false+true"
-#     else:
-#         str_diag = "false+false"
-
-#     id_medico = diag.get("id_medico", None)
-#     # NOTE: NAO GERA PDF PRA USUARIOS ANONIMOS!
-#     if str(id_medico) != "None":
-#         diag_medico = diag.get("diagnosticoMedico")  # string codificada
-#         nome_paciente = diag.get("nomePaciente")
-
-#         medico = Helper.find_one_with_id(
-#             mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
-#         )
-#         nome_medico = medico.get("nome")
-#         crm = medico.get("crm")
-#         email_medico = medico.get("email")
-#         dict_dados_pdf = {
-#             "velEsq": split_res[0],
-#             "velDir": split_res[1],
-#             "difVel": split_res[2],
-#             "crm": crm,
-#             "diagAutom": str_diag,
-#             "dataAgora": timestamp,
-#             "nomePaciente": nome_paciente,
-#             "nomeMedico": nome_medico,
-#             "diagnosticoMedico": diag_medico,
-#         }
-#     else:
-#         email_medico = PASTA_USUARIO_ANONIMO_GDRIVE
-#         dict_dados_pdf = None
-
-#     print("PEGANDO URLS")
-
-#     local_url_video_out = url_for(
-#         "get_file", resource_uri=os.path.basename(path_out), _external=True
-#     )
-#     print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
-#     local_url_video_in = url_for(
-#         "get_file", resource_uri=os.path.basename(path_arq_input), _external=True
-#     )
-
-#     result = {
-#         "diagAutom": str_diag,
-#         "dados_grafico": dict_graf,
-#         "dados_pdf": dict_dados_pdf,
-#         "dataDiag": timestamp,
-#         "video": local_url_video_out,
-#         "ultimaModif": timestamp,
-#     }
-#     mongo.db.get_collection(COLLECTION_DIAGS).update_one(
-#         {"_id": ObjectId(id_diag)}, {"$set": result}
-#     )
-
-#     result["diagAutom"] = str_res
-
-#     storage_dict = {"video_in": path_arq_input, "video_out": path_out}
-
-#     def after_analise():
-#         # cria nova thread pra sincronizar com google drive
-#         thread = threading.Thread(
-#             target=sync_google_drive, args=(storage_dict, id_diag, email_medico)
-#         )
-#         thread.start()
-
-#     result.pop("dados_grafico")
-#     result.pop("dados_pdf")
-#     result["grafico"] = url_for(
-#         "gerar_grafico", external=True, id_diag=id_diag, _external=True
-#     )
-#     result["pdf"] = url_for(
-#         "gerar_relatorio", id_diag=id_diag, download=True, _external=True
-#     )
-#     result["video"] = local_url_video_out
-#     resp = jsonify(result)
-#     resp.call_on_close(after_analise)
-#     print("\nANALISE FINALZIADA!")
-#     return resp
-
-
 @app.route("/pega_perfil", methods=["GET"])
 @cross_origin(supports_credentials=True)
 @login_required
@@ -1038,76 +615,6 @@ def envia_diag():
     )
 
     return jsonify({"task_id": task.id, "status": "Upload queued"})
-
-
-# @app.route("/envia_diag", methods=["POST"])
-# @cross_origin(supports_credentials=True)
-# def envia_diag():
-#     """
-#     Rota responsavel por receber formulario com diagnostico do medico e guardar dados no BD e no Drive
-#     """
-#     print("ENVIO DO DIAG")
-#     timestamp = time.time()
-#     video = request.files.get("video", None)
-
-#     nomePaciente = request.form.get("nomePaciente", None)
-#     stringOlhos = request.form.get("stringOlhos", None)
-
-#     desc = request.form.get("desc", None)
-#     a = [video, nomePaciente]
-#     if any(elem is None for elem in a):
-#         return make_response("INPUT NULO!", BAD_REQUEST)
-
-#     diagnosticoMedico = stringOlhos
-#     # Check if user is authenticated directly
-#     if current_user.is_authenticated:
-#         # caso pra usuario logado
-#         email_medico = current_user.id
-#         medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
-#         medico_atual = medicos.find_one({"email": email_medico})
-#         if medico_atual is None:
-#             return make_response("MEDICO LOGADO NAO ENCONTRADO", INTERNAL_SERVER_ERROR)
-#         id_medico = medico_atual.get("_id", None)
-#     else:
-#         # padronizar dados nulos no BD como None e erros de preenchimento como null
-#         id_medico = None
-
-#     print("ID MEDICO: ", id_medico)
-#     diags = mongo.db.get_collection(COLLECTION_DIAGS)
-#     dados = {
-#         "nomePaciente": nomePaciente,
-#         "id_medico": str(id_medico),
-#         "diagnosticoMedico": diagnosticoMedico,
-#         "desc": desc,
-#     }
-
-#     # transforma qualquer valor None em string
-#     for key, value in dados.items():
-#         if value is None:
-#             dados[key] = "None"
-
-#     result = diags.insert_one(dados)
-#     id_diag_mongo = str(result.inserted_id)
-#     print("RESULTADO INSERT: ", result)
-
-#     # escreve dados no video em \tmp e usa timestamp pra evitar duplicatas
-#     filename = video.filename
-#     nome_local = f"{str(round(timestamp, 4))}_{filename}"
-#     video_data = video.read()
-#     path_temp_videoLabel = os.path.join(app.config["TEMP_FOLDER"], nome_local)
-#     with open(path_temp_videoLabel, "wb") as f:
-#         f.write(video_data)
-
-#     print("DIAG ENVIADO!\n")
-#     return make_response(
-#         {
-#             "mensagem": "CARREGADO",
-#             "id_diag": id_diag_mongo,
-#             "nome_input": nome_local,
-#             "filename": filename,
-#         },
-#         OK,
-#     )
 
 
 @login_manager.user_loader
@@ -1304,6 +811,33 @@ def logout():
         return make_response(f"{e}", INTERNAL_SERVER_ERROR)
 
 
+# -----------------------------------------------#
+# -----------------------------------------------#
+# ------------------WEBSOCKETS-------------------#
+# -----------------------------------------------#
+# -----------------------------------------------#
+
+
+async def websocket_endpoint(websocket):
+    await websocket.accept()
+    await websocket.send_text("Hello from WebSocket!")
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await websocket.send_text(f"Echo: {data}")
+    except Exception:
+        await websocket.close()
+
+
+# Starlette app for WebSockets
+starlette_app = Starlette(
+    routes=[
+        Route("/ping", lambda request: PlainTextResponse("Pong!")),  # test route
+        WebSocketRoute("/ws", websocket_endpoint),
+    ]
+)
+
+
 if __name__ != "__main__":
     # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
     # app.run(host="0.0.0.0")
@@ -1313,7 +847,14 @@ if __name__ != "__main__":
     # LEGACY: GUnicorn nao sendo mais usado
     from asgiref.wsgi import WsgiToAsgi
 
-    app = WsgiToAsgi(app)
+    flask_app = WsgiToAsgi(app)
+    # --- Combine both ---
+    # Mount Flask under /api, WebSockets under /
+    from starlette.middleware.wsgi import WSGIMiddleware
+
+    starlette_app.mount("/api", WSGIMiddleware(flask_app))
+    app = starlette_app
+
     # gunicorn_logger = logging.getLogger("gunicorn.error")
     # app.logger.handlers = gunicorn_logger.handlers
     # app.logger.setLevel(gunicorn_logger.level)
