@@ -857,10 +857,9 @@ if __name__ != "__main__":
     from asgiref.wsgi import WsgiToAsgi
     from starlette.middleware.wsgi import WSGIMiddleware
 
-    flask_app = WsgiToAsgi(app)
     # --- Combine both ---
     # Mount Flask under /api, WebSockets under /
-
+    flask_app = app
     starlette_app.mount("/api", WSGIMiddleware(flask_app))
     asgi_app = starlette_app
 
