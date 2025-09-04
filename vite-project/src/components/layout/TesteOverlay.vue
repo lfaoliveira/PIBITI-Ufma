@@ -1,5 +1,8 @@
 <template>
-    <section v-if="aberto" class="overlay">
+    <section v-if="aberto" :class="
+            String(posCSS) +
+            ' flex items-start justify-between w-auto p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
+        ">
         <div class="alerta">
             <img :src="srcImg" />
             <ul class="textos">
@@ -9,13 +12,14 @@
             </ul>
         </div>
         <div class="div-but">
-            <Button @click="closeOverlay" :texto="'OK'" :ativo="true"></Button>
+            <Button @click="this.close()" :texto="'OK'" :ativo="true"></Button>
         </div>
     </section>
 </template>
 
 <script>
 import Button from "../navigation/Button.vue";
+import { mapActions, mapState } from "vuex";
 
 export default {
     name: "overlay",
@@ -25,7 +29,7 @@ export default {
 
     data() {
         return {
-            aberto: null,
+            aberto: true,
         };
     },
     props: {
@@ -35,19 +39,19 @@ export default {
         opcional: "",
         srcImg: { type: String, default: "", required: true },
         rota: null,
+        posCSS: "absolute top-22 right-0 w-28 h-auto",
     },
+
     methods: {
-        openOverlay() {
-            this.aberto = true;
-        },
-        closeOverlay() {
+        ...mapActions("modal", ["closeModal", "openModal", "closeAllModals"]),
+        close() {
+            this.$emit("close");
+            this.closeModal("overlay");
             this.aberto = false;
-            if (this.rota != null) {
-                console.log("ROTA: ", this.rota);
-                this.$router.push(this.rota);
-            }
+            console.log("fechando OVERLAY")
         },
     },
+
 };
 </script>
 

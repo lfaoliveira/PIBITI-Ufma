@@ -10,10 +10,14 @@ export const modal = {
   }),
   mutations: {
     open(state, { name, content }) {
-      if (!state.openList.includes(name) && state.modals[name]) {
+      if (!state.openList.includes(name) && state.modals[name] !== null) {
         state.openList.push(name);
         state.modals[name].content = content;
         state.modals[name].isOpen = true; // Set isOpen to true
+      }
+      else{
+        console.log(`${name} NAO ESTA INCLUSO!\n`)
+        console.log(`LISTA DE INCLUSOS: ${state.openList} MODALS: ${JSON.stringify(state.modals)}\n`)
       }
     },
     close(state, name) {

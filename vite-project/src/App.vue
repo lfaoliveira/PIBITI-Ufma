@@ -1,7 +1,9 @@
 <!-- App.vue -->
 <template>
     <router-view></router-view>
-    <Modal :name="'popup'" />
+    <Modal name="popup" />
+    <Modal name="overlay" />
+    <Modal name="notice" />
     <!-- <button @click="openExampleModal">Open Popup</button> -->
 </template>
 
@@ -18,11 +20,11 @@ export default {
     methods: {
         ...mapActions("modal", ["openModal"]),
         openExampleModal() {
-            this.openModal({
+            /* this.openModal({
                 name: popup,
                 component: "Popup", // name of registered component
                 props: { message: "Hello, this is a popup!" },
-            });
+            }); */
         },
     },
     props: {},

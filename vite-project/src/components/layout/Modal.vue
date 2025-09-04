@@ -9,7 +9,7 @@
             leave-from-class="opacity-100 scale-100"
             leave-to-class="opacity-0 scale-95"
         >
-            <div v-if="isOpen" class="absolute inset-0" @click.self="close">
+            <div v-if="isOpen" class="absolute inset-0" >
                 <div class="">
                     <component :is="content.component" v-bind="content.props" />
                 </div>
@@ -43,9 +43,6 @@ export default {
         ...mapActions("modal", ["closeModal", "openModal", "closeAllModals"]),
         close() {
             this.closeModal(this.name);
-        },
-        showModal() {
-            return this.isOpen();
         },
     },
 };

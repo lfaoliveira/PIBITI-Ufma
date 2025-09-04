@@ -57,6 +57,7 @@ export default {
         posCSS: {
             type: String,
             required: true,
+            default: "absolute top-22 right-0 w-28 h-auto"
         },
     },
     computed: {},

@@ -10,7 +10,7 @@ import axios from 'axios';
 import './style.css'
 
 import Popup from "./components/layout/Popup.vue";
-import OverlayAviso from './components/layout/OverlayAviso.vue';
+import TesteOverlay from './components/layout/TesteOverlay.vue';
 
 axios.defaults.withCredentials = true;
 
@@ -18,9 +18,11 @@ axios.defaults.withCredentials = true;
 import App from './App.vue'
 
 const app = createApp(App);
-app.component("Popup", Popup); // <-- make "Popup" resolvable globally
-app.component("Overlay", OverlayAviso); 
 
+
+/*@@@@@@@@@@@@@@@@@@    NOME REGISTRADO DEVE SER DIFERENTE DO NOME REAL DO COMPONETE    @@@@@@@@@@@@@@@@@@ */
+app.component("Popup", Popup); // <-- make "Popup" resolvable globally
+app.component("Teste", TesteOverlay); 
 
 
 router.beforeEach(async (_to, _from, next) => {
