@@ -15,10 +15,6 @@ a,
   }
 }
 
-*{
-    outline: 1px solid #792359
-}
-
 body {
   --primary-clor: #fff;
   --sec-color: #6113C6;

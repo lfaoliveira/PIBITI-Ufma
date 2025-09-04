@@ -10,9 +10,7 @@
             leave-to-class="opacity-0 scale-95"
         >
             <div v-if="isOpen" class="absolute inset-0" >
-                <div class="">
-                    <component :is="content.component" v-bind="content.props" />
-                </div>
+                <component :is="content.component" v-bind="content.props" />
             </div>
         </Transition>
     </Teleport>

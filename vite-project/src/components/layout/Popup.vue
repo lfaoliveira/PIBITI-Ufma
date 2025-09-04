@@ -2,15 +2,15 @@
     <div
         :class="
             String(posCSS) +
-            ' flex items-start justify-between h-3.5lh sm:w-60 md:w-100 md:h-[6.5lh]  p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
+            ' flex items-start justify-between h-3.5lh w-min sm:w-60 sm:mr-0 md:w-100 md:h-[6.5lh]  p-2 sm:p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
         "
     >
         <!-- Left Section -->
-        <div class="flex gap-3">
+        <div class="flex  gap-3">
             <!-- Icon -->
             <div class="flex items-center justify-center w-1/8 h-min rounded-lg">
                 <!-- Star Icon -->
-                <img src="../../assets/estrela_roxa.png" class="w-8 h-8 text-white" />
+                <img src="../../assets/estrela_roxa.png" class=" w-6 min-w-6 sm:w-8 sm:h-8 text-white" />
             </div>
 
             <!-- Text Content -->
@@ -33,7 +33,7 @@
         <!-- Close Button -->
         <button
             @click="this.close()"
-            class="flex items-center justify-center aspect-square w-6 bg-gray-300 !border-0 hover:border-4 hover:bg-gray-200 hover:border-black hover:brightness-100 transition-all duration-200 rounded-full"
+            class="flex items-center justify-center aspect-square w-6 min-w-6 bg-gray-300 !border-0 hover:border-4 hover:bg-gray-200 hover:border-black hover:brightness-100 transition-all duration-200 rounded-full"
         >
             <img src="../../assets/x.png" class="relative aspect-square w-1/2" />
         </button>
@@ -57,7 +57,7 @@ export default {
         posCSS: {
             type: String,
             required: true,
-            default: "absolute top-22 right-0 w-28 h-auto"
+            default: "absolute top-22 right-5 w-28 h-auto"
         },
     },
     computed: {},
