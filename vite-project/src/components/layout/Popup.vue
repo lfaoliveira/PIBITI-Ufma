@@ -2,13 +2,13 @@
     <div
         :class="
             String(posCSS) +
-            ' flex items-start justify-between w-[490px] p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
+            ' flex items-start justify-between h-3.5lh sm:w-60 md:w-100 md:h-[6.5lh]  p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
         "
     >
         <!-- Left Section -->
         <div class="flex gap-3">
             <!-- Icon -->
-            <div class="flex items-center justify-center w-8 h-8 bg-[#fff] rounded-lg">
+            <div class="flex items-center justify-center w-1/8 h-min rounded-lg">
                 <!-- Star Icon -->
                 <img src="../../assets/estrela_roxa.png" class="w-8 h-8 text-white" />
             </div>

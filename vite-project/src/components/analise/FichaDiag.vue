@@ -1,8 +1,11 @@
 <template>
     <section class="frame-pagina">
         <HeaderSistema :activeIndex="4" />
-        <button class="relative bg-amber-500 m-5 mr-5" @click.self="openPopup">
+        <button class="relative bg-amber-500 w-5" @click.self="openPopup">
             ABRIR
+        </button>
+        <button class="relative bg-amber-500 w-5" @click.self="openOverlay">
+            ABRIR OVERLAY
         </button>
         <h1>Etapa 1 de 3: Ficha do Diagnóstico</h1>
 
@@ -196,6 +199,22 @@ export default {
     },
     methods: {
         openPopup() {
+            this.$store.dispatch("modal/openModal", {
+                name: "popup",
+                content: {
+                    component: "Popup",
+                    props: {
+                        titulo: "Popup Aberto!",
+                        subtexto: "Você abriu via Button.vue!",
+                        srcImg: "src/assets/alert_circle.png",
+                        link: "https://google.com",
+                        
+                    },
+                },
+            });
+            // console.log("DEPOIS DISPTACH");
+        },
+        openOverlay() {
             this.$store.dispatch("modal/openModal", {
                 name: "overlay",
                 content: {
