@@ -23,7 +23,7 @@
                 </p>
                 <a
                     :href="link"
-                    class="!font-inter !font-bold !text-sm !underline !text-black"
+                    class="!font-inter !font-bold !text-sm !underline !text-black w-"
                 >
                     Clique Aqui
                 </a>

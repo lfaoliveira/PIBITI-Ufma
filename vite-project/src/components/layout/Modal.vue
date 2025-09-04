@@ -1,12 +1,20 @@
 <!-- Modal.vue -->
 <template>
-    <Teleport to="#modal" v-if="isOpen">
-        <div class="absolute inset-0" @click.self="close">
-            <div class="">
-                <component :is="content.component" v-bind="content.props" />
-                <!-- <button @click="close">&times;</button> -->
+    <Teleport to="#modal">
+        <Transition
+            enter-active-class="transition ease-out duration-1000"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-600"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+            <div v-if="isOpen" class="absolute inset-0" @click.self="close">
+                <div class="">
+                    <component :is="content.component" v-bind="content.props" />
+                </div>
             </div>
-        </div>
+        </Transition>
     </Teleport>
 </template>
 
@@ -35,6 +43,9 @@ export default {
         ...mapActions("modal", ["closeModal", "openModal", "closeAllModals"]),
         close() {
             this.closeModal(this.name);
+        },
+        showModal() {
+            return this.isOpen();
         },
     },
 };

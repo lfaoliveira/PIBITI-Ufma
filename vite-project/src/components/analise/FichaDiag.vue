@@ -209,7 +209,7 @@ export default {
                     },
                 },
             });
-            console.log("DEPOIS DISPTACH");
+            // console.log("DEPOIS DISPTACH");
         },
         async enviaDiag() {
             //envia dados pro banco de dados e comeca logica de processamento
