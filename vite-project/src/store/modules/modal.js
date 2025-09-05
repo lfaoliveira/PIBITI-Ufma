@@ -14,6 +14,7 @@ export const modal = {
         state.openList.push(name);
         state.modals[name].content = content;
         state.modals[name].isOpen = true; // Set isOpen to true
+        console.log(`MODAL ${name} ABERTO!!!\n`)
       }
       else{
         console.log(`${name} NAO ESTA INCLUSO!\n`)

@@ -9,20 +9,17 @@
         </button>
         <h1>Etapa 1 de 3: Ficha do Diagnóstico</h1>
 
-        <OverlayAviso
+        <!-- <TesteOverlay
             class="overlay-aviso"
-            :eventoAviso="'formatoErrado'"
-            :titulo="'Formato de vídeo não suportado!'"
-            :subtexto="`Formatos aceitos: ${this.extensoes}`"
-            :srcImg="'src/assets/alert_circle.png'"
-        ></OverlayAviso>
-        <OverlayAviso
+
+        ></TesteOverlay>
+        <TesteOverlay
             class="overlay-aviso"
             :eventoAviso="'tamanhoErrado'"
             :titulo="'Vídeo muito grande!'"
             :subtexto="`Tamanho máximo: 50MB`"
             :srcImg="'src/assets/alert_circle.png'"
-        ></OverlayAviso>
+        ></TesteOverlay> -->
         <main>
             <p v-if="!this.$store.getters.getLogado" id="aviso-avulso">
                 Aviso! A Análise Avulsa não salvará nenhuma informação dos pacientes
@@ -155,7 +152,7 @@ import { mapActions, mapState } from "vuex";
 import HeaderSistema from "../layout/HeaderSistema.vue";
 import Button from "../navigation/Button.vue";
 import Rodape from "../layout/Rodape.vue";
-import OverlayAviso from "../layout/OverlayAviso.vue";
+import TesteOverlay from "../layout/TesteOverlay.vue";
 import emitter from "../../eventBus";
 
 const eventoFormatoErrado = "formatoErrado";
@@ -170,7 +167,7 @@ export default {
         HeaderSistema,
         Button,
         Rodape,
-        OverlayAviso,
+        TesteOverlay,
     },
     created() {},
     data() {
@@ -181,7 +178,8 @@ export default {
             olhoDireito: "false",
             desc: "",
             videoObj: null,
-            extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"],
+            // "avi"
+            extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", ],
         };
     },
     props: {},
@@ -214,18 +212,20 @@ export default {
             });
             // console.log("DEPOIS DISPTACH");
         },
-        openOverlay() {
+        openOverlay(props) {
             this.$store.dispatch("modal/openModal", {
                 name: "overlay",
                 content: {
                     component: "Teste",
-                    props: {
-                        titulo: "Popup Aberto!",
-                        subtexto: "Você abriu via Button.vue!",
-                        srcImg: "src/assets/alert_circle.png",
-                        link: "https://google.com",
+                    props: {...props}
+                    // props: {
+                    //     titulo: "Popup Aberto!",
+                    //     subtexto: "Você abriu via Button.vue!",
+                    //     opcional: "Parte roxa",
+                    //     srcImg: "src/assets/alert_circle.png",
+                    //     link: "https://google.com",
                         
-                    },
+                    // },
                 },
             });
             // console.log("DEPOIS DISPTACH");
@@ -255,8 +255,15 @@ export default {
                 if (this.extensoes.includes(`${ext}`)) {
                     this.videoObj = file;
                 } else {
-                    emitter.emit(eventoFormatoErrado);
+                    const props = {
+                        titulo: "Formato de vídeo não suportado!",
+                        subtexto: `Formatos aceitos: ${this.extensoes}`,
+                        srcImg: "src/assets/alert_circle.png",
+                    }
+                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n")
+                    this.openOverlay(props)
                     this.videoObj = null;
+                    console.log("DEPOIS DE ABRIR OVERLAY!")
                 }
             }
         },

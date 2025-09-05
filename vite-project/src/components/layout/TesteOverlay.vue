@@ -1,27 +1,26 @@
 <template>
     <section
-        v-if="aberto"
         :class="[
             posCSS,
-            // overlay styles (converted from @mixin overlay)
-            'z-20 flex flex-col items-center absolute m-auto bg-white border border-black h-[90vmin] w-1/2 transition-all duration-500 ease-in',
-            // responsive adjustment (media query)
-            'max-[870px]:w-full max-[870px]:h-[90%]',
-            // inner styles (from your SCSS)
-            'flex items-start justify-between w-auto p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-[0_20px_20px_rgba(0,0,0,0.08)]'
+            // overlay container
+            'z-3 relative top-5/100 flex flex-col justify-between items-center transition-all duration-500 ease-in',
+            // recommended responsive breakpoints
+            'h-80 w-[100%] sm:h-fit sm:top-15/100 sm:w-auto',
+            // content styles
+            'p-4 gap-3 bg-white border border-black/10 rounded-2xl shadow-lg'
         ]"
     >
-        <div class="flex justify-center items-start gap-[2vmin]">
-            <img :src="srcImg" class="ml-[5vmin] w-[10vmin] h-[10vmin]" />
+        <div class="flex justify-center items-start gap-[2vmin] text-black">
+            <img :src="srcImg" class="ml-[5vmin] w-4/20 h-4/20 sm:w-15 sm:h-15" />
             <ul class="flex flex-col items-start self-stretch gap-[5vmin] w-fit">
                 <h1>{{ titulo }}</h1>
-                <h1>{{ subtexto }}</h1>
+                <h1 class="w-20 max-w-[10ch]">{{ subtexto }}</h1>
                 <h1 v-if="opcional !== ''" id="opcional" class="text-[#792359]">
                     {{ opcional }}
                 </h1>
             </ul>
         </div>
-        <div class="w-[22vmin]">
+        <div class="w-30">
             <Button @click="close()" :texto="'OK'" :ativo="true" />
         </div>
     </section>
@@ -39,7 +38,7 @@ export default {
 
     data() {
         return {
-            aberto: true,
+            aberto: null,
         };
     },
     props: {
@@ -49,15 +48,15 @@ export default {
         opcional: "",
         srcImg: { type: String, default: "", required: true },
         rota: null,
-        posCSS: "absolute top-22 right-0 w-28 h-auto",
+        posCSS: "",
     },
+    computed:{
 
+    },
     methods: {
         ...mapActions("modal", ["closeModal", "openModal", "closeAllModals"]),
         close() {
-            this.$emit("close");
             this.closeModal("overlay");
-            this.aberto = false;
             console.log("fechando OVERLAY")
         },
     },
