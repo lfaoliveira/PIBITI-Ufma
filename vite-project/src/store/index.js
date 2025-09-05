@@ -15,6 +15,7 @@ const store = createStore({
     },
     state:{
         urlBackend: import.meta.env.VITE_BACKEND_URL + "/api",
+        urlWebSocket: import.meta.env.VITE_BACKEND_WS,
         sharedData: null,
         logado: false,
         formDiag: null,
@@ -78,7 +79,10 @@ const store = createStore({
         }
     },
     getters: {
+        //websocket
+        getWSBackend: (state) => (state.urlWebSocket),
         //urls
+        getUrlBackend: (state) => (state.urlBackend),
         getUrlCadastro: (state) => (state.urlBackend + "/auth?tipo=cadastro"),
         getUrlLogin: (state) => (state.urlBackend + "/auth?tipo=login"),
         getUrlChecklogin: (state) => (state.urlBackend + "/val_login"),

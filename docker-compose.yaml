@@ -49,6 +49,7 @@ services:
         environment:
         # URL tem que ser de IP público externo ao docker ja que código do Vite vai rodar no browser
           VITE_BACKEND_URL: http://31.97.84.210:5000 #MUDAR PARA IP OU DOMÍNIO DA MÁQUINA RODANDO SERVIÇO
+          VITE_BACKEND_WS: ws://31.97.84.210:5000 #MUDAR PARA IP OU DOMÍNIO DA MÁQUINA RODANDO SERVIÇO
           NODE_ENV: development
         networks:
           - projeto

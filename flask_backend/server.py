@@ -8,6 +8,7 @@ from http.client import (
     NOT_FOUND,
 )
 import time
+import uuid
 from bson import ObjectId
 import shutil
 from flask_backend.analise import AnaliseParalisia
@@ -818,22 +819,37 @@ def logout():
 # -----------------------------------------------#
 
 
-async def websocket_endpoint(websocket):
-    await websocket.accept()
-    await websocket.send_text("Hello from WebSocket!")
-    try:
-        while True:
-            data = await websocket.receive_text()
-            await websocket.send_text(f"Echo: {data}")
-    except Exception:
-        await websocket.close()
+@app.route("/submit_form", methods=["POST", "GET"])
+def submit_form():
+    data = request.json or {}
+    print(data)
+    form_id = str(uuid.uuid4())
+    record = {"_id": form_id, "data": data}
+    # forms_coll.insert_one(record)
+    return jsonify({"uuid": form_id})
+
+
+async def ws_handler(ws):
+    await ws.accept()
+    msg = await ws.receive_text()
+    # Expect the UUID
+    await ws.send_json({"status": "processing started", "uuid": msg})
+    time.sleep(30)  # simulate long task
+    # Return dummy response
+    resp = {
+        "uuid": msg,
+        "video_url": "http://example.com/video.mp4",
+        "text": "Processing complete!",
+    }
+    await ws.send_json(resp)
+    await ws.close()
 
 
 # Starlette app for WebSockets
 starlette_app = Starlette(
     routes=[
         Route("/ping", lambda request: PlainTextResponse("Pong!")),  # test route
-        WebSocketRoute("/ws", websocket_endpoint),
+        WebSocketRoute("/ws", ws_handler),
     ]
 )
 from starlette.middleware.cors import CORSMiddleware
