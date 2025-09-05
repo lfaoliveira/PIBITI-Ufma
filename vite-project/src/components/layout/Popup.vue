@@ -2,7 +2,7 @@
     <div
         :class="[
             String(posCSS) ,
-            'flex items-start justify-between h-3.5lh w-min sm:w-60 sm:mr-0 md:w-100 md:h-[6.5lh]  p-2 sm:p-4 gap-3',
+            'flex items-start justify-between h-3.5lh w-min sm:w-60 sm:mr-0 md:w-100 md:h-[6.5lh] z-3  p-2 sm:p-4 gap-3',
             'bg-white border border-black/10 rounded-2xl shadow-lg']"
     >
         <!-- Left Section -->

@@ -39,10 +39,10 @@ body {
   background-color: #001B2C;
 }
 
-h1 {
+/* h1 {
   font-size: 3.2em;
   line-height: 1.1;
-}
+} */
 
 button {
   /* border-radius: 8px; */
@@ -63,9 +63,6 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-.card {
-  padding: 2em;
-}
 
 /* */
 
@@ -84,3 +81,27 @@ button:focus-visible {
 
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+
+/* Botao de acao do site */
+@layer components {
+    .h1-text{
+        @apply text-xl sm:text-4xl
+    }
+    .botao-acao {
+        @apply w-full h-16 inline-flex justify-center items-center
+            rounded-[4vmin] px-2
+            font-semibold text-white
+            text-sm
+            bg-[hsl(267,81%,37%)]
+            transition duration-300 ease-out
+            hover:scale-105 hover:brightness-125
+            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500
+            disabled:bg-[#d0a7f6] disabled:cursor-not-allowed disabled:pointer-events-none
+            max-sm:w-[120%] max-sm:rounded-[clamp(20px,6vmin,30px)];
+    }
+    
+    .campos-ficha{
+        @apply text-lg sm:text-2xl
+    }
+}

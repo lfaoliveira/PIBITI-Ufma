@@ -24,15 +24,15 @@ $form-fonte-peq: 16px;
 $form-fonte-titulo: 2.5vmin;
 
 
-h1{
-    font-size: $fonte-titulo-secao;
-}
-p{
-    font-size: $form-fonte-peq;
-}
-a{
-    padding: 0px;
-}
+// h1{
+//     font-size: $fonte-titulo-secao;
+// }
+// p{
+//     font-size: $form-fonte-peq;
+// }
+// a{
+//     padding: 0px;
+// }
 
 @mixin overlay{
     z-index: 20;
@@ -98,49 +98,8 @@ a{
 
   }
 
-@mixin container-botoes{
-    display: flex;
-    width: 100%;
-    /* display: flex;
-    flex-direction: column;
-    align-items: center; */
-    color: white;
-}
 
-@mixin botao-acao($escala: 1.1, $height: 2.2lh){
-    height: $height;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-    display: inline-block;
-    text-align: center;
-    border: none;
-    border-radius: 4vmin;
-    padding: 1%;
-    cursor: pointer;
-    color: white;
-    transition: all 0.3s ease-out 0s;
-    
-    &:disabled{
-        background-color: #d0a7f6;
-        cursor: default;
-    }
-    &:not(:disabled){
-        background: hsl(267, 81%, 37%);
 
-        &:not(:disabled):hover {
-            transform: scale($escala); // Increase size by 10% on hover
-            filter:brightness(1.25);
-          }
-    }
-    @media (max-width: 500px), (max-height:500px) {
-        border-radius: clamp(20px, 6vmin, 30px);
-        width: 120%;
-    }
-    
-    
-      
-}
 
 /* Define scrollbar styles for WebKit browsers */
 @mixin webkit-scrollbar {

@@ -7,7 +7,7 @@
         <button class="relative bg-amber-500 m-5 mr-5" @click.self="openOverlay">
             ABRIR OVERLAY
         </button>
-        <h1>Etapa 1 de 3: Ficha do Diagnóstico</h1>
+        <h1 class="h1-text">Ficha do Diagnóstico</h1>
 
         <!-- <TesteOverlay
             class="overlay-aviso"
@@ -21,7 +21,7 @@
             :srcImg="'src/assets/alert_circle.png'"
         ></TesteOverlay> -->
         <main>
-            <p v-if="!this.$store.getters.getLogado" id="aviso-avulso">
+            <p v-if="!this.$store.getters.getLogado" class="sm:text-2xl" id="aviso-avulso">
                 Aviso! A Análise Avulsa não salvará nenhuma informação dos pacientes
             </p>
 
@@ -206,7 +206,6 @@ export default {
                         subtexto: "Você abriu via Button.vue!",
                         srcImg: "src/assets/alert_circle.png",
                         link: "https://google.com",
-                        
                     },
                 },
             });
@@ -246,6 +245,13 @@ export default {
             if (file.size > MAX_FILE_SIZE) {
                 emitter.emit(eventoTamanhoErrado);
                 this.videoObj = null;
+                    const props = {
+                        titulo: "Vídeo muito grande!",
+                        subtexto: `Tamanho máximo: 50MB`,
+                        srcImg: "src/assets/alert_circle.png",
+                    }
+                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n")
+                    this.openOverlay(props)
                 return;
             }
             if (file) {
@@ -316,7 +322,7 @@ main {
 
     #aviso-avulso {
         color: #792359;
-        width: 28ch;
+        @apply .h1-text
         font-size: 1.8rem;
         font-weight: 400;
         line-height: normal;
@@ -352,7 +358,8 @@ form {
         }
 
         label {
-            font-size: $font-size-labels;
+            // font-size: $font-size-labels;
+            @apply campos-ficha
             font-weight: 600;
         }
         input,

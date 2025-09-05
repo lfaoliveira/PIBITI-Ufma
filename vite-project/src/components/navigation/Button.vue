@@ -1,15 +1,15 @@
 <template>
-    <div class="button-container">
+    <div class="flex w-full text-white">
         <button
             :type="type"
             @click="handleClick"
             v-if="ativo == true"
-            class="button classeAtivo"
+            class="botao-acao classeAtivo"
             enabled
         >
             {{ texto }}
         </button>
-        <button :type="type" v-if="ativo == false" class="button classeInativo" disabled>
+        <button :type="type" v-if="ativo == false" class="botao-acao classeInativo" disabled>
             {{ texto }}
         </button>
     </div>
@@ -39,17 +39,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$tam-fonte-botao: clamp(16px, 3vmin, 20px);
-$peso-fonte-butao: 600;
-$alt-botao: clamp(2lh, 7.5vmin, 3lh);
 
-.button-container {
-    @include container-botoes;
-    .button {
-        @include botao-acao($escala: 1.05, $height: $alt-botao);
-        font-weight: $peso-fonte-butao;
-        font-size: $fonte-but-medio;
-        color: white;
-    }
-}
+
+// .button-container {
+//     @include container-botoes;
+//     .button {
+//         @include botao-acao($escala: 1.05, $height: $alt-botao);
+//         font-weight: $peso-fonte-butao;
+//         font-size: $fonte-but-medio;
+//         color: white;
+//     }
+// }
 </style>
