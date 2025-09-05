@@ -18,6 +18,7 @@ const store = createStore({
         sharedData: null,
         logado: false,
         formDiag: null,
+        linksAnalise: [], //array funciona como fila
     },
     mutations: {
         setSharedData(state, data) {
@@ -34,7 +35,27 @@ const store = createStore({
         },
         setFormDiag(state, data) {
             state.formDiag = data;
+        },
+        addLink(state, data){
+            const link = data["link"]
+            if (state.linksAnalise.length > 0){
+                state.linksAnalise.push(link);
+            }
+            else{
+                state.linksAnalise = Array(link);
+            }
+        },
+        removeLink(state){
+            if (state.linksAnalise.length > 0){
+                const removido = state.linksAnalise.shift();
+                console.log(`LINK REMOVIDO: ${removido}`);
+            }
+            else{
+                console.warn("ARRAY DE LINKS VAZIO!\n")
+            }
+
         }
+
     },
     actions: {
         updateUrlBackend({ commit }, data) {
@@ -48,9 +69,16 @@ const store = createStore({
         },
         updateFormDiag({ commit }, data) {
             commit('setformDiag', data);
+        },
+        addLinkAnalise({commit}, data){
+            commit('addLink', data)
+        },
+        removeLinkAnalise({commit}){
+            commit('removeLink');
         }
     },
     getters: {
+        //urls
         getUrlCadastro: (state) => (state.urlBackend + "/auth?tipo=cadastro"),
         getUrlLogin: (state) => (state.urlBackend + "/auth?tipo=login"),
         getUrlChecklogin: (state) => (state.urlBackend + "/val_login"),
@@ -60,9 +88,12 @@ const store = createStore({
         getDiag: (state) => (state.urlBackend + "/envia_diag"),
         getPerfil:  (state) => (state.urlBackend + "/pega_perfil"),
         getAnalise: (state) => (state.urlBackend + "/analise"),
+        getTaskStatus: (state) => (state.urlBackend + "/status/"),
+        //estados auxiliares e objetos
         getLogado: (state) => (state.logado),
         getFormDiag: (state) => (state.formDiag),
-        getTaskStatus: (state) => (state.urlBackend + "/status/")
+        //fila de links
+        getLinks: (state) => (state.linksAnalise),
     }
 });
 
