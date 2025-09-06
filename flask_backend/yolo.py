@@ -9,8 +9,6 @@ from keras.models import load_model
 from keras.layers import Input
 from PIL import Image, ImageFont, ImageDraw
 
-print("\n\n\nDENTRO DO YOLO\n\n")
-from flask_backend import PACKAGE_WKDIR
 from flask_backend.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from flask_backend.yolo3.utils import letterbox_image
 import os
@@ -24,9 +22,9 @@ from skimage import io
 class YOLO(object):
 
     _defaults = {
-        "model_path": os.path.join(PACKAGE_WKDIR, "trained_weights_final.h5"),
-        "anchors_path": os.path.join(PACKAGE_WKDIR, "yolo_anchors.txt"),
-        "classes_path": os.path.join(PACKAGE_WKDIR, "classes.txt"),
+        "model_path": "trained_weights_final.h5",
+        "anchors_path": "yolo_anchors.txt",
+        "classes_path": "classes.txt",
         "score": 0.3,
         "iou": 0.45,
         "model_image_size": (416, 416),  # (384, 384)
