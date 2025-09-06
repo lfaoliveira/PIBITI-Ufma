@@ -61,6 +61,7 @@ from flask_backend.user import User
 
 import logging
 
+print(f"PACKAGE: {__package__}")
 from flask_backend.celery_worker.tasks import (
     processamento_analise,
     envia_diag_task,

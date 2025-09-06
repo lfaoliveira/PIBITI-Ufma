@@ -9,6 +9,7 @@ from keras.models import load_model
 from keras.layers import Input
 from PIL import Image, ImageFont, ImageDraw
 
+print("\n\n\nDENTRO DO YOLO\n\n")
 from flask_backend import PACKAGE_WKDIR
 from flask_backend.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from flask_backend.yolo3.utils import letterbox_image
