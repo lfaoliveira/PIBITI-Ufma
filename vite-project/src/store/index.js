@@ -81,6 +81,7 @@ const store = createStore({
     getters: {
         //websocket
         getWSBackend: (state) => (state.urlWebSocket),
+        getAnaliseWS: (state) => (state.urlBackend + "/analise-ws"),
         //urls
         getUrlBackend: (state) => (state.urlBackend),
         getUrlCadastro: (state) => (state.urlBackend + "/auth?tipo=cadastro"),

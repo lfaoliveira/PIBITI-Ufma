@@ -61,7 +61,8 @@ from flask_backend.user import User
 
 import logging
 
-from flask_backend.celery_worker.tasks import envia_diag_task, processamento_analise
+from flask_backend.celery_worker.tasks import processamento_analise
+from celery.result import AsyncResult
 
 
 @tf.function
@@ -417,28 +418,6 @@ def get_file(resource_uri) -> Union[Any, Response]:
         return make_response(
             {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
         )
-
-
-@app.route("/analise", methods=["PUT"])
-@cross_origin(supports_credentials=True)
-def analisar():
-    data = request.form
-    id_diag = data.get("id_diag", None)
-    nome_input = data.get("nome_input", None)
-    filename = data.get("filename", None)
-
-    if id_diag is None:
-        return make_response("INPUT NULO!", BAD_REQUEST)
-
-    # Enqueue the celery task
-    task = processamento_analise.delay(
-        id_diag, nome_input, filename, app.config["TEMP_FOLDER"]
-    )
-
-    return jsonify({"task_id": task.id, "status": "Processing started"})
-
-
-from celery.result import AsyncResult
 
 
 @app.route("/status/<task_id>", methods=["GET"])
@@ -817,24 +796,62 @@ def logout():
 # ------------------WEBSOCKETS-------------------#
 # -----------------------------------------------#
 # -----------------------------------------------#
+from starlette.exceptions import WebSocketException
 
 
-@app.route("/submit_form", methods=["POST", "GET"])
-def submit_form():
-    data = request.json or {}
-    print(data)
-    form_id = str(uuid.uuid4())
-    record = {"_id": form_id, "data": data}
-    # forms_coll.insert_one(record)
-    return jsonify({"uuid": form_id})
+@app.route("/analise-ws", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def envia_diag():
+    video = request.files.get("video", None)
+    nomePaciente = request.form.get("nomePaciente", None)
+    stringOlhos = request.form.get("stringOlhos", None)
+    desc = request.form.get("desc", None)
+
+    if any(elem is None for elem in [video, nomePaciente]):
+        return make_response("INPUT NULO!", BAD_REQUEST)
+
+    filename = video.filename
+    video_data = video.read()
+    user_id = current_user.id if current_user.is_authenticated else None
+
+    # Enqueue the Celery task
+    """ task = celery_wrapper.envia_diag(
+        video_data, filename, nomePaciente, stringOlhos, desc, user_id
+    ) """
+    task = processamento_analise.delay(
+        video_data,
+        filename,
+        nomePaciente,
+        stringOlhos,
+        desc,
+        user_id,
+        app.config["TEMP_FOLDER"],
+    )
+
+    return jsonify({"task_id": task.id, "status": "enviando"})
 
 
 async def ws_handler(ws):
     await ws.accept()
-    msg = await ws.receive_text()
-    # Expect the UUID
-    await ws.send_json({"status": "processing started", "uuid": msg})
-    time.sleep(30)  # simulate long task
+    data = await ws.receive_json()
+    task_id = data["taskId"]
+
+    TEMPO_LIMITE = 10 * 60 * 60 * 1000  # limite de 10 min
+    tempo_comeco = time.time()
+
+    status = AsyncResult(task_id).status
+    while status != "SUCCESS":
+        # so fica esperando
+        if tempo_comeco - time.time() > TEMPO_LIMITE:
+            raise TimeoutError("TAREFA DEMOROU DEMAIS!")
+        status = AsyncResult(task_id).status
+        if status == "FAILURE" or status == "RETRY":
+            raise WebSocketException(code=1011, reason="ERRO INTERNO!")
+
+    # tarefa de analise (upload e processamento) foi completada
+    task = AsyncResult(task_id)
+    resultado = task.result
+    print(f"RESULTADO TASK {task.id}: {resultado}\n")
     # Return dummy response
     resp = {
         "uuid": msg,
@@ -852,6 +869,7 @@ starlette_app = Starlette(
         WebSocketRoute("/ws", ws_handler),
     ]
 )
+
 from starlette.middleware.cors import CORSMiddleware
 
 starlette_app.add_middleware(

@@ -109,6 +109,7 @@ class SyncDriveTask(MainTask):
 
 
 class AnaliseTask(MainTask):
+    """TASK PRINCIPAL DO CELERY PARA PROCESSAMENTO PESADO E ASSINCRONO!"""
 
     _helper = None
     _analisador = None
@@ -136,6 +137,9 @@ class AnaliseTask(MainTask):
         filename,
         TEMP_FOLDER,
     ):
+        """
+        Funcao deve: registrar dados no BD, pegar o que tiver que pegar pra processar, processar e guardar dados no BD
+        """
 
         timestamp = time.time()
         diag = self.mongo.db.get_collection(self.coll_diags).find_one(
@@ -143,7 +147,6 @@ class AnaliseTask(MainTask):
         )
         self.analisador.path_temp = TEMP_FOLDER
         ext = self.helper.allowed_file(filename)
-        print(self.helper.allowed_file, "\n\n\n")
 
         if ext is None:
             return {"error": "Incorrect file type"}
@@ -174,10 +177,11 @@ class AnaliseTask(MainTask):
 
         path_out_antes_conv = os.path.join(TEMP_FOLDER, f"OUT_PRE_{nome_local}")
 
-        # executando predicao
+        # --------- executando predicao ------------
         res_tensor, dict_graf_tensor = predict(
             self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp
         )
+        # --------- executando predicao ------------
 
         with tf.compat.v1.Session() as sess:
             # Run the session to get the tensor's value
