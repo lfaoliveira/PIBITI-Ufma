@@ -11,6 +11,7 @@ import ffmpeg
 from flask_mail import Message
 from flask_backend.drive import GoogleDrive
 from flask_backend.yolo import YOLO
+from flask_backend import PACKAGE_WKDIR
 
 
 class Helper:
@@ -179,9 +180,9 @@ class Helper:
 
 def get_modelo():
     kwargs = {
-        "model_path": "trained_weights_final.h5",
-        "anchors_path": "yolo_anchors.txt",
-        "classes_path": "classes.txt",
+        "model_path": os.path.join(PACKAGE_WKDIR, "trained_weights_final.h5"),
+        "anchors_path": os.path.join(PACKAGE_WKDIR, "yolo_anchors.txt"),
+        "classes_path": os.path.join(PACKAGE_WKDIR, "classes.txt"),
         "score": 0.3,
         "iou": 0.45,
         "model_image_size": (416, 416),
