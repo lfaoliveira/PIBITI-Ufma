@@ -91,6 +91,7 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 # WARNING: Tasks foram criadas para serem executadas em sequencia, mas fora do FLASK!!!!!!!
 class EnviaDiagTask(MainTask):
     name = "envia_diag_task"
+    bind = True
 
     def run(
         self,
@@ -136,7 +137,7 @@ class EnviaDiagTask(MainTask):
 
         with open(path_temp_videoLabel, "wb") as f:
             f.write(video_data)
-
+        print("ENVIAD DIAG TERMINADO\n")
         return {
             "mensagem": "CARREGADO",
             "id_diag": id_diag_mongo,
@@ -149,7 +150,7 @@ class AnaliseTask(MainTask):
 
     _helper = None
     _analisador = None
-
+    bind = True
     name = "processamento_analise"
 
     @property
@@ -343,6 +344,7 @@ class AnaliseTask(MainTask):
 # NOTE: ARGUMENTOS DEVEM SER APENAS OBJETOS SERIALIZAVEIS (SEM SER OBJETOS COMPLEXOS)
 class SyncDriveTask(MainTask):
     name = "sync_google_drive"
+    bind = True
 
     def run(self, res_anterior):
         # -----INPUT--------#

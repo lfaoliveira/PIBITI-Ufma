@@ -854,7 +854,6 @@ def registrar_diag_processar():
     #     app.config["TEMP_FOLDER"],
     # )
     try:
-
         timestamp = time.time()
         temp_folder = app.config["TEMP_FOLDER"]
         workflow = chain(
