@@ -88,24 +88,60 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
         return str_res, dict_graf
 
 
-# NOTE: ARGUMENTOS DEVEM SER APENAS OBJETOS SERIALIZAVEIS (SEM SER OBJETOS COMPLEXOS)
-class SyncDriveTask(MainTask):
-    name = "sync_google_drive"
+# WARNING: Tasks foram criadas para serem executadas em sequencia, mas fora do FLASK!!!!!!!
+class EnviaDiagTask(MainTask):
+    name = "envia_diag_task"
 
-    def run(self, storage_strings: dict, id_diag: str, email: str):
-        print(f"STORAGE: {storage_strings}, ID: {id_diag}")
-        path_video_in = storage_strings["video_in"]
-        path_video_out = storage_strings["video_out"]
-        id_in = self.drive.upload_to_drive(path_video_in, [email])
-        id_out = self.drive.upload_to_drive(path_video_out, [email])
+    def run(
+        self,
+        video_data,
+        filename,
+        nomePaciente,
+        stringOlhos,
+        desc,
+        user_id,
+        TEMP_FOLDER: str,
+        timestamp,
+    ):
+        import os
 
-        # Update the document in the database with the new Google Drive file IDs
-        self.mongo.db.get_collection("diagnosticos").update_one(
-            {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
-        )
+        diagnosticoMedico = stringOlhos
+        if user_id:
+            medicos = self.mongo.db.get_collection(self.coll_meds)
+            medico_atual = medicos.find_one({"email": user_id})
+            if medico_atual is None:
+                return {"error": "MEDICO LOGADO NAO ENCONTRADO"}
+            id_medico = medico_atual.get("_id", None)
+        else:
+            id_medico = None
 
-        print("UPLOAD COMPLETO! ANÁLISE TERMINADA")
-        return None
+        dados = {
+            "nomePaciente": nomePaciente,
+            "id_medico": str(id_medico),
+            "diagnosticoMedico": diagnosticoMedico,
+            "desc": desc,
+        }
+
+        # Convert None to string "None"
+        for key, value in dados.items():
+            if value is None:
+                dados[key] = "None"
+
+        diags = self.mongo.db.get_collection(self.coll_diags)
+        result = diags.insert_one(dados)
+        id_diag_mongo = str(result.inserted_id)
+
+        nome_local = f"{str(round(timestamp, 4))}_{filename}"
+        path_temp_videoLabel = os.path.join(TEMP_FOLDER, nome_local)
+
+        with open(path_temp_videoLabel, "wb") as f:
+            f.write(video_data)
+
+        return {
+            "mensagem": "CARREGADO",
+            "id_diag": id_diag_mongo,
+            "nome_input": nome_local,
+        }
 
 
 class AnaliseTask(MainTask):
@@ -130,18 +166,21 @@ class AnaliseTask(MainTask):
             self._analisador = AnaliseParalisia(modelo, None)
         return self._analisador
 
-    def run(
-        self,
-        id_diag,
-        nome_input,
-        filename,
-        TEMP_FOLDER,
-    ):
+    def run(self, res_anterior, **kwargs):
         """
         Funcao deve: registrar dados no BD, pegar o que tiver que pegar pra processar, processar e guardar dados no BD
         """
+        # ------------INPUT----------------#
+        filename = kwargs.get("filename")
+        TEMP_FOLDER = kwargs.get("TEMP_FOLDER")
+        timestamp = kwargs.get("timestamp")
 
-        timestamp = time.time()
+        id_diag = res_anterior.get("id_diag")
+        nome_input = res_anterior.get("nome_input")
+        mensagem = res_anterior.get("mensagem")
+        print(f"ESTADO ATUAL TASKS: {mensagem}\n")
+
+        # --------PREPARANDO PROCESSAMENTO-----#
         diag = self.mongo.db.get_collection(self.coll_diags).find_one(
             {"_id": ObjectId(id_diag)}
         )
@@ -274,8 +313,6 @@ class AnaliseTask(MainTask):
 
         storage_dict = {"video_in": path_arq_input, "video_out": path_out}
 
-        sync_google_drive.delay(storage_dict, id_diag, email_medico)
-
         result.pop("dados_grafico")
         result.pop("dados_pdf")
         result["grafico"] = url_for(
@@ -296,64 +333,41 @@ class AnaliseTask(MainTask):
                 "gerar_relatorio", id_diag=id_diag, download=True, _external=True
             ),
             "video_url": local_url_video_out,
+            "storage_strings": storage_dict,
+            "id_diag": id_diag,
+            "email": email_medico,
         }
+        # sync_google_drive.delay(storage_dict, id_diag, email_medico)
 
 
-class EnviaDiagTask(MainTask):
-    name = "envia_diag_task"
+# NOTE: ARGUMENTOS DEVEM SER APENAS OBJETOS SERIALIZAVEIS (SEM SER OBJETOS COMPLEXOS)
+class SyncDriveTask(MainTask):
+    name = "sync_google_drive"
 
-    def run(
-        self,
-        video_data,
-        filename,
-        nomePaciente,
-        stringOlhos,
-        desc,
-        user_id,
-        TEMP_FOLDER: str,
-    ):
-        import os
+    def run(self, res_anterior):
+        # -----INPUT--------#
+        storage_strings = res_anterior.get("storage_strings")
+        id_diag = res_anterior.get("id_diag")
+        email = res_anterior.get("email")
 
-        timestamp = time.time()
+        print(f"STORAGE: {storage_strings}, ID: {id_diag}")
+        # --------SYNC---------#
+        path_video_in = storage_strings["video_in"]
+        path_video_out = storage_strings["video_out"]
+        id_in = self.drive.upload_to_drive(path_video_in, [email])
+        id_out = self.drive.upload_to_drive(path_video_out, [email])
 
-        diagnosticoMedico = stringOlhos
-        if user_id:
-            medicos = self.mongo.db.get_collection(self.coll_meds)
-            medico_atual = medicos.find_one({"email": user_id})
-            if medico_atual is None:
-                return {"error": "MEDICO LOGADO NAO ENCONTRADO"}
-            id_medico = medico_atual.get("_id", None)
-        else:
-            id_medico = None
+        # Update the document in the database with the new Google Drive file IDs
+        self.mongo.db.get_collection("diagnosticos").update_one(
+            {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
+        )
 
-        dados = {
-            "nomePaciente": nomePaciente,
-            "id_medico": str(id_medico),
-            "diagnosticoMedico": diagnosticoMedico,
-            "desc": desc,
-        }
+        print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
+        res_anterior.pop("storage_strings")
+        res_anterior.pop("id_diag")
+        res_anterior.pop("email")
 
-        # Convert None to string "None"
-        for key, value in dados.items():
-            if value is None:
-                dados[key] = "None"
-
-        diags = self.mongo.db.get_collection(self.coll_diags)
-        result = diags.insert_one(dados)
-        id_diag_mongo = str(result.inserted_id)
-
-        nome_local = f"{str(round(timestamp, 4))}_{filename}"
-        path_temp_videoLabel = os.path.join(TEMP_FOLDER, nome_local)
-
-        with open(path_temp_videoLabel, "wb") as f:
-            f.write(video_data)
-
-        return {
-            "mensagem": "CARREGADO",
-            "id_diag": id_diag_mongo,
-            "nome_input": nome_local,
-            "filename": filename,
-        }
+        return res_anterior
 
 
 sync_google_drive = SyncDriveTask()
@@ -363,12 +377,3 @@ envia_diag_task = EnviaDiagTask()
 app.register_task(sync_google_drive)
 app.register_task(processamento_analise)
 app.register_task(envia_diag_task)
-
-
-# from celery import Celery
-
-# app = Celery(
-#     "tasks",
-#     backend=os.environ["CELERY_RESULT_BACKEND"],
-#     broker=os.environ["CELERY_BROKER_URL"],
-# )

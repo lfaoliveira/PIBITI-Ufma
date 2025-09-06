@@ -61,7 +61,11 @@ from flask_backend.user import User
 
 import logging
 
-from flask_backend.celery_worker.tasks import processamento_analise
+from flask_backend.celery_worker.tasks import (
+    processamento_analise,
+    envia_diag_task,
+    sync_google_drive,
+)
 from celery.result import AsyncResult
 
 
@@ -418,6 +422,25 @@ def get_file(resource_uri) -> Union[Any, Response]:
         return make_response(
             {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
         )
+
+
+@app.route("/analise", methods=["PUT"])
+@cross_origin(supports_credentials=True)
+def analisar():
+    data = request.form
+    id_diag = data.get("id_diag", None)
+    nome_input = data.get("nome_input", None)
+    filename = data.get("filename", None)
+
+    if id_diag is None:
+        return make_response("INPUT NULO!", BAD_REQUEST)
+
+    # Enqueue the celery task
+    task = processamento_analise.delay(
+        id_diag, nome_input, filename, app.config["TEMP_FOLDER"]
+    )
+
+    return jsonify({"task_id": task.id, "status": "Processing started"})
 
 
 @app.route("/status/<task_id>", methods=["GET"])
@@ -797,11 +820,12 @@ def logout():
 # -----------------------------------------------#
 # -----------------------------------------------#
 from starlette.exceptions import WebSocketException
+from celery import chain
 
 
 @app.route("/analise-ws", methods=["POST"])
 @cross_origin(supports_credentials=True)
-def envia_diag():
+def registrar_diag_processar():
     video = request.files.get("video", None)
     nomePaciente = request.form.get("nomePaciente", None)
     stringOlhos = request.form.get("stringOlhos", None)
@@ -818,17 +842,43 @@ def envia_diag():
     """ task = celery_wrapper.envia_diag(
         video_data, filename, nomePaciente, stringOlhos, desc, user_id
     ) """
-    task = processamento_analise.delay(
-        video_data,
-        filename,
-        nomePaciente,
-        stringOlhos,
-        desc,
-        user_id,
-        app.config["TEMP_FOLDER"],
-    )
+    # task = processamento_analise.delay(
+    #     video_data,
+    #     filename,
+    #     nomePaciente,
+    #     stringOlhos,
+    #     desc,
+    #     user_id,
+    #     app.config["TEMP_FOLDER"],
+    # )
+    try:
 
-    return jsonify({"task_id": task.id, "status": "enviando"})
+        timestamp = time.time()
+        temp_folder = app.config["TEMP_FOLDER"]
+        workflow = chain(
+            envia_diag_task.s(
+                video_data,
+                filename,
+                nomePaciente,
+                stringOlhos,
+                desc,
+                user_id,
+                temp_folder,
+                timestamp,
+            ),
+            processamento_analise.s(
+                filename=filename, TEMP_FOLDER=temp_folder, timestamp=timestamp
+            ),  # receives previous result as args
+            sync_google_drive.s(),  # receives result of processamento_analise
+        )
+
+        result = workflow.apply_async()
+
+        return jsonify({"task_id": result.id, "status": "enviando"})
+
+    except Exception as e:
+        print(f"EXCECAO NA ANALISE: {e}\n")
+        return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
 
 
 async def ws_handler(ws):
@@ -842,7 +892,7 @@ async def ws_handler(ws):
     status = AsyncResult(task_id).status
     while status != "SUCCESS":
         # so fica esperando
-        if tempo_comeco - time.time() > TEMPO_LIMITE:
+        if tempo_comeco - time.time() >= TEMPO_LIMITE:
             raise TimeoutError("TAREFA DEMOROU DEMAIS!")
         status = AsyncResult(task_id).status
         if status == "FAILURE" or status == "RETRY":
@@ -850,15 +900,11 @@ async def ws_handler(ws):
 
     # tarefa de analise (upload e processamento) foi completada
     task = AsyncResult(task_id)
-    resultado = task.result
+    resultado = task.get()
     print(f"RESULTADO TASK {task.id}: {resultado}\n")
     # Return dummy response
-    resp = {
-        "uuid": msg,
-        "video_url": "http://example.com/video.mp4",
-        "text": "Processing complete!",
-    }
-    await ws.send_json(resp)
+
+    await ws.send_json(resultado)
     await ws.close()
 
 
