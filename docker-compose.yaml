@@ -31,7 +31,7 @@ services:
         networks:
           - projeto
         volumes:
-          - backend:/app
+          - /root/pibiti/flask_backend:/app
         # env_file:
         #   - .env
         restart: unless-stopped
@@ -68,7 +68,7 @@ services:
       command: bash -c "pwd && celery -A  flask_backend.celery_worker worker -l DEBUG"
       working_dir: /app
       volumes:
-        - backend:/app
+        - /root/pibiti/flask_backend:/app
       depends_on:
         - redis
       environment:
