@@ -1,8 +1,8 @@
 <!-- App.vue -->
 <template>
     <router-view></router-view>
-    <Modal name="popup" />
-    <Modal name="overlay" />
+    <Modal name="popup" delayEnter="1000" delayExit="500" />
+    <Modal name="overlay" delayEnter="500" delayExit="500" />
     <Modal name="notice" />
     <!-- <button @click="openExampleModal">Open Popup</button> -->
 </template>
