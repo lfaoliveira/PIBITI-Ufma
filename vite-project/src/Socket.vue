@@ -159,6 +159,8 @@ import Rodape from "./components/layout/Rodape.vue";
 import TesteOverlay from "./components/layout/TesteOverlay.vue";
 import emitter from "./eventBus";
 
+import axios from "axios";
+
 const eventoFormatoErrado = "formatoErrado";
 const eventoTamanhoErrado = "tamanhoErrado";
 
@@ -201,6 +203,31 @@ export default {
     },
     methods: {
         ...mapActions("modals", ["openModal"]),
+
+        openPopup() {
+            this.$store.dispatch("modal/openModal", {
+                name: "popup",
+                content: {
+                    component: "Popup",
+                    props: {
+                        titulo: "Popup Aberto!",
+                        subtexto: "Você abriu via Button.vue!",
+                        srcImg: "src/assets/alert_circle.png",
+                        link: "https://google.com",
+                    },
+                },
+            });
+        },
+        openOverlay(props) {
+            this.$store.dispatch("modal/openModal", {
+                name: "overlay",
+                content: {
+                    component: "Teste",
+                    props: { ...props },
+                },
+            });
+        },
+
         async enviaFlask() {
             const url = this.$store.getters.getUrlBackend;
             const res = await fetch(`${String(url)}/submit_form`, {
@@ -220,12 +247,12 @@ export default {
             formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
             formData.append("desc", this.desc);
 
-            const formDiag = this.$store.getters.getFormDiag;
-            console.log("FORM: ", formDiag, typeof formDiag);
+            // const formDiag = this.$store.getters.getFormDiag;
+            console.log("FORM: ", formData, typeof formData);
 
             const promiseEnviaDiag = axios.post(
                 this.$store.getters.getAnaliseWS,
-                formDiag,
+                formData,
                 {
                     withCredentials: true,
                 }
@@ -257,7 +284,7 @@ export default {
             console.log(`URL WS: ${urlWS}`);
             const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
             console.log(`NOVO SOCKET: ` + JSON.stringify(ws));
-            ws.onopen = () => ws.send({taskId: taskId});
+            ws.onopen = () => ws.send({ taskId: taskId });
             ws.onmessage = (evt) => console.log("WS got:", evt.data);
             ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
             ws.onclose = (evt) => console.log(`WEBSOCKET FECHADO!\n`);

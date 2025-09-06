@@ -831,6 +831,8 @@ def registrar_diag_processar():
     stringOlhos = request.form.get("stringOlhos", None)
     desc = request.form.get("desc", None)
 
+    [print(elem) for elem in [video, nomePaciente, stringOlhos, desc]]
+
     if any(elem is None for elem in [video, nomePaciente]):
         return make_response("INPUT NULO!", BAD_REQUEST)
 
