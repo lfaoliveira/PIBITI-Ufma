@@ -506,7 +506,8 @@ def processamento_analise(self, res_anterior, **kwargs):
         # Run the session to get the tensor's value
         res_np = sess.run(res_tensor)
         if "ERRO" in res_np.decode("utf-8"):
-            return make_response(res_np, BAD_REQUEST)
+
+            raise Exception("DEU ERRO: ", BAD_REQUEST)
         graf_np = sess.run(dict_graf_tensor)
 
     # Decode bytes to string since predict returns all output as tensor
