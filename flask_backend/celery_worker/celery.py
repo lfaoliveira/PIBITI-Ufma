@@ -10,12 +10,12 @@ app = Celery(
 
 app.autodiscover_tasks(["flask_backend.celery_worker"])
 
-CELERY_CONFIG = {
-    "worker_log_format": "[%(levelname)s/%(processName)s] %(message)s",
-    "worker_task_log_format": "[%(levelname)s/%(processName)s] %(task_name)s[%(task_id)s]: %(message)s",
-}
-config_preparada = app.prepare_config(CELERY_CONFIG)
-app.config_from_object(config_preparada)
+# CELERY_CONFIG = {
+#     "worker_log_format": "[%(levelname)s/%(processName)s] %(message)s",
+#     "worker_task_log_format": "[%(levelname)s/%(processName)s] %(task_name)s[%(task_id)s]: %(message)s",
+# }
+# config_preparada = app.prepare_config(CELERY_CONFIG)
+# app.config_from_object(config_preparada)
 
 if __name__ == "__main__":
     app.start()

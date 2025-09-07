@@ -839,7 +839,7 @@ def registrar_diag_processar():
     filename = video.filename
     video_data = video.read()
     user_id = current_user.id if current_user.is_authenticated else None
-
+    print(f"USER ID: {user_id}")
     # Enqueue the Celery task
     """ task = celery_wrapper.envia_diag(
         video_data, filename, nomePaciente, stringOlhos, desc, user_id

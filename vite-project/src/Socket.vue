@@ -185,7 +185,7 @@ export default {
             desc: "",
             videoObj: null,
             // "avi"
-            extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4"],
+            extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"],
         };
     },
     props: {},
