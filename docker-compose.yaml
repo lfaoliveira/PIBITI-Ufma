@@ -31,7 +31,7 @@ services:
         networks:
             - projeto
         volumes:
-            - backend:/app
+            - /root/pibiti:/app
         # env_file:
         #   - .env
         restart: unless-stopped
@@ -67,8 +67,6 @@ services:
             dockerfile: ./DOCKER/celery/dockerfile
         command: bash -c "pwd && celery -A  flask_backend.celery_worker worker -l DEBUG"
         working_dir: /app
-        volumes:
-            - backend:/app
         depends_on:
             - redis
         environment:
@@ -77,6 +75,8 @@ services:
             - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
         networks:
             - projeto
+        volumes:
+            - /root/pibiti:/app
         restart: unless-stopped
 
     redis:
