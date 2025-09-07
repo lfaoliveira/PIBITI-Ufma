@@ -381,7 +381,10 @@ class SyncDriveTask(MainTask):
 # app.register_task(envia_diag_task)
 
 
+
 @app.task(base=EnviaDiagTask, bind=True)
+def envia_diag_task(
+    self,
 def envia_diag_task(
     self,
     video_data,
@@ -392,15 +395,19 @@ def envia_diag_task(
     user_id,
     TEMP_FOLDER: str,
     timestamp,
-):
+    ):
 
-    print(f"\nCONEXAO MONGO: {self.mongo.db}\n")
+    print(f"\nCONEXAO MONGO: {self.mongo.get_database('PARALISIA6_NERVO')}\n")
     diagnosticoMedico = stringOlhos
+
     if user_id:
-        medicos = self.mongo.db.get_collection(self.coll_meds)
+        db = self.mongo.get_database('PARALISIA6_NERVO')
+        medicos = db.get_collection(self.coll_meds)
         medico_atual = medicos.find_one({"email": user_id})
-        print(f"\nMEDICO ATUAL: {medico_atual}\n")
         print(f"\nUSER ID: {user_id}\n")
+        print(f"\nCOLLECTION MEDICOS: {medicos} \n")
+        print(f"\nTODOS OS MEDICOS: {list(medicos.find({'email': user_id}))} \n")
+        print(f"\nMEDICO ATUAL: {medico_atual}\n")
 
         if medico_atual is None:
             raise Exception("MEDICO LOGADO NAO ENCONTRADO")
