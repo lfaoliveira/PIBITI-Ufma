@@ -52,8 +52,8 @@ class AnaliseParalisia:
         try:
             titulo = "Grafico de Velocidade dos Olhos"
             dict_graf = {
-                "vel_esq": xEsquerdoFinal,
-                "vel_dir": xDireitaFinal,
+                "vel_esq": xEsquerdoFinal.astype(int),
+                "vel_dir": xDireitaFinal.astype(int),
                 "titulo": titulo,
                 "time": timestamp,
             }

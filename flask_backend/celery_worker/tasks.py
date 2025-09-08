@@ -5,6 +5,8 @@ from http.client import (
     OK,
     UNAUTHORIZED,
 )
+from json import dumps
+import json
 import time
 from bson import ObjectId
 import os
@@ -40,6 +42,7 @@ from flask_backend.helpers import Helper, get_modelo
 
 
 # PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
+DB_PARALISIA = "PARALISIA6_NERVO"
 
 
 # classe abstrata pra instanciar GoogleDrive e Mongo
@@ -84,6 +87,18 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
     str_res, dict_graf = analisador.funcao_metodo(
         path_processamento_arq, path_out, timestamp
     )
+    str_res = tf.convert_to_tensor(str_res)
+
+    # essa parte transforma qualquer elemento que nao seja int em int
+    dict_graf["vel_esq"] = list(
+        map(lambda x: x.item() if type(x) == np.int64 else x, dict_graf["vel_esq"])
+    )
+    dict_graf["vel_dir"] = list(
+        map(lambda x: x.item() if type(x) == np.int64 else x, dict_graf["vel_dir"])
+    )
+    dict_graf = dumps(dict_graf)
+    print(f"DICT GRAF DUMP: {dict_graf}\n")
+    dict_graf = tf.convert_to_tensor(dict_graf)
 
     return str_res, dict_graf
 
@@ -152,7 +167,7 @@ class AnaliseTask(MainTask):
     # name = "processamento_analise"
 
     def __init__(self):
-        pass
+        super().__init__()
 
     @property
     def helper(self):
@@ -381,7 +396,6 @@ class SyncDriveTask(MainTask):
 # app.register_task(envia_diag_task)
 
 
-
 @app.task(base=EnviaDiagTask, bind=True)
 def envia_diag_task(
     self,
@@ -393,13 +407,13 @@ def envia_diag_task(
     user_id,
     TEMP_FOLDER: str,
     timestamp,
-    ):
+):
 
-    print(f"\nCONEXAO MONGO: {self.mongo.get_database('PARALISIA6_NERVO')}\n")
+    print(f"\nCONEXAO MONGO: {self.mongo.get_database(DB_PARALISIA)}\n")
     diagnosticoMedico = stringOlhos
 
     if user_id:
-        db = self.mongo.get_database('PARALISIA6_NERVO')
+        db = self.mongo.get_database(DB_PARALISIA)
         medicos = db.get_collection(self.coll_meds)
         medico_atual = medicos.find_one({"email": user_id})
         print(f"\nUSER ID: {user_id}\n")
@@ -425,7 +439,8 @@ def envia_diag_task(
         if value is None:
             dados[key] = "None"
 
-    diags = self.mongo.db.get_collection(self.coll_diags)
+    diags = db.get_collection(self.coll_diags)
+    print(f"DIAGS: {diags}")
     result = diags.insert_one(dados)
     id_diag_mongo = str(result.inserted_id)
 
@@ -457,10 +472,11 @@ def processamento_analise(self, res_anterior, **kwargs):
     mensagem = res_anterior.get("mensagem")
     print(f"ESTADO ATUAL TASKS: {mensagem}\n")
 
-    # --------PREPARANDO PROCESSAMENTO-----#
-    diag = self.mongo.db.get_collection(self.coll_diags).find_one(
-        {"_id": ObjectId(id_diag)}
-    )
+    db = self.mongo.get_database(DB_PARALISIA)
+
+    # --------PREPARANDO PROCESSAMENTO---------#
+    print(f"COLLECTION: {db.get_collection(self.coll_diags)}\n")
+    diag = db.get_collection(self.coll_diags).find_one({"_id": ObjectId(id_diag)})
     self.analisador.path_temp = TEMP_FOLDER
     ext = self.helper.allowed_file(filename)
 
@@ -494,22 +510,24 @@ def processamento_analise(self, res_anterior, **kwargs):
     path_out_antes_conv = os.path.join(TEMP_FOLDER, f"OUT_PRE_{nome_local}")
 
     # --------- executando predicao ------------
-    print(f"ANALISADOR: {self.analisador}")
     res_tensor, dict_graf_tensor = predict(
         self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp
     )
-    # --------- executando predicao ------------
 
+    # --------- executando predicao ------------
+    print(res_tensor, type(res_tensor))
+    print(dict_graf_tensor, type(dict_graf_tensor))
     with tf.compat.v1.Session() as sess:
         # Run the session to get the tensor's value
         res_np = sess.run(res_tensor)
         if "ERRO" in res_np.decode("utf-8"):
-
             raise Exception("DEU ERRO: ", BAD_REQUEST)
         graf_np = sess.run(dict_graf_tensor)
 
     # Decode bytes to string since predict returns all output as tensor
-    str_res, dict_graf = res_np.decode("utf-8"), graf_np
+    str_res = res_np.decode("utf-8")
+    dict_graf_string = graf_np.decode("utf-8")
+    dict_graf = json.loads(dict_graf_string)
 
     dict_graf["vel_esq"] = np.array(dict_graf["vel_esq"]).tolist()
     dict_graf["vel_dir"] = np.array(dict_graf["vel_dir"]).tolist()
@@ -545,7 +563,8 @@ def processamento_analise(self, res_anterior, **kwargs):
         nome_paciente = diag.get("nomePaciente")
 
         medico = self.helper.find_one_with_id(
-            self.mongo.db.get_collection(self.coll_meds), id_medico
+            db.get_collection(self.coll_meds),
+            id_medico,
         )
         nome_medico = medico.get("nome")
         crm = medico.get("crm")
@@ -584,7 +603,7 @@ def processamento_analise(self, res_anterior, **kwargs):
         "ultimaModif": timestamp,
     }
     # seta resultado no BD
-    self.mongo.db.get_collection(self.coll_diags).update_one(
+    db.get_collection(self.coll_diags).update_one(
         {"_id": ObjectId(id_diag)}, {"$set": result}
     )
 
