@@ -98,6 +98,7 @@ class AnaliseParalisia:
 
     def detectaOlhos(self, path_inputVideo, path_outputVideo):
         vid = cv2.VideoCapture(path_inputVideo)
+        print(f"VIDEO EXISTE? {os.path.exists(path_inputVideo)}\n")
         print(f"VIDEO: {vid}\n")
         length = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
         if not vid.isOpened():
@@ -185,7 +186,7 @@ class AnaliseParalisia:
         except Exception as e:
             print(e)
             print_exc()
-            return None, None, None
+            raise
 
     def escrever_olhos(self, olhos, frames, videoEntrada):
         for idx_olho, olho in enumerate(olhos):

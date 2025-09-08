@@ -12,7 +12,10 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     gcc \
     libsm6 \
     libxext6 \
-    libgl1-mesa-glx 
+    libgl1-mesa-glx \
+    #PARTE DO WEASYPRINT!
+    python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
 COPY ./flask_backend ./flask_backend 

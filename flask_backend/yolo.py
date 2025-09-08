@@ -9,6 +9,7 @@ from keras.models import load_model
 from keras.layers import Input
 from PIL import Image, ImageFont, ImageDraw
 
+from flask_backend import PACKAGE_WKDIR
 from flask_backend.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from flask_backend.yolo3.utils import letterbox_image
 import os
@@ -152,7 +153,7 @@ class YOLO(object):
         )
 
         font = ImageFont.truetype(
-            font="font/FiraMono-Medium.otf",
+            font=os.path.join(PACKAGE_WKDIR, "font/FiraMono-Medium.otf"),
             size=np.floor(3e-2 * image.size[1] + 0.5).astype("int32"),
         )
         thickness = (image.size[0] + image.size[1]) // 300

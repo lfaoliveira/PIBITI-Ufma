@@ -385,8 +385,6 @@ class SyncDriveTask(MainTask):
 @app.task(base=EnviaDiagTask, bind=True)
 def envia_diag_task(
     self,
-def envia_diag_task(
-    self,
     video_data,
     filename,
     nomePaciente,
