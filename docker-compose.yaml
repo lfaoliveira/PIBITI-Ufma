@@ -67,7 +67,7 @@ services:
         build: 
             context: .
             dockerfile: ./DOCKER/celery/dockerfile
-        command: bash -c "pwd && celery -A  flask_backend.celery_worker worker -l INFO"
+        command: bash -c "pwd && celery -A  flask_backend.celery_worker worker -l INFO --pool=solo --max-memory-per-child=400000"
         working_dir: /app
         depends_on:
             - redis

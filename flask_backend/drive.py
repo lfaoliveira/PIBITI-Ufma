@@ -1,3 +1,4 @@
+import traceback
 from google.oauth2 import service_account
 from googleapiclient.discovery import build, Resource
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
@@ -355,82 +356,90 @@ class GoogleDrive:
         Returns: id do arquivo criado
         """
         # self.fetch_drive_files()
-        nomes_parents.insert(0, self.ROOT_DRIVE)
+        try:
 
-        print(f"NO UPLOAD: FILE: {file_path} PARENTS: {nomes_parents}\n\n")
-        if len(nomes_parents) >= 2:
-            # quer inserir em um diretorio mais profundo que ROOT_DRIVE
-            parent = nomes_parents[-2]
+            nomes_parents.insert(0, self.ROOT_DRIVE)
 
-            # pega id do folder mais profundo
-            print(f"INNER FOLDER: {nomes_parents[-1]} PARENT: {parent}")
-            id_folder = self.get_folder_id(nomes_parents[-1])
-        else:
-            print(f"AVISO!! INSERINDO em {self.ROOT_DRIVE}!")
-            # quer inserir no ROOT
-            id_folder = self.get_folder_id(nomes_parents[0])
+            print(f"NO UPLOAD: FILE: {file_path} PARENTS: {nomes_parents}\n\n")
+            if len(nomes_parents) >= 2:
+                # quer inserir em um diretorio mais profundo que ROOT_DRIVE
+                parent = nomes_parents[-2]
 
-        # checa se ja existe arquivo igual naquele diretorio
-        filename = os.path.basename(file_path)
-        id_file = self.get_file_id(filename, nomes_parents[-1])
-        if id_file != None:
-            return id_file
+                # pega id do folder mais profundo
+                print(f"INNER FOLDER: {nomes_parents[-1]} PARENT: {parent}")
+                id_folder = self.get_folder_id(nomes_parents[-1])
+            else:
+                print(f"AVISO!! INSERINDO em {self.ROOT_DRIVE}!")
+                # quer inserir no ROOT
+                id_folder = self.get_folder_id(nomes_parents[0])
 
-        # cria parentes, se nao existirem, e folder
-        if id_folder == None:
-            print(f"ESPERANDO DIRETORIO {nomes_parents[-1]}")
+            # checa se ja existe arquivo igual naquele diretorio
+            filename = os.path.basename(file_path)
+            id_file = self.get_file_id(filename, nomes_parents[-1])
+            if id_file != None:
+                return id_file
 
-        mime = mimetypes.guess_type(file_path)
-        if mime[0]:
-            media = MediaFileUpload(file_path, mimetype=mime[0], resumable=resumable)
+            # cria parentes, se nao existirem, e folder
+            if id_folder == None:
+                print(f"ESPERANDO DIRETORIO {nomes_parents[-1]}")
 
-            file_metadata = {
-                "name": filename,
-                "parents": [id_folder],
-            }
-            """NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO API VAI DAR BUG SILENCIOSO!!!!!!!!"""
-            try:
-                print("FAZENDO UPLOAD")
-                if resumable == False:
-                    # upload simples
-                    response = (
-                        self.drive_service.files()
-                        .create(
+            mime = mimetypes.guess_type(file_path)
+            if mime[0]:
+                media = MediaFileUpload(
+                    file_path, mimetype=mime[0], resumable=resumable
+                )
+
+                file_metadata = {
+                    "name": filename,
+                    "parents": [id_folder],
+                }
+                """NOTE: SEMPRE QUE ESPECIFICAR 'parents' BOTAR COMO UM ARRAY!!!!!!! SENAO API VAI DAR BUG SILENCIOSO!!!!!!!!"""
+                try:
+                    print("FAZENDO UPLOAD")
+                    if resumable == False:
+                        # upload simples
+                        response = (
+                            self.drive_service.files()
+                            .create(
+                                body=file_metadata,
+                                media_body=media,
+                                fields="id",
+                                supportsAllDrives=True,
+                            )
+                            .execute()
+                        )
+                        file_id = response.get("id")
+                        # self.fetch_drive_files(changed_file_id=file_id)
+                    else:
+                        # UPLOAD EM PARTES (NECESSARIO PARA ARQUIVOS > 5MB)
+                        request = self.drive_service.files().create(
                             body=file_metadata,
                             media_body=media,
                             fields="id",
                             supportsAllDrives=True,
                         )
-                        .execute()
-                    )
-                    file_id = response.get("id")
-                    # self.fetch_drive_files(changed_file_id=file_id)
-                else:
-                    # UPLOAD EM PARTES (NECESSARIO PARA ARQUIVOS > 5MB)
-                    request = self.drive_service.files().create(
-                        body=file_metadata,
-                        media_body=media,
-                        fields="id",
-                        supportsAllDrives=True,
-                    )
 
-                    response = None
-                    while response is None:
-                        status, response = request.next_chunk()
-                        if status:
-                            print(f"Uploaded {int(status.progress() * 100)}%.")
-                    file_id = response.get("id")
+                        response = None
+                        while response is None:
+                            status, response = request.next_chunk()
+                            if status:
+                                print(f"Uploaded {int(status.progress() * 100)}%.")
+                        file_id = response.get("id")
 
-                    if wait:
-                        self.fetch_drive_files(changed_file_id=file_id)
-                return file_id
-            except Exception as e:
-                print("PROBLEMA NO UPLOAD: \n\n", e)
+                        if wait:
+                            self.fetch_drive_files(changed_file_id=file_id)
+                    return file_id
+                except Exception as e:
+                    print("PROBLEMA NO UPLOAD: \n\n", e)
+                    raise
+            else:
+                """ERRO NO MIME"""
+                raise Exception("ERRO AO PEGAR MIMETYPE")
                 return None
-        else:
-            """ERRO NO MIME"""
-            print(Exception("ERRO AO PEGAR MIMETYPE"))
-            return None
+
+        except Exception as e:
+            print("ERRO NO UPLOAD: ", e)
+            traceback.print_exc()
 
     def update_file(self, new_data, filename, folder):
         """

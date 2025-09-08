@@ -60,6 +60,7 @@ from flask_backend._email import MailHandler
 from flask_backend.user import User
 
 import logging
+from flask_backend import PATH_CRED, ROOT_DRIVE, PACKAGE_WKDIR
 
 from flask_backend.celery_worker.tasks import (
     processamento_analise,
@@ -151,16 +152,16 @@ testar se pdfs estao sendo gerados corretamente para ter deploy garantido\n")"""
 
 os.makedirs("tmp", exist_ok=True)
 
-PATH_PIBITI = os.getcwd()
+PATH_PIBITI = PACKAGE_WKDIR
 print(f"PATH_PIBITI: {PATH_PIBITI}\n")
-PATH_flask_backend = os.path.join(PATH_PIBITI, "flask_backend")
+
 EMAIL_ADMIN = "viplab.psno@nca.ufma.br"
 DOMINIO_SITE = "http://localhost:5000"
 # DOMINIO_FRONT_VUE = "http://localhost:5173"
 DOMINIO_FRONT_VUE = os.environ.get("VUE_FRONT_URL")
 
 if "WKDIR" not in app.config.keys():
-    app.config["WKDIR"] = PATH_flask_backend
+    app.config["WKDIR"] = PACKAGE_WKDIR
     print("SETTING WKDIR TO APP.CONFIG")
 if "PIBITI" == os.path.basename(PATH_PIBITI):
     os.chdir(app.config["WKDIR"])
@@ -168,9 +169,7 @@ if "PIBITI" == os.path.basename(PATH_PIBITI):
 
 # app.config["WKDIR"] = os.getcwd()
 
-PATH_CRED = os.path.join(
-    app.config["WKDIR"], "permalink-googleDrive-pibiti6-nervo.json"
-)
+
 if not os.path.exists(PATH_CRED):
     raise FileNotFoundError(f"\n\nSEM CHAVE DE API DO GOOGLE DRIVE {PATH_CRED}!\n\n")
     exit(1)
@@ -183,7 +182,6 @@ MAILHANDLER = MailHandler(mail)
 
 print("APP INICIADO")
 # PASTA NO DRIVE QUE VAI CONTER TODOS OS ARQVUISO DE COLLECTION_MEDICOS
-ROOT_DRIVE = "ROOT_DADOS"
 drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
 print("\nGOOGLE DRIVE:", end=" ")
 if not drive.file_state.empty:

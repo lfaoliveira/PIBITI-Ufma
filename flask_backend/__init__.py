@@ -12,3 +12,8 @@ PACKAGE_WKDIR = os.path.join(
         __package__,
     )
 )
+
+PATH_CRED = os.path.join(
+    PACKAGE_WKDIR, "permalink-googleDrive-pibiti6-nervo.json"
+)
+ROOT_DRIVE = "ROOT_DADOS"

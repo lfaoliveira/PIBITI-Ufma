@@ -283,8 +283,9 @@ export default {
             const urlWS = `${this.$store.getters.getWSBackend}/ws`;
             console.log(`URL WS: ${urlWS}`);
             const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
-            console.log(`NOVO SOCKET: ` + JSON.stringify(ws));
-            ws.onopen = () => ws.send({ taskId: taskId });
+            console.log(`NOVO SOCKET: ${JSON.stringify(ws)}`);
+
+            ws.onopen = () => ws.send(JSON.stringify({ taskId: taskId }));
             ws.onmessage = (evt) => console.log("WS got:", evt.data);
             ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
             ws.onclose = (evt) => console.log(`WEBSOCKET FECHADO!\n`);
