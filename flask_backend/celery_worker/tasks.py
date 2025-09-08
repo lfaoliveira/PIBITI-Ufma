@@ -8,6 +8,7 @@ from http.client import (
 from json import dumps
 import json
 import time
+from traceback import print_exc
 from bson import ObjectId
 import os
 from flask import (
@@ -613,12 +614,10 @@ def processamento_analise(self, res_anterior, **kwargs):
 
     result.pop("dados_grafico")
     result.pop("dados_pdf")
-    result["grafico"] = url_for(
-        "gerar_grafico", external=True, id_diag=id_diag, _external=True
-    )
-    result["pdf"] = url_for(
-        "gerar_relatorio", id_diag=id_diag, download=True, _external=True
-    )
+    print(f"BASE_URL: {BASE_URL}\n")
+    result["grafico"] = urljoin(BASE_URL, "gerar_grafico", id_diag)
+    result["pdf"] = urljoin(BASE_URL, "gerar_relatorio", id_diag)
+
     result["video"] = local_url_video_out
     print("\nANALISE FINALZIADA!")
 
@@ -637,25 +636,32 @@ def processamento_analise(self, res_anterior, **kwargs):
 @app.task(base=SyncDriveTask, bind=True)
 def sync_google_drive(self, res_anterior):
     # -----INPUT--------#
-    storage_strings = res_anterior.get("storage_strings")
-    id_diag = res_anterior.get("id_diag")
-    email = res_anterior.get("email")
+    try:
 
-    print(f"STORAGE: {storage_strings}, ID: {id_diag}")
-    # --------SYNC---------#
-    path_video_in = storage_strings["video_in"]
-    path_video_out = storage_strings["video_out"]
-    id_in = self.drive.upload_to_drive(path_video_in, [email])
-    id_out = self.drive.upload_to_drive(path_video_out, [email])
+        storage_strings = res_anterior.get("storage_strings")
+        id_diag = res_anterior.get("id_diag")
+        email = res_anterior.get("email")
 
-    # Update the document in the database with the new Google Drive file IDs
-    self.mongo.db.get_collection("diagnosticos").update_one(
-        {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
-    )
+        print(f"STORAGE: {storage_strings}, ID: {id_diag}")
+        # --------SYNC---------#
+        path_video_in = storage_strings["video_in"]
+        path_video_out = storage_strings["video_out"]
+        id_in = self.drive.upload_to_drive(path_video_in, [email])
+        id_out = self.drive.upload_to_drive(path_video_out, [email])
 
-    print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
-    res_anterior.pop("storage_strings")
-    res_anterior.pop("id_diag")
-    res_anterior.pop("email")
+        db = self.mongo.get_database(DB_PARALISIA)
 
-    return res_anterior
+        # Update the document in the database with the new Google Drive file IDs
+        db.get_collection("diagnosticos").update_one(
+            {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
+        )
+
+        print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
+        res_anterior.pop("storage_strings")
+        res_anterior.pop("id_diag")
+        res_anterior.pop("email")
+        return res_anterior
+    except Exception as e:
+        print(f"ERRO NA PARTE DE UPLOAD: {e}")
+        print_exc()
+        raise

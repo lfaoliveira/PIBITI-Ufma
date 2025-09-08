@@ -5,6 +5,8 @@ import os
 import numpy as np
 import cv2
 from tensorflow.python.framework.ops import disable_eager_execution
+from shapely.geometry import Polygon
+
 from traceback import print_exc
 
 disable_eager_execution()
@@ -328,9 +330,6 @@ def getCenter(bbox):
     centerY = (bbox[3] + bbox[1]) // 2
     return centerX, centerY
 
-
-from shapely.geometry import Polygon
-import numpy as np
 
 def getIntersection(bbox1, bbox2):
     #bbox:xmin[0],ymin[1],xmax[2],ymax[3] left top right bottom

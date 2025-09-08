@@ -4,7 +4,7 @@ COLLECTION_DIAGS = "Diagnosticos"
 COLLECTION_MEDICOS = "Medicos"
 PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 
-BASE_URL = os.getenv("FLASK_BASE_URL")
+BASE_URL = os.environ["FLASK_BASE_URL"]
 
 PACKAGE_WKDIR = os.path.join(
     os.path.join(

@@ -75,6 +75,8 @@ services:
             - CELERY_BROKER_URL=redis://redis:6379/0
             - CELERY_RESULT_BACKEND=redis://redis:6379/0
             - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
+            - FLASK_BASE_URL=http://31.97.84.210:5000 #TODO: MUDAR PRA IP DO SERVIDOR DE PROD
+
         networks:
             - projeto
         volumes:
