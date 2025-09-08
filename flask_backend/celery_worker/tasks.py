@@ -28,9 +28,11 @@ from celery import Task
 import numpy as np
 
 from pymongo import MongoClient
+from urllib.parse import urljoin
 
 from flask_backend.analise import AnaliseParalisia
 from flask_backend import (
+    BASE_URL,
     COLLECTION_DIAGS,
     COLLECTION_MEDICOS,
     PASTA_USUARIO_ANONIMO_GDRIVE,
@@ -585,14 +587,12 @@ def processamento_analise(self, res_anterior, **kwargs):
         dict_dados_pdf = None
 
     print("PEGANDO URLS")
+    local_url_video_out = (urljoin(BASE_URL, "get_file", os.path.basename(path_out)),)
 
-    local_url_video_out = url_for(
-        "get_file", resource_uri=os.path.basename(path_out), _external=True
+    local_url_video_in = (
+        urljoin(BASE_URL, "get_file", os.path.basename(path_arq_input)),
     )
     print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
-    local_url_video_in = url_for(
-        "get_file", resource_uri=os.path.basename(path_arq_input), _external=True
-    )
 
     result = {
         "diagAutom": str_diag,
@@ -624,12 +624,8 @@ def processamento_analise(self, res_anterior, **kwargs):
 
     return {
         "result": result,
-        "grafico_url": url_for(
-            "gerar_grafico", external=True, id_diag=id_diag, _external=True
-        ),
-        "pdf_url": url_for(
-            "gerar_relatorio", id_diag=id_diag, download=True, _external=True
-        ),
+        "grafico_url": urljoin(BASE_URL, "gerar_grafico", id_diag),
+        "pdf_url": urljoin(BASE_URL, "gerar_relatorio", id_diag),
         "video_url": local_url_video_out,
         "storage_strings": storage_dict,
         "id_diag": id_diag,
