@@ -15,11 +15,13 @@ services:
         - '5000:5000'
         environment:
             - FLASK_ENV=production
+            - FLASK_BASE_URL=http://31.97.84.210:5000 #TODO: MUDAR PRA IP DO SERVIDOR DE PROD
             #USANDO MESMAS CREDENCIAIS DO DB!
             - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
             - CELERY_BROKER_URL=redis://redis:6379/0
             - CELERY_RESULT_BACKEND=redis://redis:6379/0
             - VUE_FRONT_URL=http://31.97.84.210:5173
+            #--------- SEGREDOS ---------#
             - MAIL_USERNAME=viplab.psno@nca.ufma.br
             - MAIL_DEFAULT_SENDER=viplab.psno@nca.ufma.br
             - MAIL_PASSWORD=lndd gxkj sdlh sgfo
@@ -48,13 +50,13 @@ services:
         - '5173:5173'
         environment:
             # URL tem que ser de IP público externo ao docker ja que código do Vite vai rodar no browser
-            VITE_BACKEND_URL: http://31.97.84.210:5000 #MUDAR PARA IP OU DOMÍNIO DA MÁQUINA RODANDO SERVIÇO
-            VITE_BACKEND_WS: ws://31.97.84.210:5000 #MUDAR PARA IP OU DOMÍNIO DA MÁQUINA RODANDO SERVIÇO
+            VITE_BACKEND_URL: http://31.97.84.210:5000 #TODO: MUDAR PARA IP OU DOMÍNIO DA MÁQUINA RODANDO SERVIÇO
+            VITE_BACKEND_WS: ws://31.97.84.210:5000 #TODO: MUDAR PARA IP OU DOMÍNIO DA MÁQUINA RODANDO SERVIÇO
             NODE_ENV: development
         networks:
             - projeto
         volumes:
-            - /root/pibiti/vite-project:/frontend #TODO: MUDAR ISSO PRO VOLUME DO FRONTEND
+            - /root/pibiti/vite-project:/frontend #TODO: TIRAR BIND MOUNT
             - /frontend/node_modules
         restart: unless-stopped
         command: "npm run dev -- --host"
