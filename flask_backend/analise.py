@@ -98,8 +98,6 @@ class AnaliseParalisia:
 
     def detectaOlhos(self, path_inputVideo, path_outputVideo):
         vid = cv2.VideoCapture(path_inputVideo)
-        print(f"VIDEO EXISTE? {os.path.exists(path_inputVideo)}\n")
-        print(f"VIDEO: {vid}\n")
         length = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
         if not vid.isOpened():
             print("FRAME COUNT: ", length)
