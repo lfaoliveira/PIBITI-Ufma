@@ -60,7 +60,6 @@ from flask_backend._email import MailHandler
 from flask_backend.user import User
 
 import logging
-from flask_backend import PATH_CRED, ROOT_DRIVE, PACKAGE_WKDIR
 
 from flask_backend.celery_worker.tasks import (
     processamento_analise,
@@ -86,6 +85,9 @@ from flask_backend import (
     COLLECTION_DIAGS,
     COLLECTION_MEDICOS,
     PASTA_USUARIO_ANONIMO_GDRIVE,
+    PATH_CRED,
+    ROOT_DRIVE,
+    PACKAGE_WKDIR,
 )
 
 # Read environment variables from CSV

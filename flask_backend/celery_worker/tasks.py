@@ -38,6 +38,8 @@ from flask_backend import (
     COLLECTION_DIAGS,
     COLLECTION_MEDICOS,
     PASTA_USUARIO_ANONIMO_GDRIVE,
+    PATH_CRED,
+    ROOT_DRIVE,
 )
 
 from .celery import app
@@ -45,7 +47,6 @@ from flask_backend.drive import GoogleDrive
 from flask_backend.helpers import Helper, get_modelo
 
 
-# PASTA_USUARIO_ANONIMO_GDRIVE = "ANONIMO"
 DB_PARALISIA = "PARALISIA6_NERVO"
 
 
@@ -72,8 +73,7 @@ class MainTask(Task):
     @property
     def drive(self):
         if self._drive is None:
-            from flask_backend import PATH_CRED, ROOT_DRIVE
-
+            print(f"PATH CRED E ROOT DRIVE: {PATH_CRED, ROOT_DRIVE}\n")
             self._drive = GoogleDrive(PATH_CRED, ROOT_DRIVE)
         return self._drive
 
@@ -112,6 +112,7 @@ class EnviaDiagTask(MainTask):
     # name = "envia_diag_task"
     pass
 
+
 class AnaliseTask(MainTask):
     """TASK PRINCIPAL DO CELERY PARA PROCESSAMENTO PESADO E ASSINCRONO!"""
 
@@ -137,13 +138,12 @@ class AnaliseTask(MainTask):
             self._analisador = AnaliseParalisia(modelo, None)
         return self._analisador
 
-    
 
 # NOTE: ARGUMENTOS DEVEM SER APENAS OBJETOS SERIALIZAVEIS (SEM SER OBJETOS COMPLEXOS)
 class SyncDriveTask(MainTask):
     # name = "sync_google_drive"
     pass
-    
+
 
 @app.task(base=EnviaDiagTask, bind=True)
 def envia_diag_task(
@@ -334,12 +334,12 @@ def processamento_analise(self, res_anterior, **kwargs):
         dict_dados_pdf = None
 
     print("PEGANDO URLS")
-    local_url_video_out = (
-        posixpath.join(BASE_URL, "get_file", os.path.basename(path_out))
+    local_url_video_out = posixpath.join(
+        BASE_URL, "get_file", os.path.basename(path_out)
     )
 
-    local_url_video_in = (
-        posixpath.join(BASE_URL, "get_file", os.path.basename(path_arq_input))
+    local_url_video_in = posixpath.join(
+        BASE_URL, "get_file", os.path.basename(path_arq_input)
     )
     print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
 
