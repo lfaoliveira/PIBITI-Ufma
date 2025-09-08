@@ -77,15 +77,15 @@ class MainTask(Task):
         return self._mongo
 
 
-@tf.function
+# @tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
-    modelo = analisador.modelo
-    with modelo.sess.graph.as_default():
-        str_res, dict_graf = analisador.funcao_metodo(
-            path_processamento_arq, path_out, timestamp
-        )
+    # modelo = analisador.modelo
 
-        return str_res, dict_graf
+    str_res, dict_graf = analisador.funcao_metodo(
+        path_processamento_arq, path_out, timestamp
+    )
+
+    return str_res, dict_graf
 
 
 # WARNING: Tasks foram criadas para serem executadas em sequencia, mas fora do FLASK!!!!!!!
@@ -380,8 +380,10 @@ class SyncDriveTask(MainTask):
 # app.register_task(processamento_analise)
 # app.register_task(envia_diag_task)
 
+
 @app.task(base=EnviaDiagTask, bind=True)
-def envia_diag_task(self,
+def envia_diag_task(
+    self,
     video_data,
     filename,
     nomePaciente,
@@ -389,7 +391,8 @@ def envia_diag_task(self,
     desc,
     user_id,
     TEMP_FOLDER: str,
-    timestamp):
+    timestamp,
+):
 
     print(f"\nCONEXAO MONGO: {self.mongo.db}\n")
     diagnosticoMedico = stringOlhos
@@ -398,7 +401,7 @@ def envia_diag_task(self,
         medico_atual = medicos.find_one({"email": user_id})
         print(f"\nMEDICO ATUAL: {medico_atual}\n")
         print(f"\nUSER ID: {user_id}\n")
-        
+
         if medico_atual is None:
             raise Exception("MEDICO LOGADO NAO ENCONTRADO")
         id_medico = medico_atual.get("_id", None)
@@ -434,9 +437,8 @@ def envia_diag_task(self,
     }
 
 
-
 @app.task(base=AnaliseTask, bind=True)
-def  processamento_analise(self, res_anterior, **kwargs):
+def processamento_analise(self, res_anterior, **kwargs):
     """
     Funcao deve: registrar dados no BD, pegar o que tiver que pegar pra processar, processar e guardar dados no BD
     """
@@ -487,6 +489,7 @@ def  processamento_analise(self, res_anterior, **kwargs):
     path_out_antes_conv = os.path.join(TEMP_FOLDER, f"OUT_PRE_{nome_local}")
 
     # --------- executando predicao ------------
+    print(f"ANALISADOR: {self.analisador}")
     res_tensor, dict_graf_tensor = predict(
         self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp
     )
@@ -508,8 +511,8 @@ def  processamento_analise(self, res_anterior, **kwargs):
     dict_graf["titulo"] = str(dict_graf["titulo"])
 
     path_out = os.path.join(TEMP_FOLDER, f"OUT_{nome_local}")
-    print("ULTIMA CONVERSAO")
     path_out = self.helper.converter_arq(path_out_antes_conv, path_out)
+    print("ULTIMA CONVERSAO")
 
     """Removendo APENAS arquivos auxiliares"""
     os.remove(path_out_antes_conv)

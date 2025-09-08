@@ -1,9 +1,11 @@
+import traceback
 import matplotlib.pyplot as plt
 from PIL import Image
 import os
 import numpy as np
 import cv2
 from tensorflow.python.framework.ops import disable_eager_execution
+from traceback import print_exc
 
 disable_eager_execution()
 
@@ -30,7 +32,8 @@ class AnaliseParalisia:
             )
             print("DETECCAO DOS OLHOS OK")
         except Exception as e:
-            print("ERRO:FALHA NA DETECÇÃO DOS OLHOS: ", e)
+            print(f"ERRO:FALHA NA DETECÇÃO DOS OLHOS: {e}")
+            print_exc()
             return "ERRO:FALHA NA DETECÇÃO DOS OLHOS", "None"
         # self.escrever_olhos([olhoEsquerdo, olhoDireito], frames, videoEntrada)
         try:
@@ -95,10 +98,12 @@ class AnaliseParalisia:
 
     def detectaOlhos(self, path_inputVideo, path_outputVideo):
         vid = cv2.VideoCapture(path_inputVideo)
+        print(f"VIDEO: {vid}\n")
         length = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
         if not vid.isOpened():
             print("FRAME COUNT: ", length)
             raise IOError("Nao foi possivel abrir o video indicado.")
+
         fps = vid.get(cv2.CAP_PROP_FPS)
         frame_width = int(vid.get(3))
         frame_height = int(vid.get(4))
@@ -118,59 +123,69 @@ class AnaliseParalisia:
         olhoEsquerdo = []
         olhoDireito = []
         frames = []
+        try:
 
-        for x in range(0, length - 1):
-            image = []
-            return_value, frame = vid.read()
+            for x in range(0, length - 1):
+                image = []
+                return_value, frame = vid.read()
 
-            if x % 5 == 0:
-                if return_value:
-                    rows, cols, ch = frame.shape
-                    dim = (frame_width, frame_height)
-                    resized = cv2.resize(frame, dim)
-                    image = Image.fromarray(resized)
-                    image, area, classes = self.modelo.detect_image(image)
-                    pontosCentro = []
+                if x % 5 == 0:
+                    if return_value:
+                        rows, cols, ch = frame.shape
+                        dim = (frame_width, frame_height)
+                        resized = cv2.resize(frame, dim)
+                        image = Image.fromarray(resized)
+                        image, area, classes = self.modelo.detect_image(image)
+                        pontosCentro = []
 
-                    if len(area) > 1:
-                        numbers = selectBoundingBoxes(area)
-                        if len(numbers) > 0:
-                            angle = round(numbers[1], 2)
-                            numbers = numbers[0]
-                            if len(numbers) == 2:
-                                for index in numbers:
-                                    a = area[index]
-                                    start_point = (a[0], a[1])
-                                    end_point = (a[2], a[3])
-                                    center = getCenter(a)
-                                    pontosCentro.append(center)
-                                    cv2.rectangle(
-                                        resized, start_point, end_point, (0, 0, 255), 3
+                        if len(area) > 1:
+                            numbers = selectBoundingBoxes(area)
+                            if len(numbers) > 0:
+                                angle = round(numbers[1], 2)
+                                numbers = numbers[0]
+                                if len(numbers) == 2:
+                                    for index in numbers:
+                                        a = area[index]
+                                        start_point = (a[0], a[1])
+                                        end_point = (a[2], a[3])
+                                        center = getCenter(a)
+                                        pontosCentro.append(center)
+                                        cv2.rectangle(
+                                            resized,
+                                            start_point,
+                                            end_point,
+                                            (0, 0, 255),
+                                            3,
+                                        )
+                                        cv2.circle(resized, center, 5, (0, 255, 0), -1)
+                                    cv2.putText(
+                                        resized,
+                                        text="Olhos " + str(len(numbers)),
+                                        org=(3, 15),
+                                        fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                                        fontScale=0.50,
+                                        color=(255, 0, 0),
+                                        thickness=2,
                                     )
-                                    cv2.circle(resized, center, 5, (0, 255, 0), -1)
-                                cv2.putText(
-                                    resized,
-                                    text="Olhos " + str(len(numbers)),
-                                    org=(3, 15),
-                                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                                    fontScale=0.50,
-                                    color=(255, 0, 0),
-                                    thickness=2,
-                                )
-                                videoFinal.write(resized)
-                                frames.append(x)
+                                    videoFinal.write(resized)
+                                    frames.append(x)
 
-                                if len(pontosCentro) == 2:
-                                    if pontosCentro[0][0] < pontosCentro[1][0]:
-                                        olhoEsquerdo.append(pontosCentro[0])
-                                        olhoDireito.append(pontosCentro[1])
-                                    else:
-                                        olhoEsquerdo.append(pontosCentro[1])
-                                        olhoDireito.append(pontosCentro[0])
+                                    if len(pontosCentro) == 2:
+                                        if pontosCentro[0][0] < pontosCentro[1][0]:
+                                            olhoEsquerdo.append(pontosCentro[0])
+                                            olhoDireito.append(pontosCentro[1])
+                                        else:
+                                            olhoEsquerdo.append(pontosCentro[1])
+                                            olhoDireito.append(pontosCentro[0])
 
-        vid.release()
-        videoFinal.release()
-        return olhoEsquerdo, olhoDireito, frames
+            vid.release()
+            videoFinal.release()
+            return olhoEsquerdo, olhoDireito, frames
+
+        except Exception as e:
+            print(e)
+            print_exc()
+            return None, None, None
 
     def escrever_olhos(self, olhos, frames, videoEntrada):
         for idx_olho, olho in enumerate(olhos):
