@@ -20,6 +20,7 @@ const store = createStore({
         logado: false,
         formDiag: null,
         linksAnalise: [], //array funciona como fila
+        
     },
     mutations: {
         setSharedData(state, data) {

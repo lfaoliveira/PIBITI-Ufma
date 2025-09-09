@@ -891,11 +891,13 @@ async def ws_handler(ws):
     tempo_comeco = time.time()
 
     status = AsyncResult(task_id).status
+    print(f"STATUS: {status}\n")
     while status != "SUCCESS":
         # so fica esperando
-        if tempo_comeco - time.time() >= TEMPO_LIMITE:
+        if time.time() - tempo_comeco >= TEMPO_LIMITE:
             raise TimeoutError("TAREFA DEMOROU DEMAIS!")
         status = AsyncResult(task_id).status
+        print(f"STATUS: {status}\n")
         if status == "FAILURE" or status == "RETRY":
             raise WebSocketException(code=1011, reason="ERRO INTERNO!")
 
@@ -907,6 +909,12 @@ async def ws_handler(ws):
 
     await ws.send_json(resultado)
     await ws.close()
+
+@app.route("/ver-analise/<uuid_diag>", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def enviar_diag(uuid_diag):
+    
+
 
 
 # Starlette app for WebSockets

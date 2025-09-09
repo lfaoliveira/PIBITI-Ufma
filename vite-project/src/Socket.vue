@@ -160,7 +160,8 @@ import TesteOverlay from "./components/layout/TesteOverlay.vue";
 import emitter from "./eventBus";
 
 import axios from "axios";
-
+import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
 const eventoFormatoErrado = "formatoErrado";
 const eventoTamanhoErrado = "tamanhoErrado";
 
@@ -228,17 +229,34 @@ export default {
             });
         },
 
-        async enviaFlask() {
-            const url = this.$store.getters.getUrlBackend;
-            const res = await fetch(`${String(url)}/submit_form`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ texto: "texto", video: "video" }),
-            });
-            const { uuid } = await res.json();
-            console.log(`UUID: ${uuid}`);
-            //-------
+        processaWebSocket(evt) {
+            //resultado válido
+            const result = evt?.data?.result;
+
+            const a = {
+                result: {
+                    diagAutom:
+                        "1.1290322580645162,1.7096774193548387,0.3396226415094339,Esquerdo",
+                    dataDiag: 1757438530.7012749,
+                    video:
+                        "http://31.97.84.210:5000/get_file/OUT_ada_1757438530.7013.mp4",
+                    ultimaModif: 1757438530.7012749,
+                    grafico:
+                        "http://31.97.84.210:5000/gerar_grafico/68c0624b785e7c4a7613b11b",
+                    pdf:
+                        "http://31.97.84.210:5000/gerar_relatorio/68c0624b785e7c4a7613b11b",
+                },
+                grafico_url:
+                    "http://31.97.84.210:5000/gerar_grafico/68c0624b785e7c4a7613b11b",
+                pdf_url:
+                    "http://31.97.84.210:5000/gerar_relatorio/68c0624b785e7c4a7613b11b",
+                video_url:
+                    "http://31.97.84.210:5000/get_file/OUT_ada_1757438530.7013.mp4",
+            };
         },
+
+        gerarLinkAnalise(resJSON) {},
+
         async enviaDiag() {
             //envia dados pro back comecar processamento
             const formData = new FormData();
