@@ -19,8 +19,8 @@ const store = createStore({
         sharedData: null,
         logado: false,
         formDiag: null,
-        linksAnalise: [], //array funciona como fila
-        wsDict: [],
+        linksAnalise: {}, //array funciona como fila
+        wsDict: {},
     },
     mutations: {
         setSharedData(state, data) {
@@ -53,6 +53,13 @@ const store = createStore({
                 console.warn("ARRAY DE LINKS VAZIO!\n");
             }
         },
+        SET_WS_HANDLER(state, { taskId, handler }) {
+            state.wsDict[taskId] = handler;
+            console.log(state.wsDict, taskId)
+        },
+        REMOVE_WS_HANDLER(state, { taskId }) {
+            delete state.wsDict[taskId];
+        },
     },
     actions: {
         updateUrlBackend({ commit }, data) {
@@ -73,19 +80,16 @@ const store = createStore({
         removeLinkAnalise({ commit }) {
             commit("removeLink");
         },
-        handleWebSocket({ dispatch }, { wsURL, taskId }) {
+        handleWebSocket({ state, dispatch, commit }, { wsURL, taskId }) {
             try {
                 if (!taskId) {
                     throw new Error("taskId é obrigatório!");
-                }
-                if (popupMessageObject instanceof Object === false) {
-                    throw new Error("MENSAGEM DEVE TER CAMPOS VALIDOS!");
                 }
                 // 2. Define a função de callback que será chamada ao receber uma mensagem do backend
                 const handleBackendMessage = (dispatch, event) => {
                     // A mensagem do WebSocket geralmente é um JSON em formato de string.
                     const data = JSON.parse(event.data);
-
+                    console.log(`EVT: ${evt} DATA: ${evt.data}`)
                     // Verifica se a mensagem contém os dados que você precisa, como o taskId
                     if (data && data?.task_id) {
                         // 3. Cria o link do frontend com base no uuid recebido do backend
@@ -96,7 +100,7 @@ const store = createStore({
                         dispatch(
                             "modal/openModal",
                             {
-                                name: "popup", 
+                                name: "popup",
                                 content: { link: analysisLink },
                             },
                             { root: true } // { root: true } é necessário se 'modal' for um módulo raiz e 'analise' um sub-módulo
@@ -104,11 +108,12 @@ const store = createStore({
                     }
                 };
                 const wsHand = new WsHandler(dispatch, wsURL, handleBackendMessage);
-                wsDict[taskId] = wsHand
-                return true
+                commit("SET_WS_HANDLER", { taskId, handler: wsHand });
+
+                return true;
             } catch (err) {
                 console.error("❌ Erro ao processar mensagem WS:", err);
-                throw err
+                throw err;
             }
         },
     },
@@ -132,8 +137,8 @@ const store = createStore({
         //estados auxiliares e objetos
         getLogado: (state) => state.logado,
         getFormDiag: (state) => state.formDiag,
-        //fila de links
-        getLinks: (state) => state.linksAnalise,
+        //dict de links
+        getLink: (state, taskId) => state.linksAnalise[taskId],
     },
 });
 

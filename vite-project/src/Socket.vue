@@ -301,6 +301,7 @@ export default {
 
             const urlWS = `${this.$store.getters.getWSBackend}/ws`;
             console.log(`URL WS: ${urlWS}`);
+            this.handleWebSocket( {urlWS, taskId})
             // const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
             // console.log(`NOVO SOCKET: ${JSON.stringify(ws)}`);
 

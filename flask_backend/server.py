@@ -874,6 +874,7 @@ def registrar_diag_processar():
         )
 
         result = workflow.apply_async()
+        
 
         return jsonify({"task_id": result.id, "status": "enviando"})
 
