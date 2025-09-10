@@ -911,9 +911,9 @@ async def ws_handler(ws):
     await ws.send_json(resultado)
     await ws.close()
 
-@app.route("/ver-analise/<uuid_diag>", methods=["POST"])
-@cross_origin(supports_credentials=True)
-def enviar_diag(uuid_diag):
+# @app.route("/ver-analise/<uuid_diag>", methods=["POST"])
+# @cross_origin(supports_credentials=True)
+# def enviar_diag(uuid_diag):
     
 
 
