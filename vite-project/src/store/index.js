@@ -3,7 +3,7 @@ import { createStore } from "vuex";
 import { useCookies } from "vue3-cookies";
 import { modal } from "./modules/modal";
 
-import { WsHandler } from "./websocket";
+import { WsHandler } from "../utils/websocket";
 
 //gerência de estados do vuex
 
@@ -20,7 +20,7 @@ const store = createStore({
         logado: false,
         formDiag: null,
         linksAnalise: [], //array funciona como fila
-        listaWebSockets: [],
+        wsDict: [],
     },
     mutations: {
         setSharedData(state, data) {
@@ -53,20 +53,6 @@ const store = createStore({
                 console.warn("ARRAY DE LINKS VAZIO!\n");
             }
         },
-        addWS(state, ws) {
-            if (state.listaWebSockets.length >= MAX_LINKS) {
-                state.listaWebSockets.shift();
-            }
-            state.listaWebSockets.push(ws);
-            return state.listaWebSockets.length - 1; //retorna indice do novo WS
-        },
-        removeWS(state, ws) {
-            const index = state.listaWebSockets.indexOf(ws);
-            if (index > -1) {
-                array.splice(index, 1);
-            }
-            return index;
-        },
     },
     actions: {
         updateUrlBackend({ commit }, data) {
@@ -87,30 +73,42 @@ const store = createStore({
         removeLinkAnalise({ commit }) {
             commit("removeLink");
         },
-        handleWebSocket({ dispatch }, rawMessage, popupMessageObject) {
+        handleWebSocket({ dispatch }, { wsURL, taskId }) {
             try {
-                const data = JSON.parse(rawMessage);
-                if (!popupMessageObject instanceof Object) {
-                    if (
-                        !popupMessageObject?.titulo ||
-                        !popupMessageObject?.subtexto ||
-                        !popupMessageObject?.srcImg ||
-                        !popupMessageObject?.link
-                    ) {
-                        throw new Error("MENSAGEM DEVE TER CAMPOS VALIDOS!");
-                    }
+                if (!taskId) {
+                    throw new Error("taskId é obrigatório!");
                 }
+                if (popupMessageObject instanceof Object === false) {
+                    throw new Error("MENSAGEM DEVE TER CAMPOS VALIDOS!");
+                }
+                // 2. Define a função de callback que será chamada ao receber uma mensagem do backend
+                const handleBackendMessage = (dispatch, event) => {
+                    // A mensagem do WebSocket geralmente é um JSON em formato de string.
+                    const data = JSON.parse(event.data);
 
-                // Decide qual modal abrir (exemplo: se vier "type", usa ele)
-                const modalName = data?.type || "popup";
-                const component = {};
+                    // Verifica se a mensagem contém os dados que você precisa, como o taskId
+                    if (data && data?.task_id) {
+                        // 3. Cria o link do frontend com base no uuid recebido do backend
+                        const analysisLink = `/analise?uuid=${data.task_id}`;
+                        console.log(`LINK GERADO: ${analysisLink}`);
 
-                dispatch("openModal", {
-                    name: modalName,
-                    content: data.message || "📩 Nova mensagem recebida!",
-                });
+                        // 4. Dispara a ação para abrir o modal, passando o link como conteúdo
+                        dispatch(
+                            "modal/openModal",
+                            {
+                                name: "popup", 
+                                content: { link: analysisLink },
+                            },
+                            { root: true } // { root: true } é necessário se 'modal' for um módulo raiz e 'analise' um sub-módulo
+                        );
+                    }
+                };
+                const wsHand = new WsHandler(dispatch, wsURL, handleBackendMessage);
+                wsDict[taskId] = wsHand
+                return true
             } catch (err) {
                 console.error("❌ Erro ao processar mensagem WS:", err);
+                throw err
             }
         },
     },
@@ -118,6 +116,7 @@ const store = createStore({
         //websocket
         getWSBackend: (state) => state.urlWebSocket,
         getAnaliseWS: (state) => state.urlBackend + "/analise-ws",
+        getWSUuid: (state, taskId) => state.wsDict[taskId],
         //urls
         getUrlBackend: (state) => state.urlBackend,
         getUrlCadastro: (state) => state.urlBackend + "/auth?tipo=cadastro",

@@ -204,6 +204,7 @@ export default {
     },
     methods: {
         ...mapActions("modals", ["openModal"]),
+        ...mapActions(["handleWebSocket"]),
 
         openPopup() {
             this.$store.dispatch("modal/openModal", {
@@ -300,13 +301,28 @@ export default {
 
             const urlWS = `${this.$store.getters.getWSBackend}/ws`;
             console.log(`URL WS: ${urlWS}`);
-            const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
-            console.log(`NOVO SOCKET: ${JSON.stringify(ws)}`);
+            // const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
+            // console.log(`NOVO SOCKET: ${JSON.stringify(ws)}`);
 
-            ws.onopen = () => ws.send(JSON.stringify({ taskId: taskId }));
-            ws.onmessage = (evt) => console.log("WS got:", evt.data);
-            ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
-            ws.onclose = (evt) => console.log(`WEBSOCKET FECHADO!\n`);
+            // const funSendWS = (taskId) => {
+            //     return JSON.stringify({ taskId: taskId });
+            // };
+
+            // const funGetResBackend = (evt) => {
+            //     console.log("WS got:", evt.data);
+            // };
+            // const funError = (evt) => {
+            //     ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
+            // };
+            // const funClose = (evt) => {
+            //     console.log(`WEBSOCKET FECHADO!\n`);
+            // };
+
+            // ws.onopen = () => ws.send(funSendWS(taskId));
+            // ws.onmessage = funGetResBackend(evt);
+            // ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
+
+            // ws.onclose = (evt) => console.log(`WEBSOCKET FECHADO!\n`);
 
             // this.$router.push({ name: "PaginaCarregando" });
         },

@@ -897,13 +897,14 @@ async def ws_handler(ws):
         if time.time() - tempo_comeco >= TEMPO_LIMITE:
             raise TimeoutError("TAREFA DEMOROU DEMAIS!")
         status = AsyncResult(task_id).status
-        print(f"STATUS: {status}\n")
+        # print(f"STATUS: {status}\n")
         if status == "FAILURE" or status == "RETRY":
             raise WebSocketException(code=1011, reason="ERRO INTERNO!")
 
     # tarefa de analise (upload e processamento) foi completada
     task = AsyncResult(task_id)
     resultado = task.get()
+    resultado["task_id"] = task_id
     print(f"RESULTADO TASK {task.id}: {resultado}\n")
     # Return dummy response
 

@@ -1,4 +1,3 @@
-import WS from "../websocket.js"
 
 export const modal = {
     namespaced: true,
