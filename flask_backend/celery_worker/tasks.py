@@ -163,12 +163,10 @@ def envia_diag_task(
 
     if user_id:
         db = self.mongo.get_database(DB_PARALISIA)
+        assert db != null
         medicos = db.get_collection(self.coll_meds)
         medico_atual = medicos.find_one({"email": user_id})
         print(f"\nUSER ID: {user_id}\n")
-        print(f"\nCOLLECTION MEDICOS: {medicos} \n")
-        print(f"\nTODOS OS MEDICOS: {list(medicos.find({'email': user_id}))} \n")
-        print(f"\nMEDICO ATUAL: {medico_atual}\n")
 
         if medico_atual is None:
             raise Exception("MEDICO LOGADO NAO ENCONTRADO")
@@ -189,7 +187,6 @@ def envia_diag_task(
             dados[key] = "None"
 
     diags = db.get_collection(self.coll_diags)
-    print(f"DIAGS: {diags}")
     result = diags.insert_one(dados)
     id_diag_mongo = str(result.inserted_id)
 
@@ -362,7 +359,6 @@ def processamento_analise(self, res_anterior, **kwargs):
 
     result.pop("dados_grafico")
     result.pop("dados_pdf")
-    print(f"BASE_URL: {BASE_URL}\n")
     result["grafico"] = posixpath.join(BASE_URL, "gerar_grafico", id_diag)
     result["pdf"] = posixpath.join(BASE_URL, "gerar_relatorio", id_diag)
 
@@ -385,7 +381,6 @@ def processamento_analise(self, res_anterior, **kwargs):
 def sync_google_drive(self, res_anterior):
     # -----INPUT--------#
     try:
-
         storage_strings = res_anterior.get("storage_strings")
         id_diag = res_anterior.get("id_diag")
         email = res_anterior.get("email")
@@ -394,23 +389,19 @@ def sync_google_drive(self, res_anterior):
         # --------SYNC---------#
         path_video_in = storage_strings["video_in"]
         path_video_out = storage_strings["video_out"]
-        print(f"ANTES ID_IN: INSTANCIA DRIVE: {self.drive}")
         id_in = self.drive.upload_to_drive(path_video_in, [email])
-        print("ANTES ID_OUT")
         id_out = self.drive.upload_to_drive(path_video_out, [email])
-        print("ANTES DEPOIS ID_OUT")
 
         db = self.mongo.get_database(DB_PARALISIA)
-        print("ANTES DB")
         # Update the document in the database with the new Google Drive file IDs
         db.get_collection("diagnosticos").update_one(
             {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
         )
 
-        print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
         res_anterior.pop("storage_strings")
         res_anterior.pop("id_diag")
         res_anterior.pop("email")
+        print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
         return res_anterior
     except Exception as e:
         print(f"ERRO NA PARTE DE UPLOAD: {e}")
