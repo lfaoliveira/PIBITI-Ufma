@@ -70,7 +70,7 @@ export const websocket = {
             if (data && data?.task_id) {
                 const analysisLink = router.resolve({
                     name: 'analiseVideo',
-                    params: { uuid: data.task_id }
+                    query: { uuid: data.task_id }
                 }).fullPath
                 console.log(`LINK GERADO: ${analysisLink}`)
 

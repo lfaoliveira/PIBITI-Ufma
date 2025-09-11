@@ -927,10 +927,11 @@ async def ws_handler(ws):
     task = AsyncResult(task_id)
     resultado = task.get()
     resultado["task_id"] = task_id
-    print(f"RESULTADO TASK {task.id}: {resultado}\n")
+    print(f"FIM WEBSOCKET {task.id}. RESULTADO TASK: {resultado}\n\n")
     # Return dummy response
 
     await ws.send_json(resultado)
+    time.sleep(1) #essencial para que websocket nao feche sem receber mensagem
     await ws.close()
 
 
