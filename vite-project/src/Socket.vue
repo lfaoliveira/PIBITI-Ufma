@@ -1,12 +1,12 @@
 <template>
     <section class="frame-pagina">
         <HeaderSistema :activeIndex="4" />
-        <button class="relative bg-amber-500 m-5 mr-5" @click.self="openPopup">
+        <!-- <button class="relative bg-amber-500 m-5 mr-5" @click.self="openPopup">
             ABRIR
         </button>
-        <button class="relative bg-amber-500 m-5 mr-5" @click.self="openOverlay">
-            ABRIR OVERLAY
-        </button>
+         -->
+        <button @click="teste_WS">TESTE WS</button>
+        <button @click="cancelar_task">FECHAR TASK</button>
         <h1 class="h1-text">Ficha do Diagnóstico</h1>
 
         <!-- <TesteOverlay
@@ -185,6 +185,7 @@ export default {
             olhoDireito: "false",
             desc: "",
             videoObj: null,
+            taskId: null,
             // "avi"
             extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"],
         };
@@ -205,6 +206,14 @@ export default {
     methods: {
         ...mapActions("modals", ["openModal"]),
         ...mapActions(["handleWebSocket"]),
+        cancelar_task() {
+            axios.post(
+                this.$store.getters.getUrlBackend + `/cancelar-task/${this.taskId}`,
+                {
+                    withCredentials: true,
+                }
+            );
+        },
 
         openPopup() {
             this.$store.dispatch("modal/openModal", {
@@ -230,34 +239,21 @@ export default {
             });
         },
 
-        processaWebSocket(evt) {
-            //resultado válido
-            const result = evt?.data?.result;
+        async teste_WS() {
+            this.objEnviaDiag = { task_id: 2 };
+            console.log("MOUNTED RESPONSE: ", this.objEnviaDiag);
+            const taskId = this.objEnviaDiag?.task_id;
 
-            const a = {
-                result: {
-                    diagAutom:
-                        "1.1290322580645162,1.7096774193548387,0.3396226415094339,Esquerdo",
-                    dataDiag: 1757438530.7012749,
-                    video:
-                        "http://31.97.84.210:5000/get_file/OUT_ada_1757438530.7013.mp4",
-                    ultimaModif: 1757438530.7012749,
-                    grafico:
-                        "http://31.97.84.210:5000/gerar_grafico/68c0624b785e7c4a7613b11b",
-                    pdf:
-                        "http://31.97.84.210:5000/gerar_relatorio/68c0624b785e7c4a7613b11b",
-                },
-                grafico_url:
-                    "http://31.97.84.210:5000/gerar_grafico/68c0624b785e7c4a7613b11b",
-                pdf_url:
-                    "http://31.97.84.210:5000/gerar_relatorio/68c0624b785e7c4a7613b11b",
-                video_url:
-                    "http://31.97.84.210:5000/get_file/OUT_ada_1757438530.7013.mp4",
-            };
+            const urlWS = `${this.$store.getters.getWSBackend}/ws`;
+            console.log(`URL WS: ${urlWS}`);
+
+            try {
+                await this.$store.dispatch("handleWebSocket", { wsURL: urlWS, taskId });
+                console.log("CONEXAO COM WEBSOCKET OK");
+            } catch (err) {
+                console.error("Falha ao estabelecer a conexão WebSocket:", error);
+            }
         },
-
-        gerarLinkAnalise(resJSON) {},
-
         async enviaDiag() {
             //envia dados pro back comecar processamento
             const formData = new FormData();
@@ -298,10 +294,21 @@ export default {
 
             console.log("MOUNTED RESPONSE: ", this.objEnviaDiag);
             const taskId = this.objEnviaDiag?.task_id;
+            this.taskId = this.objEnviaDiag?.task_id;
 
             const urlWS = `${this.$store.getters.getWSBackend}/ws`;
             console.log(`URL WS: ${urlWS}`);
-            this.handleWebSocket( {urlWS, taskId})
+
+            try {
+                await this.$store.dispatch("handleWebSocket", {
+                    wsURL: urlWS,
+                    taskId: taskId,
+                });
+                console.log("CONEXAO COM WEBSOCKET OK");
+            } catch (err) {
+                console.error("Falha ao estabelecer a conexão WebSocket:", err);
+            }
+
             // const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
             // console.log(`NOVO SOCKET: ${JSON.stringify(ws)}`);
 
