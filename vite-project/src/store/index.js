@@ -2,8 +2,8 @@
 import { createStore } from "vuex";
 import { useCookies } from "vue3-cookies";
 import { modal } from "./modules/modal";
+import { websocket } from "./modules/websocket";
 
-import { WsHandler } from "../utils/websocket";
 
 //gerência de estados do vuex
 
@@ -12,6 +12,7 @@ const MAX_LINKS = 3;
 const store = createStore({
     modules: {
         modal,
+        websocket,
     },
     state: {
         urlBackend: import.meta.env.VITE_BACKEND_URL + "/api",
@@ -53,13 +54,7 @@ const store = createStore({
                 console.warn("ARRAY DE LINKS VAZIO!\n");
             }
         },
-        SET_WS_HANDLER(state, { taskId, handler }) {
-            state.wsDict[taskId] = handler;
-            console.log(state.wsDict, taskId)
-        },
-        REMOVE_WS_HANDLER(state, { taskId }) {
-            delete state.wsDict[taskId];
-        },
+
     },
     actions: {
         updateUrlBackend({ commit }, data) {
@@ -68,11 +63,9 @@ const store = createStore({
         updateCookie({ commit }, data) {
             commit("setCookie", data);
         },
-        updateLogado({ commit }, data) {
-            commit("setLoado", data);
-        },
+
         updateFormDiag({ commit }, data) {
-            commit("setformDiag", data);
+            commit("setFormDiag", data);
         },
         addLinkAnalise({ commit }, data) {
             commit("addLink", data);
@@ -81,47 +74,16 @@ const store = createStore({
             commit("removeLink");
         },
         handleWebSocket({ state, dispatch, commit }, { wsURL, taskId }) {
-            try {
-                if (!taskId) {
-                    throw new Error("taskId é obrigatório!");
-                }
-                // 2. Define a função de callback que será chamada ao receber uma mensagem do backend
-                const handleBackendMessage = (dispatch, event) => {
-                    // A mensagem do WebSocket geralmente é um JSON em formato de string.
-                    const data = JSON.parse(event.data);
-                    console.log(`EVT: ${evt} DATA: ${evt.data}`)
-                    // Verifica se a mensagem contém os dados que você precisa, como o taskId
-                    if (data && data?.task_id) {
-                        // 3. Cria o link do frontend com base no uuid recebido do backend
-                        const analysisLink = `/analise?uuid=${data.task_id}`;
-                        console.log(`LINK GERADO: ${analysisLink}`);
-
-                        // 4. Dispara a ação para abrir o modal, passando o link como conteúdo
-                        dispatch(
-                            "modal/openModal",
-                            {
-                                name: "popup",
-                                content: { link: analysisLink },
-                            },
-                            { root: true } // { root: true } é necessário se 'modal' for um módulo raiz e 'analise' um sub-módulo
-                        );
-                    }
-                };
-                const wsHand = new WsHandler(dispatch, wsURL, handleBackendMessage);
-                commit("SET_WS_HANDLER", { taskId, handler: wsHand });
-
-                return true;
-            } catch (err) {
-                console.error("❌ Erro ao processar mensagem WS:", err);
-                throw err;
-            }
+            dispatch('websocket/initWebSocket', {
+                uuid: taskId, url: wsURL
+            }, { root: true })
         },
     },
     getters: {
         //websocket
         getWSBackend: (state) => state.urlWebSocket,
         getAnaliseWS: (state) => state.urlBackend + "/analise-ws",
-        getWSUuid: (state, taskId) => state.wsDict[taskId],
+        getWSUuid: (state) => (taskId) => state.websocket.sockets[taskId],
         //urls
         getUrlBackend: (state) => state.urlBackend,
         getUrlCadastro: (state) => state.urlBackend + "/auth?tipo=cadastro",
