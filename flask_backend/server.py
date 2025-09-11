@@ -874,7 +874,6 @@ def registrar_diag_processar():
         )
 
         result = workflow.apply_async()
-        
 
         return jsonify({"task_id": result.id, "status": "enviando"})
 
@@ -883,12 +882,34 @@ def registrar_diag_processar():
         return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
 
 
+@app.route("/stop-task/<task_id>", methods=["POST"])
+@cross_origin(supports_credentials=True)
+def stop_task(task_id):
+    async_res = AsyncResult(task_id)
+
+    async_res.revoke(terminate=True, signal="SIGTERM")
+    # Depending on broker/backend, there may be child tasks in the chain.
+    # If your result backend supports it, you may inspect `async_res.children`
+    # to revoke them too.
+
+    # Example:
+    if hasattr(async_res, "children"):
+        for child in async_res.children:
+            try:
+                child.revoke(terminate=True, signal="SIGTERM")
+            except Exception as e:
+                # log or ignore
+                print(f"Error revoking child {child.id}: {e}")
+
+    return True
+
+
 async def ws_handler(ws):
     await ws.accept()
     data = await ws.receive_json()
     task_id = data["taskId"]
 
-    TEMPO_LIMITE = 10 * 60 * 60 * 1000  # limite de 10 min
+    TEMPO_LIMITE = 10 * 60 * 1000  # limite de 10 min
     tempo_comeco = time.time()
 
     status = AsyncResult(task_id).status
@@ -899,7 +920,7 @@ async def ws_handler(ws):
             raise TimeoutError("TAREFA DEMOROU DEMAIS!")
         status = AsyncResult(task_id).status
         # print(f"STATUS: {status}\n")
-        if status == "FAILURE" or status == "RETRY":
+        if status == "FAILURE":
             raise WebSocketException(code=1011, reason="ERRO INTERNO!")
 
     # tarefa de analise (upload e processamento) foi completada
@@ -912,11 +933,10 @@ async def ws_handler(ws):
     await ws.send_json(resultado)
     await ws.close()
 
+
 # @app.route("/ver-analise/<uuid_diag>", methods=["POST"])
 # @cross_origin(supports_credentials=True)
 # def enviar_diag(uuid_diag):
-    
-
 
 
 # Starlette app for WebSockets
