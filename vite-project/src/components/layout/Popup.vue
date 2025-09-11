@@ -56,7 +56,6 @@ export default {
         link: { type: String, default: "#", required: true },
         posCSS: {
             type: String,
-            required: true,
             default: "absolute top-22 right-5 w-28 h-auto"
         },
     },
