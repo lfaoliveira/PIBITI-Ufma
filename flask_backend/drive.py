@@ -96,7 +96,8 @@ class GoogleDrive:
         self.file_state = pd.DataFrame.from_dict(self.file_state, orient="index")
         # more options can be specified also
         with pd.option_context("display.max_rows", None, "display.max_columns", 3):
-            print(f"DF FILE STATE: \n{self.file_state}")
+            # print(f"DF FILE STATE: \n{self.file_state}")
+            pass
         self.first_fetch = False
 
     def update_state(self, changes, verbose=False):
