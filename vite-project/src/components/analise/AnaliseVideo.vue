@@ -76,7 +76,7 @@ export default {
         try {
             if (this.uuid != null) {
                 const res = await axios.post(
-                    `${this.$store.getters.getVerAnalise}/${uuid}`,
+                    `${this.$store.getters.getVerAnalise}/${this.uuid}`,
                     {
                         withCredentials: true,
                     }

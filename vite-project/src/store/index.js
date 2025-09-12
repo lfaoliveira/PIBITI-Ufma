@@ -83,7 +83,7 @@ const store = createStore({
         //websocket
         getWSBackend: (state) => state.urlWebSocket,
         getAnaliseWS: (state) => state.urlBackend + "/analise-ws",
-        getWSUuid: (state) => (taskId) => state.websocket.sockets[taskId],
+        // getWSUuid: (state) => (taskId) => state.websocket.sockets[taskId],
         //urls
         getUrlBackend: (state) => state.urlBackend,
         getUrlCadastro: (state) => state.urlBackend + "/auth?tipo=cadastro",
@@ -95,7 +95,7 @@ const store = createStore({
         getDiag: (state) => state.urlBackend + "/envia_diag",
         getPerfil: (state) => state.urlBackend + "/pega_perfil",
         getAnalise: (state) => state.urlBackend + "/analise",
-        getVerAnalise: (state) => state.urlBackend + "/ver-analise/",
+        getVerAnalise: (state) => state.urlBackend + "/ver-analise",
         //estados auxiliares e objetos
         getLogado: (state) => state.logado,
         getFormDiag: (state) => state.formDiag,
