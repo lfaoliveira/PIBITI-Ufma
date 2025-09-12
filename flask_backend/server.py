@@ -882,26 +882,43 @@ def registrar_diag_processar():
         return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
 
 
-@app.route("/stop-task/<task_id>", methods=["POST"])
+# @app.route("/stop-task/<task_id>", methods=["POST"])
+# @cross_origin(supports_credentials=True)
+# def stop_task(task_id):
+#     async_res = AsyncResult(task_id)
+
+#     async_res.revoke(terminate=True, signal="SIGTERM")
+#     # Depending on broker/backend, there may be child tasks in the chain.
+#     # If your result backend supports it, you may inspect `async_res.children`
+#     # to revoke them too.
+
+#     # Example:
+#     if hasattr(async_res, "children"):
+#         for child in async_res.children:
+#             try:
+#                 child.revoke(terminate=True, signal="SIGTERM")
+#             except Exception as e:
+#                 # log or ignore
+#                 print(f"Error revoking child {child.id}: {e}")
+
+#     return True
+
+
+@app.route("/ver-analise/<task_uuid>", methods=["POST"])
 @cross_origin(supports_credentials=True)
-def stop_task(task_id):
-    async_res = AsyncResult(task_id)
-
-    async_res.revoke(terminate=True, signal="SIGTERM")
-    # Depending on broker/backend, there may be child tasks in the chain.
-    # If your result backend supports it, you may inspect `async_res.children`
-    # to revoke them too.
-
-    # Example:
-    if hasattr(async_res, "children"):
-        for child in async_res.children:
-            try:
-                child.revoke(terminate=True, signal="SIGTERM")
-            except Exception as e:
-                # log or ignore
-                print(f"Error revoking child {child.id}: {e}")
-
-    return True
+def ver_analise(task_uuid):
+    """Get diagnostic from Mongo DB collection and return as JSON"""
+    try:
+        diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
+            {"celery_task_id": task_uuid}
+        )
+        if diagnostico:
+            return jsonify(diagnostico)
+        else:
+            return make_response("Diagnostic not found", NOT_FOUND)
+    except Exception as e:
+        print(f"Error retrieving diagnostic: {e}")
+        return make_response(f"Error: {str(e)}", INTERNAL_SERVER_ERROR)
 
 
 async def ws_handler(ws):
@@ -931,7 +948,7 @@ async def ws_handler(ws):
     # Return dummy response
 
     await ws.send_json(resultado)
-    time.sleep(1) #essencial para que websocket nao feche sem receber mensagem
+    time.sleep(1)  # essencial para que websocket nao feche sem receber mensagem
     await ws.close()
 
 
