@@ -90,9 +90,9 @@ export default {
             console.error("ERRO AO TENTAR CARREGAR ANALISE: " + err);
         }
 
-        this.responseData = JSON.parse(this.responseStringJson);
         console.log("REPONSE DATA: ", this.responseData);
-
+        this.parseResult();
+        
         // this.videoSource = this.responseData.video;
         // this.graficoURL = this.responseData.grafico;
         const urls = await Promise.all([
@@ -102,12 +102,10 @@ export default {
         this.videoSource = urls[0];
         this.graficoURL = urls[1];
         this.resPronto = true;
-
+        
         this.pdfURL = this.responseData.pdf;
         console.log("\n\nTHIS.PDF: ", this.pdfURL);
         this.$refs.imgGraf.src = this.graficoURL;
-        const strResult = this.responseData.diagAutom;
-        this.parseResult(strResult);
     },
     methods: {
         addFocusClass() {
@@ -132,20 +130,25 @@ export default {
             console.log(`Blob URL created: ${blobURL}`);
             return blobURL;
         },
+        parseResult() {
+            // Set velocity values
+            this.velE = parseFloat(this.responseData.velE).toFixed(2);
+            this.velD = parseFloat(this.responseData.velD).toFixed(2);
+            this.percentDif = (parseFloat(this.responseData.percentDif) * 100).toFixed(
+                2
+            );
 
-        parseResult(string) {
-            const split = String(string).split(",");
-            this.velE = parseFloat(split[0]).toFixed(2);
-            this.velD = parseFloat(split[1]).toFixed(2);
-            this.percentDif = parseFloat(split[2]).toFixed(2);
-            const diag = split[3];
-            let texto = "";
-            if (diag === "None") {
-                texto = "Olhos Saudáveis";
+            // Set diagnosis
+            const diag = this.responseData.olho_doente;
+            if (diag === "false+false") {
+                this.olho_doente = "Olhos Saudáveis";
+            } else if (diag === "true+false") {
+                this.olho_doente = "Olho Esquerdo Possivelmente Doente";
+            } else if (diag === "false+true") {
+                this.olho_doente = "Olho Direito Possivelmente Doente";
             } else {
-                texto = "Olho " + diag + " Possivelmente Doente";
+                this.olho_doente = "Ambos os Olhos Possivelmente Doentes";
             }
-            this.olho_doente = texto;
         },
     },
     computed: {
