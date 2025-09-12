@@ -909,9 +909,11 @@ def registrar_diag_processar():
 def ver_analise(task_uuid):
     """Get diagnostic from Mongo DB collection and return as JSON"""
     try:
+        print(f"VER ANALISE: {task_uuid}")
         diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
             {"celery_task_id": task_uuid}
         )
+
         if diagnostico:
             return jsonify(diagnostico)
         else:
