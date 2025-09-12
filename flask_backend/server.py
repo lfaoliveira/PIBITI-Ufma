@@ -335,7 +335,6 @@ def get_file_drive(id_file):
     """
     print("FILE ID: ", id_file)
     try:
-        limite_mega = 20 * 1024 * 1024  # (20 MB)
         print("PEGANDO ARQUIVO!")
         file_generator, filename = drive.download_file(id_file)
         print("DEPOIS DOWNLOAD")
@@ -881,29 +880,6 @@ def registrar_diag_processar():
         print(f"EXCECAO NA ANALISE: {e}\n")
         return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
 
-
-# @app.route("/stop-task/<task_id>", methods=["POST"])
-# @cross_origin(supports_credentials=True)
-# def stop_task(task_id):
-#     async_res = AsyncResult(task_id)
-
-#     async_res.revoke(terminate=True, signal="SIGTERM")
-#     # Depending on broker/backend, there may be child tasks in the chain.
-#     # If your result backend supports it, you may inspect `async_res.children`
-#     # to revoke them too.
-
-#     # Example:
-#     if hasattr(async_res, "children"):
-#         for child in async_res.children:
-#             try:
-#                 child.revoke(terminate=True, signal="SIGTERM")
-#             except Exception as e:
-#                 # log or ignore
-#                 print(f"Error revoking child {child.id}: {e}")
-
-#     return True
-
-
 @app.route("/ver-analise/<task_uuid>", methods=["POST"])
 @cross_origin(supports_credentials=True)
 def ver_analise(task_uuid):
@@ -913,11 +889,26 @@ def ver_analise(task_uuid):
         diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
             {"celery_task_id": task_uuid}
         )
-
         if diagnostico:
-            return jsonify(diagnostico)
+            retorno = {
+                "video": url_for(
+                    "get_file", resource_uri=diagnostico["video"], _external=True
+                ),
+                "graficoURL": url_for(
+                    "gerar_grafico", id_diag=diagnostico["_id"], _external=True
+                ),
+                "pdfURL": url_for(
+                    "gerar_relatorio", id_diag=diagnostico["_id"], _external=True
+                ),
+                "olho_doente": diagnostico["diagnosticoMedico"],
+                "percentDif": diagnostico["dados_pdf"].get("difVel"),
+                "velD": diagnostico["dados_pdf"].get("velDir"),
+                "velE": diagnostico["dados_pdf"].get("velEsq"),
+            }
+
+            return jsonify(retorno)
         else:
-            return make_response("Diagnostic not found", NOT_FOUND)
+            return make_response("Diagnostico nao encontrado", NOT_FOUND)
     except Exception as e:
         print(f"Error retrieving diagnostic: {e}")
         return make_response(f"Error: {str(e)}", INTERNAL_SERVER_ERROR)
