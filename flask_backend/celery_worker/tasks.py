@@ -40,6 +40,7 @@ from flask_backend import (
     PASTA_USUARIO_ANONIMO_GDRIVE,
     PATH_CRED,
     ROOT_DRIVE,
+    DB_PARALISIA,
 )
 
 from .celery import app
@@ -47,10 +48,7 @@ from flask_backend.drive import GoogleDrive
 from flask_backend.helpers import Helper, get_modelo
 
 
-DB_PARALISIA = "PARALISIA6_NERVO"
-
-
-# classe abstrata pra instanciar GoogleDrive e Mongo
+# classe abstrata pra instanciar GoogleDrive, Mongo e outras variaveis compartilhadas
 class MainTask(Task):
     _drive = None
     _mongo = None
@@ -108,9 +106,6 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 
 
 # WARNING: Tasks foram criadas para serem executadas em sequencia, mas fora do FLASK!!!!!!!
-class EnviaDiagTask(MainTask):
-    # name = "envia_diag_task"
-    pass
 
 
 class AnaliseTask(MainTask):
@@ -145,7 +140,7 @@ class SyncDriveTask(MainTask):
     pass
 
 
-@app.task(base=EnviaDiagTask, bind=True)
+@app.task(base=MainTask, bind=True)
 def envia_diag_task(
     self,
     video_data,
@@ -164,11 +159,10 @@ def envia_diag_task(
     if user_id:
         db = self.mongo.get_database(DB_PARALISIA)
         assert db != None
-        task_uuid = self.request.chain[0].id if self.request.chain else self.request.id
-        print(f"Current task chain ID: {task_uuid}")
         medicos = db.get_collection(self.coll_meds)
         medico_atual = medicos.find_one({"email": user_id})
         print(f"\nUSER ID: {user_id}\n")
+        print("MEDICO ATUAL: ", medico_atual)
 
         if medico_atual is None:
             raise Exception("MEDICO LOGADO NAO ENCONTRADO")
@@ -177,7 +171,6 @@ def envia_diag_task(
         id_medico = None
 
     dados = {
-        "celery_task_id": task_uuid,
         "nomePaciente": nomePaciente,
         "id_medico": str(id_medico),
         "diagnosticoMedico": diagnosticoMedico,
@@ -380,7 +373,7 @@ def processamento_analise(self, res_anterior, **kwargs):
     # sync_google_drive.delay(storage_dict, id_diag, email_medico)
 
 
-@app.task(base=SyncDriveTask, bind=True)
+@app.task(base=MainTask, bind=True)
 def sync_google_drive(self, res_anterior):
     # -----INPUT--------#
     try:
@@ -394,17 +387,29 @@ def sync_google_drive(self, res_anterior):
         path_video_out = storage_strings["video_out"]
         id_in = self.drive.upload_to_drive(path_video_in, [email])
         id_out = self.drive.upload_to_drive(path_video_out, [email])
+        print(f"ID_IN: {id_in} ID_OUT: {id_out}")
 
         db = self.mongo.get_database(DB_PARALISIA)
+        task_id = self.request.id
+        if (task_id == None):
+            raise ValueError("ID NULO!")
+        
         # Update the document in the database with the new Google Drive file IDs
-        db.get_collection("diagnosticos").update_one(
-            {"_id": ObjectId(id_diag)}, {"$set": {"video_in": id_in, "video": id_out}}
+        db.get_collection(self.coll_diags).update_one(
+            {"_id": ObjectId(id_diag)},
+            {
+                "$set": {
+                    "video_in": id_in,
+                    "video": id_out,
+                    "celery_task_id": task_id,
+                }
+            },
         )
 
         res_anterior.pop("storage_strings")
         res_anterior.pop("id_diag")
         res_anterior.pop("email")
-        print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
+        print(f"ID DA ULTIMA TASK: {task_id} \n UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
         return res_anterior
     except Exception as e:
         print(f"ERRO NA PARTE DE UPLOAD: {e}")
