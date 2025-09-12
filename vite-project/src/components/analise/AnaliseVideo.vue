@@ -70,17 +70,37 @@ export default {
         };
     },
     props: {
-        responseStringJson: null,
-        id_diag: "",
+        uuid: null,
     },
     async mounted() {
+        try {
+            if (this.uuid != null) {
+                const res = await axios.post(
+                    `${this.$store.getters.getVerAnalise}/${uuid}`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                this.responseData = res.data;
+                console.log("DADOS CARREGADOS!: " + JSON.stringify(this.responseData));
+            } else {
+                throw Error("SEM UUID!");
+            }
+        } catch (err) {
+            console.error("ERRO AO TENTAR CARREGAR ANALISE: " + err);
+        }
+
         this.responseData = JSON.parse(this.responseStringJson);
         console.log("REPONSE DATA: ", this.responseData);
 
         // this.videoSource = this.responseData.video;
         // this.graficoURL = this.responseData.grafico;
-        this.videoSource = await this.downloadFile(this.responseData.video);
-        this.graficoURL = await this.downloadFile(this.responseData.grafico);
+        const urls = await Promise.all([
+            this.downloadFile(this.responseData.video),
+            this.downloadFile(this.responseData.grafico),
+        ]);
+        this.videoSource = urls[0];
+        this.graficoURL = urls[1];
         this.resPronto = true;
 
         this.pdfURL = this.responseData.pdf;

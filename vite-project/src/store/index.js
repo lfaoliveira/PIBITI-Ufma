@@ -95,7 +95,7 @@ const store = createStore({
         getDiag: (state) => state.urlBackend + "/envia_diag",
         getPerfil: (state) => state.urlBackend + "/pega_perfil",
         getAnalise: (state) => state.urlBackend + "/analise",
-        getTaskStatus: (state) => state.urlBackend + "/status/",
+        getVerAnalise: (state) => state.urlBackend + "/ver-analise/",
         //estados auxiliares e objetos
         getLogado: (state) => state.logado,
         getFormDiag: (state) => state.formDiag,
