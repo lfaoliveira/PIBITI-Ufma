@@ -516,16 +516,33 @@ class GoogleDrive:
             return False
 
     def download_file(self, file_id):
+        import io
+
         # self.fetch_drive_files()
         filename = str(self.file_state.loc[file_id, "name"])
         request = self.drive_service.files().get_media(fileId=file_id)
-        print(request)
-        import io
+        print(f"REQUEST DE DOWNLOAD: {request}")
 
-        file = io.BytesIO()
-        downloader = MediaIoBaseDownload(file, request, chunksize=1024 * 1024)
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
-            print(f"Download {int(status.progress() * 100)}%.")
-        return file.getvalue(), filename
+        def file_generator():
+            # We use an in-memory buffer to hold one chunk at a time.
+            chunk_buffer = io.BytesIO()
+            downloader = MediaIoBaseDownload(
+                chunk_buffer, request, chunksize=1024 * 1024
+            )
+
+            done = False
+            while not done:
+                print(f"Downloading next chunk for {filename}...")
+                status, done = downloader.next_chunk()
+                if status:
+                    print(f"Download progress: {int(status.progress() * 100)}%")
+
+                # Yield the content of the buffer (the chunk we just downloaded)
+                yield chunk_buffer.getvalue()
+
+                # Reset the buffer for the next chunk
+                chunk_buffer.seek(0)
+                chunk_buffer.truncate(0)
+            print(f"Finished streaming download for {filename}.")
+
+        return file_generator(), filename

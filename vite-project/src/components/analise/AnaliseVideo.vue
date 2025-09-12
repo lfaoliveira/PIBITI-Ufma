@@ -100,7 +100,9 @@ export default {
             this.downloadFile(this.responseData.grafico),
         ]);
         this.videoSource = urls[0];
+        console.log("URL VIDEO: " + String(this.videoSource))
         this.graficoURL = urls[1];
+        console.log("URL GRAFICO: " + String(this.graficoURL))
         this.resPronto = true;
         
         this.pdfURL = this.responseData.pdf;

@@ -333,19 +333,21 @@ def get_file_drive(id_file):
     """
     Serves files using file_id from Google Drive.
     """
-    print("FILE ID: ", id_file)
+    # print("FILE ID: ", id_file)
+    print(f"SYNC GET /get-file-drive-sync/{id_file}")
+
     try:
         print("PEGANDO ARQUIVO!")
         file_generator, filename = drive.download_file(id_file)
-        print("DEPOIS DOWNLOAD")
-        return Response(
-            stream_with_context(file_generator),
-            headers={
-                "Content-Disposition": f'attachment; filename="{filename}"',
-                "Content-Type": mimetypes.guess_type(filename)[0]
-                or "application/octet-stream",
-            },
-        )
+
+        # print("DEPOIS DOWNLOAD")
+        headers = {
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Content-Type": mimetypes.guess_type(filename)[0]
+            or "application/octet-stream",
+        }
+        print("RETORNANDO ARQUIVO: ")
+        return Response(stream_with_context(file_generator), headers=headers)
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
         return make_response(
@@ -411,7 +413,7 @@ def get_file(resource_uri) -> Union[Any, Response]:
                 return get_file_local(os.path.basename(resource_uri))
             elif drive.check_id(resource_uri):
                 print("RETORNANDO ARQUIVO DO DRIVE")
-                return get_file_drive(resource_uri)
+                return  get_file_drive(resource_uri)
             else:
                 raise Exception("Arquivo não encontrado em nenhuma fonte!")
         else:
@@ -524,7 +526,7 @@ def pega_perfil():
 
 
 @app.route("/gerar_relatorio/<id_diag>", methods=["GET"])
-def gerar_relatorio(id_diag):
+async def gerar_relatorio(id_diag):
     """
     Gera pdf com grafico e outros dados importantes e retorna url do pdf
     """
@@ -558,7 +560,7 @@ def gerar_relatorio(id_diag):
 
 
 @app.route("/gerar_grafico/<id_diag>", methods=["GET"])
-def gerar_grafico(id_diag, external=True):
+async def gerar_grafico(id_diag, external=True):
     """
     Gera grafico e retorna ele como stream
     """
@@ -879,6 +881,7 @@ def registrar_diag_processar():
     except Exception as e:
         print(f"EXCECAO NA ANALISE: {e}\n")
         return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
+
 
 @app.route("/ver-analise/<task_uuid>", methods=["POST"])
 @cross_origin(supports_credentials=True)
