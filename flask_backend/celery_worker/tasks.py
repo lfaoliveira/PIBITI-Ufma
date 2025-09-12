@@ -163,7 +163,9 @@ def envia_diag_task(
 
     if user_id:
         db = self.mongo.get_database(DB_PARALISIA)
-        assert db != null
+        assert db != None
+        task_uuid = self.request.chain[0].id if self.request.chain else self.request.id
+        print(f"Current task chain ID: {task_uuid}")
         medicos = db.get_collection(self.coll_meds)
         medico_atual = medicos.find_one({"email": user_id})
         print(f"\nUSER ID: {user_id}\n")
@@ -175,6 +177,7 @@ def envia_diag_task(
         id_medico = None
 
     dados = {
+        "celery_task_id": task_uuid,
         "nomePaciente": nomePaciente,
         "id_medico": str(id_medico),
         "diagnosticoMedico": diagnosticoMedico,
