@@ -5,7 +5,7 @@ import router from "../../router"
 
 export const websocket = {
     namespaced: true,
-    
+
     state: () => ({
         sockets: {},            // dictionary to store multiple WebSocket instances
         socketStatuses: {},     // track connection status for each socket
@@ -54,7 +54,7 @@ export const websocket = {
             ws.onclose = (event) => {
                 commit('SET_SOCKET_CONNECTED', { uuid, isConnected: false })
                 commit('CLEAR_SOCKET', uuid)
-                dispatch('closeWebSocket', { uuid})
+                dispatch('closeWebSocket', { uuid })
                 console.log(`WEBSOCKET FECHADO! Code: ${event.code}, Reason: ${event.reason}`);
             }
 
@@ -64,10 +64,11 @@ export const websocket = {
 
         },
 
-        handleIncomingMessage({ state, commit, dispatch}, { uuid, data }) {
+        handleIncomingMessage({ state, commit, dispatch }, { uuid, data }) {
             console.log(`DATA: ${JSON.stringify(data)}`)
 
             if (data && data?.task_id) {
+                //cria rota pra pagina de analise com uuid da task
                 const analysisLink = router.resolve({
                     name: 'analiseVideo',
                     query: { uuid: data.task_id }
@@ -82,7 +83,7 @@ export const websocket = {
                     }
                 }, { root: true })
             }
-            else{
+            else {
                 console.log("DEU MERDA")
             }
         },
@@ -99,7 +100,7 @@ export const websocket = {
 
         closeWebSocket({ state, commit }, uuid) {
             const socket = state.sockets[uuid]
-            
+
             if (socket) {
                 socket.close()
                 commit('CLEAR_SOCKET', uuid)
