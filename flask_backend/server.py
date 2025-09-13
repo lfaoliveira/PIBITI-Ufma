@@ -8,6 +8,7 @@ from http.client import (
     NOT_FOUND,
 )
 import time
+import traceback
 import uuid
 from bson import ObjectId
 import shutil
@@ -338,9 +339,10 @@ def get_file_drive(id_file):
 
         headers = {
             "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Type": mimetypes.guess_type(filename)[0] or "application/octet-stream",
+            "Content-Type": mimetypes.guess_type(filename)[0]
+            or "application/octet-stream",
         }
-        
+
         # The generator is wrapped in a Response object.
         # Flask handles iterating over it.
         return Response(stream_with_context(file_generator), headers=headers)
@@ -354,7 +356,6 @@ def get_file_drive(id_file):
         # General catch-all for other errors during setup.
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
         return jsonify({"error": str(e)}), INTERNAL_SERVER_ERROR
-
 
 
 @app.route("/get-file-local/<filename>", methods=["GET"])
@@ -415,7 +416,7 @@ def get_file(resource_uri) -> Union[Any, Response]:
                 return get_file_local(os.path.basename(resource_uri))
             elif drive.check_id(resource_uri):
                 print("RETORNANDO ARQUIVO DO DRIVE")
-                return  get_file_drive(resource_uri)
+                return get_file_drive(resource_uri)
             else:
                 raise Exception("Arquivo não encontrado em nenhuma fonte!")
         else:
@@ -536,6 +537,7 @@ def gerar_relatorio(id_diag):
 
     diag = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
     dados_pdf = diag.get("dados_pdf", None)
+    print(f"DADOS DO PDF: {dados_pdf}")
     if str(dados_pdf) == "None":
         return make_response("NAO TEM PDF!", BAD_REQUEST)
 
@@ -544,6 +546,7 @@ def gerar_relatorio(id_diag):
     )
     relpath_output = os.path.relpath(path_out_pdf, app.config["WKDIR"])
     try:
+        print(f"DADOS DO PDF: {dados_pdf}")
         dados_pdf["urlGrafico"] = gerar_grafico(id_diag, external=False)
 
         Helper.gerar_pdf(relpath_output, app.config["WKDIR"], dados_pdf)
@@ -566,29 +569,36 @@ def gerar_grafico(id_diag, external=True):
     """
     Gera grafico e retorna ele como stream
     """
+    try:
 
-    diag = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
-    dados_grafico = diag.get("dados_grafico", None)
-    if str(dados_grafico) == "None":
-        return make_response("NAO TEM GRAFICO!", BAD_REQUEST)
+        diag = Helper.find_one_with_id(
+            mongo.db.get_collection(COLLECTION_DIAGS), id_diag
+        )
+        dados_grafico = diag.get("dados_grafico", None)
+        if str(dados_grafico) == "None":
+            return make_response("NAO TEM GRAFICO!", BAD_REQUEST)
 
-    vel_esq, vel_dir, titulo, time = (
-        dados_grafico["vel_esq"],
-        dados_grafico["vel_dir"],
-        dados_grafico["titulo"],
-        dados_grafico["time"],
-    )
+        vel_esq, vel_dir, titulo, time = (
+            dados_grafico["vel_esq"],
+            dados_grafico["vel_dir"],
+            dados_grafico["titulo"],
+            dados_grafico["time"],
+        )
 
-    # Instantiate the analyzer from the task to access its methods
-    analisador = processamento_analise.analisador
-    path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
-    print(f"PATH_GRAF: {path_graf}\n\n")
-    uri_graf = path_graf
-    print(f"URI DO GRAF: {uri_graf}\n\n")
-    if external:
-        return get_file(uri_graf)
-    else:
-        return uri_graf
+        # Instantiate the analyzer from the task to access its methods
+        analisador = processamento_analise.analisador
+        analisador.path_temp = app.config["TEMP_FOLDER"]
+        path_graf = analisador.plotHampelFinal(vel_esq, vel_dir, titulo, time)
+        print(f"PATH_GRAF: {path_graf}\n\n")
+        uri_graf = path_graf
+        print(f"URI DO GRAF: {uri_graf}\n\n")
+        if external:
+            return get_file(uri_graf)
+        else:
+            return uri_graf
+    except Exception as e:
+        print(f"ERRO AO GERAR GRAFICO: {e}")
+        traceback.print_exc()
 
 
 @app.route("/envia_diag", methods=["POST"])
