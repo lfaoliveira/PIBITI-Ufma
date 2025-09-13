@@ -93,13 +93,12 @@ export default {
         console.log("REPONSE DATA: ", this.responseData);
         this.parseResult();
         
-        // this.videoSource = this.responseData.video;
-        // this.graficoURL = this.responseData.grafico;
+
         const urls = await Promise.all([
             this.downloadFile(this.responseData.video),
-            // this.downloadFile(this.responseData.graficoURL),
+            this.downloadFile(this.responseData.graficoURL),
         ]);
-        /* AVISO: COMENTANDO PRA EVITAR PROBLEMAS AO GERAR GRAFICO NO SERVIDOR
+        /* AVISO: COMENTANDO PRA EVITAR PROBLEMAS AO GERAR GRAFICO NO SERVIDOR */
         this.videoSource = urls[0];
         this.resPronto = true;
         console.log("URL VIDEO: " + String(this.videoSource))
@@ -110,7 +109,7 @@ export default {
         this.pdfURL = this.responseData.pdfURL;
         console.log("\n\nTHIS.PDF: ", this.pdfURL);
         this.$refs.imgGraf.src = this.graficoURL;
-        */
+        
     },
     methods: {
         addFocusClass() {
