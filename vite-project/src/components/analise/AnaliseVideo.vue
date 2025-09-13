@@ -97,17 +97,20 @@ export default {
         // this.graficoURL = this.responseData.grafico;
         const urls = await Promise.all([
             this.downloadFile(this.responseData.video),
-            this.downloadFile(this.responseData.grafico),
+            // this.downloadFile(this.responseData.graficoURL),
         ]);
+        /* AVISO: COMENTANDO PRA EVITAR PROBLEMAS AO GERAR GRAFICO NO SERVIDOR
         this.videoSource = urls[0];
+        this.resPronto = true;
         console.log("URL VIDEO: " + String(this.videoSource))
         this.graficoURL = urls[1];
         console.log("URL GRAFICO: " + String(this.graficoURL))
-        this.resPronto = true;
         
-        this.pdfURL = this.responseData.pdf;
+        
+        this.pdfURL = this.responseData.pdfURL;
         console.log("\n\nTHIS.PDF: ", this.pdfURL);
         this.$refs.imgGraf.src = this.graficoURL;
+        */
     },
     methods: {
         addFocusClass() {

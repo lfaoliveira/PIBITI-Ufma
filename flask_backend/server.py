@@ -328,31 +328,33 @@ def index():
 
 @app.route("/get-file-drive/<id_file>", methods=["GET"])
 @cross_origin(supports_credentials=True)
-# usando esse decorator pra evitar erros de TLS
 def get_file_drive(id_file):
     """
     Serves files using file_id from Google Drive.
     """
-    # print("FILE ID: ", id_file)
-    print(f"SYNC GET /get-file-drive-sync/{id_file}")
-
+    print(f"SYNC GET /get-file-drive/{id_file}")
     try:
-        print("PEGANDO ARQUIVO!")
         file_generator, filename = drive.download_file(id_file)
 
-        # print("DEPOIS DOWNLOAD")
         headers = {
             "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Type": mimetypes.guess_type(filename)[0]
-            or "application/octet-stream",
+            "Content-Type": mimetypes.guess_type(filename)[0] or "application/octet-stream",
         }
-        print("RETORNANDO ARQUIVO: ")
+        
+        # The generator is wrapped in a Response object.
+        # Flask handles iterating over it.
         return Response(stream_with_context(file_generator), headers=headers)
+
+    except FileNotFoundError as e:
+        # This new exception provides a more specific error to the client.
+        print(f"ERRO AO PEGAR ARQUIVO (NOT FOUND): {e}")
+        return jsonify({"error": str(e)}), NOT_FOUND
+
     except Exception as e:
+        # General catch-all for other errors during setup.
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
-        return make_response(
-            {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
-        )
+        return jsonify({"error": str(e)}), INTERNAL_SERVER_ERROR
+
 
 
 @app.route("/get-file-local/<filename>", methods=["GET"])
@@ -526,7 +528,7 @@ def pega_perfil():
 
 
 @app.route("/gerar_relatorio/<id_diag>", methods=["GET"])
-async def gerar_relatorio(id_diag):
+def gerar_relatorio(id_diag):
     """
     Gera pdf com grafico e outros dados importantes e retorna url do pdf
     """
@@ -560,7 +562,7 @@ async def gerar_relatorio(id_diag):
 
 
 @app.route("/gerar_grafico/<id_diag>", methods=["GET"])
-async def gerar_grafico(id_diag, external=True):
+def gerar_grafico(id_diag, external=True):
     """
     Gera grafico e retorna ele como stream
     """

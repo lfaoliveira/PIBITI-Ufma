@@ -531,18 +531,32 @@ class GoogleDrive:
             )
 
             done = False
-            while not done:
-                print(f"Downloading next chunk for {filename}...")
-                status, done = downloader.next_chunk()
-                if status:
-                    print(f"Download progress: {int(status.progress() * 100)}%")
+            try:
 
-                # Yield the content of the buffer (the chunk we just downloaded)
-                yield chunk_buffer.getvalue()
+                while not done:
+                    try:
 
-                # Reset the buffer for the next chunk
-                chunk_buffer.seek(0)
-                chunk_buffer.truncate(0)
-            print(f"Finished streaming download for {filename}.")
+                        print(f"Downloading next chunk for {filename}...")
+                        status, done = downloader.next_chunk()
+                        if status:
+                            print(f"Download progress: {int(status.progress() * 100)}%")
+                    except HttpError as error:
+                        print(
+                            f"!!! Google Drive API error during chunk download: {error}"
+                        )
+                        # Stop the generator cleanly if an API error occurs mid-stream
+                        return
+                    # Yield the content of the buffer (the chunk we just downloaded)
+                    chunk = chunk_buffer.getvalue()
+                    if chunk:
+                        yield chunk
+
+                    # Reset the buffer for the next chunk
+                    chunk_buffer.seek(0)
+                    chunk_buffer.truncate(0)
+                print(f"Finished streaming download for {filename}.")
+            finally:
+                # This ensures the buffer is closed and memory is released, even if an error occurs
+                chunk_buffer.close()
 
         return file_generator(), filename
