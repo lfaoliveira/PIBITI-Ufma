@@ -15,7 +15,7 @@
         </div>
         <div class="div-titulo">
             <h1 class="section-title" id="titulo">
-                Software de Análise de Vídeos de Paralisia do Sexto Nervo Óptico
+                6Nervetrack: Análise de Vídeos de Paralisia do Sexto Nervo Óptico
             </h1>
         </div>
         <div class="botoes">

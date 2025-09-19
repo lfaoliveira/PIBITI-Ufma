@@ -4,9 +4,13 @@
         <section class="secao-texto tipo1">
             <h2 class="titulo-secao">Sobre o Software</h2>
             <p class="texto-secoes" id="about-description">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla
-                mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu,
-                iaculis lectus. Curabitur vehicula nibh urna
+                Nosso sistema é uma solução não invasiva para auxiliar no
+                diagnóstico da paralisia do sexto nervo craniano (SONP). A tecnologia
+                analisa vídeos simples dos movimentos oculares e calcula a velocidade
+                média de cada olho, permitindo identificar diferenças que podem indicar a
+                presença da paralisia. O método foi desenvolvido em ambiente clínico e
+                demonstrou alta precisão e confiabilidade para apoiar médicos no processo
+                de avaliação.
             </p>
         </section>
 
@@ -14,19 +18,17 @@
             <h2 class="titulo-secao">Sexto Nervo Óptico</h2>
             <div class="texto-imagem">
                 <p class="texto-grande" id="optic-nerve-description">
-                    O músculo reto lateral é inervado pelo sexto nervo óptico, também
-                    chamado de nervo abducente, como ilustra a figura. Este nervo é
-                    diretamente responsável pela contração do músculo reto lateral. O reto
-                    lateral permite que o olho faça o movimento de abdução, ou seja, que
-                    se mova em direção ao seu canto externo. Uma lesão no sexto nervo
-                    causa a paralisia parcial ou total do músculo reto lateral,
-                    impossibilitando ou limitando a abdução
+                    O músculo reto lateral é controlado pelo sexto nervo craniano, também
+                    chamado de nervo abducente. Esse nervo é responsável por mover os olhos
+                    para fora, em direção ao canto externo. Quando há uma lesão nesse nervo,
+                    o olho perde parcial ou totalmente a capacidade de realizar esse
+                    movimento, caracterizando a paralisia do sexto nervo.
                 </p>
                 <div class="div-nervo">
                     <img
                         alt="Ilustração do sexto nervo óptico"
                         class="optic-nerve-image"
-                        src="../../assets/sexto-nervo.png"
+                        src="../../../assets/sexto-nervo.png"
                     />
                 </div>
             </div>
@@ -35,43 +37,47 @@
         <section class="secao-texto tipo1">
             <h2 class="titulo-secao" id="titulo-protocolo">Protocolo de Aquisição</h2>
             <p class="texto-secoes" id="protocol-description">
-                Os vídeos podem ser gravados com câmeras comuns ou com smartphones, mas
-                para isso, usa-se um tripé para garantir a estabilidade da câmera. Além
-                disso, a fim de evitar ruídos no resultado final causados pelo balançar da
-                cabeça do paciente, pede-se que este apoie os cotovelos em uma mesa, cerre
-                os punhos, juntando-os e apoiando o queixo em ambos os punhos. O vídeo
-                começa a ser gravado com o paciente olhando para a frente, com os olhos na
-                posição primária (PPO). Ambos os olhos do paciente precisam estar visíveis
-                no vídeo, e alinhados horizontalmente; não é preciso que o rosto inteiro
-                do paciente esteja visível, mas não há problema se estiver. Em seguida,
-                pede-se que o paciente olhe para a esquerda, depois que olhe para a
-                direita. Esse movimento é repetido algumas vezes, com o objetivo de
-                analisar a movimentação horizontal dos olhos
+                Os vídeos podem ser gravados com câmeras de smartphones comuns apoiadas em
+                um tripé. Para evitar movimentação da cabeça, o paciente deve apoiar os
+                cotovelos sobre uma mesa, cerrar os punhos e descansar o queixo sobre eles.
+                A gravação começa com o paciente olhando para frente (posição primária).
+                Em seguida, ele é orientado a mover os olhos para a esquerda e depois para
+                a direita, repetindo esse movimento algumas vezes. É importante que ambos
+                os olhos estejam visíveis e alinhados horizontalmente no vídeo. Esse
+                protocolo garante estabilidade e qualidade adequadas para análise do
+                movimento ocular.
             </p>
         </section>
 
         <section class="secao-texto tipo2">
             <h2 class="titulo-secao" id="titulo-deteccao">Método de Detecção</h2>
             <p class="texto-secoes" id="method-description">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla
-                mi a lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu,
-                iaculis lectus. Curabitur vehicula nibh urna
+                O sistema identifica automaticamente a região dos olhos em cada quadro do
+                vídeo por meio de redes neurais de detecção de objetos. Em seguida, registra
+                a trajetória do movimento ocular e aplica filtros matemáticos para corrigir
+                eventuais imprecisões. Com base nessa trajetória, calcula a velocidade de
+                cada olho e compara os resultados. Diferenças significativas de velocidade entre os olhos
+                podem indicar a presença de paralisia.
             </p>
         </section>
 
         <section class="secao-texto tipo1">
             <h2 class="titulo-secao" id="metodo">Método de Cálculo da Velocidade</h2>
             <p class="texto-secoes" id="calculation-description">
-                Praesent in lobortis purus, id blandit leo. Vestibulum posuere urna vitae
-                scelerisque lacinia. Donec nec elit efficitur, sollicitudin est nec,
-                sodales mauris. Maecenas et purus vel massa varius sodales. mi a lorem
-                tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis
-                lectus. Curabitur vehicula nibh urna
+                A velocidade média do olho é calculada a partir do deslocamento horizontal
+                entre quadros sucessivos do vídeo. Como o sexto nervo óptico controla
+                exclusivamente os movimentos laterais, o cálculo considera apenas esse
+                eixo. Se um dos olhos se movimentar pelo menos 19,65% mais devagar que o
+                outro, o sistema classifica o paciente como portador de paralisia do sexto
+                nervo no olho mais lento. Estudos clínicos demonstraram que esse método
+                alcança mais de 92% de precisão, tornando-se um forte aliado na prática
+                médica. 
             </p>
         </section>
         <Rodape></Rodape>
     </div>
 </template>
+
 
 <script>
 import Rodape from "../../layout/Rodape.vue";

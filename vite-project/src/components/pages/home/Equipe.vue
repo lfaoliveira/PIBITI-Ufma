@@ -4,19 +4,19 @@
 
     <div id="divisor" class="secao">
       <img
-        src="../../assets/logo_VIP_Lab.png"
+        src="../../../assets/logo_VIP_Lab.png"
         alt="Logo VIpLab"
         class="img-logos"
         id="logo-vip"
       />
       <img
-        src="../../assets/logo ufma.png"
+        src="../../../assets/logo ufma.png"
         alt="Logo UFMA"
         class="img-logos"
         id="logo-ufma"
       />
       <img
-        src="../../assets/LogoNCAFundBranco2000_2021.png"
+        src="../../../assets/LogoNCAFundBranco2000_2021.png"
         alt="Logo VIpLab"
         class="img-logos"
         id="logo-nca"
@@ -125,31 +125,31 @@ export default {
       lista_dados: [
         {
           nome: "Luis Felipe Araujo de Oliveira",
-          descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
+          descricao: "Desenvolvedor Frontend e Backend da Aplicação",
           tipo: "tipo2",
           img: "src/assets/dummy.png",
         },
         {
           nome: "Prof. João Dalysson",
-          descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
+          descricao: "Professor e Orientador do projeto de ppesquisa",
           tipo: "tipo1",
           img: "src/assets/dummy.png",
         },
         {
           nome: "Prof. Luis Rivero",
-          descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
+          descricao: "Professor e UX Designer",
           tipo: "tipo2",
           img: "src/assets/dummy.png",
         },
         {
           nome: "Polyana Bezerra",
-          descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
+          descricao: "Pesquisadora principal na criação do método de diagnóstico automático da Paralisia",
           tipo: "tipo1",
           img: "src/assets/dummy.png",
         },
         {
           nome: "Dr. Jorge",
-          descricao: "Ut at ante quis urna euismod aliquam ut sit amet tellus. ",
+          descricao: "Médico pesquisador e Co-autor no projeto de pesquisa",
           tipo: "tipo2",
           img: "src/assets/dummy.png",
         },
