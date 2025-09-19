@@ -1,7 +1,7 @@
 <template>
     <nav class="nav-bar">
         <ul class="header lado-esquerdo">
-            <img class="img-logo" src="../../assets/dummy-image-square 1.png" />
+            <img class="img-logo" src="../../../public/logo_app.png" />
             <!-- Para cada item dentro de menuItens, so ativa quem tiver indice igual a activeIndex -->
             <li class="nav-item" v-for="(item, index) in itensEsquerdo" :key="index">
                 <a :class="{ active: activeIndex === index }" @click="setActive(item)">
