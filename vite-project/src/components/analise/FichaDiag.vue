@@ -1,12 +1,7 @@
 <template>
     <section class="frame-pagina">
         <HeaderSistema :activeIndex="4" />
-        <button class="relative bg-amber-500 m-5 mr-5" @click.self="openPopup">
-            ABRIR
-        </button>
-        <button class="relative bg-amber-500 m-5 mr-5" @click.self="openOverlay">
-            ABRIR OVERLAY
-        </button>
+
         <h1 class="h1-text">Ficha do Diagnóstico</h1>
 
         <!-- <TesteOverlay
@@ -21,7 +16,11 @@
             :srcImg="'src/assets/alert_circle.png'"
         ></TesteOverlay> -->
         <main>
-            <p v-if="!this.$store.getters.getLogado" class="sm:text-2xl" id="aviso-avulso">
+            <p
+                v-if="!this.$store.getters.getLogado"
+                class="sm:text-2xl"
+                id="aviso-avulso"
+            >
                 Aviso! A Análise Avulsa não salvará nenhuma informação dos pacientes
             </p>
 
@@ -155,8 +154,9 @@ import Rodape from "../layout/Rodape.vue";
 import TesteOverlay from "../layout/TesteOverlay.vue";
 import emitter from "../../eventBus";
 
-const eventoFormatoErrado = "formatoErrado";
-const eventoTamanhoErrado = "tamanhoErrado";
+import axios from "axios";
+// const eventoFormatoErrado = "formatoErrado";
+// const eventoTamanhoErrado = "tamanhoErrado";
 
 //em bytes
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -178,8 +178,9 @@ export default {
             olhoDireito: "false",
             desc: "",
             videoObj: null,
+            taskId: null,
             // "avi"
-            extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", ],
+            extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"],
         };
     },
     props: {},
@@ -196,6 +197,17 @@ export default {
         },
     },
     methods: {
+        ...mapActions("modals", ["openModal"]),
+        ...mapActions(["handleWebSocket"]),
+        cancelar_task() {
+            axios.post(
+                this.$store.getters.getUrlBackend + `/cancelar-task/${this.taskId}`,
+                {
+                    withCredentials: true,
+                }
+            );
+        },
+
         openPopup() {
             this.$store.dispatch("modal/openModal", {
                 name: "popup",
@@ -209,35 +221,101 @@ export default {
                     },
                 },
             });
-            // console.log("DEPOIS DISPTACH");
         },
         openOverlay(props) {
             this.$store.dispatch("modal/openModal", {
                 name: "overlay",
                 content: {
                     component: "Teste",
-                    props: {...props}
-                    // props: {
-                    //     titulo: "Popup Aberto!",
-                    //     subtexto: "Você abriu via Button.vue!",
-                    //     opcional: "Parte roxa",
-                    //     srcImg: "src/assets/alert_circle.png",
-                    //     link: "https://google.com",
-                        
-                    // },
+                    props: { ...props },
                 },
             });
-            // console.log("DEPOIS DISPTACH");
         },
+
         async enviaDiag() {
-            //envia dados pro banco de dados e comeca logica de processamento
+            //envia dados pro back comecar processamento
             const formData = new FormData();
             formData.append("video", this.videoObj);
             formData.append("nomePaciente", this.nomePac);
             formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
             formData.append("desc", this.desc);
-            this.$store.commit("setFormDiag", formData);
-            this.$router.push({ name: "PaginaCarregando" });
+            console.log("video", this.videoObj);
+            console.log("nomePaciente", this.nomePac);
+            console.log("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
+            console.log("desc", this.desc);
+
+            // const formDiag = this.$store.getters.getFormDiag;
+            console.log('FORM: ${JSON.stringify(formData)}');
+
+            const promiseEnviaDiag = axios.post(
+                this.$store.getters.getAnaliseWS,
+                formData,
+                {
+                    withCredentials: true,
+                }
+            );
+
+            let res = "None";
+            //lida com falha no envio
+            try {
+                res = await promiseEnviaDiag;
+                this.objEnviaDiag = res.data;
+                console.log(
+                    "UPLOAD FEITO COM SUCESSO!: " + JSON.stringify(this.objEnviaDiag)
+                );
+            } catch (error) {
+                this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
+                console.error("DEU RUIM: " + JSON.stringify(this.msgErro));
+                const msgErro = {
+                    titulo: "Formato de vídeo não suportado!",
+                    subtexto: `Formatos aceitos: ${this.extensoes}`,
+                    srcImg: "src/assets/alert_circle.png",
+                };
+                this.openOverlay(msgErro);
+                throw error;
+            }
+
+            console.log("MOUNTED RESPONSE: ", this.objEnviaDiag);
+            const taskId = this.objEnviaDiag?.task_id;
+            this.taskId = this.objEnviaDiag?.task_id;
+
+            const urlWS = `${this.$store.getters.getWSBackend}/ws`;
+            console.log(`URL WS: ${urlWS}`);
+
+            try {
+                await this.$store.dispatch("handleWebSocket", {
+                    wsURL: urlWS,
+                    taskId: taskId,
+                });
+                console.log("CONEXAO COM WEBSOCKET OK");
+            } catch (err) {
+                console.error("Falha ao estabelecer a conexão WebSocket:", err);
+            }
+
+            // const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
+            // console.log(`NOVO SOCKET: ${JSON.stringify(ws)}`);
+
+            // const funSendWS = (taskId) => {
+            //     return JSON.stringify({ taskId: taskId });
+            // };
+
+            // const funGetResBackend = (evt) => {
+            //     console.log("WS got:", evt.data);
+            // };
+            // const funError = (evt) => {
+            //     ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
+            // };
+            // const funClose = (evt) => {
+            //     console.log(`WEBSOCKET FECHADO!\n`);
+            // };
+
+            // ws.onopen = () => ws.send(funSendWS(taskId));
+            // ws.onmessage = funGetResBackend(evt);
+            // ws.onerror = (evt) => console.error(`WEBSOCKET: ${evt.data}`);
+
+            // ws.onclose = (evt) => console.log(`WEBSOCKET FECHADO!\n`);
+
+            // this.$router.push({ name: "PaginaCarregando" });
         },
         getVideo($evt) {
             //checagem por tipos de video e tamanho
@@ -245,13 +323,13 @@ export default {
             if (file.size > MAX_FILE_SIZE) {
                 emitter.emit(eventoTamanhoErrado);
                 this.videoObj = null;
-                    const props = {
-                        titulo: "Vídeo muito grande!",
-                        subtexto: `Tamanho máximo: 50MB`,
-                        srcImg: "src/assets/alert_circle.png",
-                    }
-                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n")
-                    this.openOverlay(props)
+                const props = {
+                    titulo: "Vídeo muito grande!",
+                    subtexto: `Tamanho máximo: 50MB`,
+                    srcImg: "src/assets/alert_circle.png",
+                };
+                console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n");
+                this.openOverlay(props);
                 return;
             }
             if (file) {
@@ -265,19 +343,13 @@ export default {
                         titulo: "Formato de vídeo não suportado!",
                         subtexto: `Formatos aceitos: ${this.extensoes}`,
                         srcImg: "src/assets/alert_circle.png",
-                    }
-                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n")
-                    this.openOverlay(props)
+                    };
+                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n");
+                    this.openOverlay(props);
                     this.videoObj = null;
-                    console.log("DEPOIS DE ABRIR OVERLAY!")
+                    console.log("DEPOIS DE ABRIR OVERLAY!");
                 }
             }
-        },
-        estiloCheckBox() {
-            return {
-                "checkBox--disabled": this.paralisia !== "Sim",
-                "checkBox--enabled": this.paralisia === "Sim",
-            };
         },
     },
     mounted() {

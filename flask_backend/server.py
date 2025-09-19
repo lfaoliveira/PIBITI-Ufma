@@ -844,7 +844,8 @@ def registrar_diag_processar():
     stringOlhos = request.form.get("stringOlhos", None)
     desc = request.form.get("desc", None)
 
-    [print(elem) for elem in [video, nomePaciente, stringOlhos, desc]]
+    [print(elem ,end="  ") for elem in [video, nomePaciente, stringOlhos, desc]]
+    print("")
 
     if any(elem is None for elem in [video, nomePaciente]):
         return make_response("INPUT NULO!", BAD_REQUEST)
@@ -892,6 +893,7 @@ def registrar_diag_processar():
 
     except Exception as e:
         print(f"EXCECAO NA ANALISE: {e}\n")
+        traceback.print_exc()
         return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
 
 
