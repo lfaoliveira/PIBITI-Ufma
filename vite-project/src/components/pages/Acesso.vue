@@ -21,7 +21,11 @@
 
             <!-- PARTE DO LOGIN -->
             <section v-if="tipo === 'login'" class="login">
-                <h1>Fazer Login</h1>
+                <h1
+                    class="text-[#3a0d75] text-xl sm:text-4xl m-0 text-center self-center font-light leading-normal"
+                >
+                    Fazer Login
+                </h1>
                 <form @submit.prevent="valAcesso">
                     <div class="form-group">
                         <label>Email</label>
@@ -58,7 +62,11 @@
             </section>
             <!-- PARTE DO CADASTRO -->
             <section class="sec-cadastro" v-if="tipo === 'cadastro'">
-                <h1>Cadastro</h1>
+                <h1
+                    class="text-[#3a0d75] text-xl sm:text-4xl m-0 text-center self-center font-light leading-normal"
+                >
+                    Cadastro
+                </h1>
                 <form
                     @keyup.enter="$emit('submit')"
                     ref="formCadastro"
@@ -405,7 +413,7 @@ export default {
 }
 
 h1 {
-    font-weight: 600;
+    // font-weight: 600;
     width: max-content;
     margin: 0px;
     text-align: center;
