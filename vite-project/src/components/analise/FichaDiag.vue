@@ -245,7 +245,7 @@ export default {
             console.log("desc", this.desc);
 
             // const formDiag = this.$store.getters.getFormDiag;
-            console.log('FORM: ${JSON.stringify(formData)}');
+            console.log("FORM: ${JSON.stringify(formData)}");
 
             const promiseEnviaDiag = axios.post(
                 this.$store.getters.getAnaliseWS,
@@ -263,6 +263,12 @@ export default {
                 console.log(
                     "UPLOAD FEITO COM SUCESSO!: " + JSON.stringify(this.objEnviaDiag)
                 );
+                const mensagemOK = {
+                    titulo: "Vídeo enviado com sucesso!",
+                    subtexto: `Uma notificação chegará quando estiver tudo pronto.`,
+                    srcImg: "src/assets/check_circle.png",
+                };
+                this.openOverlay(mensagemOK);
             } catch (error) {
                 this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
                 console.error("DEU RUIM: " + JSON.stringify(this.msgErro));
