@@ -13,7 +13,7 @@
         <div class="flex justify-center items-start gap-[2vmin] text-black">
             <img :src="srcImg" class="ml-[5vmin] w-4/20 h-4/20 sm:w-15 sm:h-15" />
             <ul class="flex pr-8  flex-col items-start self-stretch gap-[5vmin]">
-                <h1 class="text-md w-4" > {{ titulo }}</h1>
+                <h1 class="text-md w-min" > {{ titulo }}</h1>
                 <h1 class="text-md break-words">{{ subtexto }}</h1>
                 <h1 v-if="opcional !== ''" id="opcional" class="text-sm text-[#792359]">
                     {{ opcional }}

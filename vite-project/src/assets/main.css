@@ -8,12 +8,12 @@ a,
   padding: 3px;
 }
 
-@media (hover: hover) {
+/* @media (hover: hover) {
   a:hover, a:focus {
     background-color: hsla(0, 0%, 44%, 0.164);
     margin: 0;
   }
-}
+} */
 
 body {
   --primary-clor: #fff;
@@ -29,7 +29,7 @@ body {
   display: flex;
   align-items: start;
   justify-content: center;
-  overflow: auto;
+  /* overflow: auto; */
 }
 
 /* html, body, #app {

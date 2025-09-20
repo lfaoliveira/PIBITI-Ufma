@@ -1,49 +1,59 @@
-<!-- PARTE GERADA POR IA -->
-
 <template>
     <HeaderSistema :activeIndex="5" :urlPDF="pdfURL" />
     <main class="analysis-view">
-        <h1 class="page-title">Análise de Paralisia</h1>
+        <!-- Loading screen -->
+        <div
+            v-if="!resPronto"
+            class=" fixed inset-[10%] bg-black/75 flex items-center justify-center z-10"
+        >
+            <div class="border-solid bg-white p-8 rounded-lg shadow-xl flex flex-col items-center z-12">
+                <div
+                    class="w-12 h-12  !border-4 !border-purple-700 !border-t-transparent !rounded-4xl !animate-spin z-13"
+                ></div>
+                <p class="text-gray-700 text-lg font-semibold z-2">Carregando análise...</p>
+            </div>
 
-        <div class="analysis-grid">
-            <div class="diagnosis-card">
-                <h2 class="diagnostico texto-diag">
-                    Diagnóstico: {{ this.olho_doente }}
-                </h2>
-                <p class="dif-velocidade texto-diag">
-                    Diferença de Velocidade: {{ this.percentDif }} %
-                </p>
-                <p class="velocidade-dir texto-diag">
-                    Olho Direito: {{ this.velD }} mm/s
-                </p>
-                <p class="velocidade-esq texto-diag">
-                    Olho Esquerdo: {{ this.velE }} mm/s
-                </p>
-            </div>
-            <div class="div-grafico">
-                <!-- Placeholder for your graph (image or canvas) -->
-                <img
-                    ref="imgGraf"
-                    class="grafico"
-                    alt="Analysis graph"
-                    draggable="false"
-                />
-            </div>
+            
         </div>
-        <VideoPlayer
-            v-if="resPronto"
-            :videoSource="this.videoSource"
-            :mimeVideo="this.mimeVideo"
-        />
-        <Rodape class="rodape"></Rodape>
+
+        <!-- Main content -->
+        <template v-else>
+            <h1 class="page-title">Análise de Paralisia</h1>
+
+            <div class="analysis-grid">
+                <div class="diagnosis-card">
+                    <h2 class="diagnostico texto-diag">Diagnóstico: {{ olho_doente }}</h2>
+                    <p class="dif-velocidade texto-diag">
+                        Diferença de Velocidade: {{ percentDif }} %
+                    </p>
+                    <p class="velocidade-dir texto-diag">Olho Direito: {{ velD }} mm/s</p>
+                    <p class="velocidade-esq texto-diag">
+                        Olho Esquerdo: {{ velE }} mm/s
+                    </p>
+                </div>
+                <div class="div-grafico">
+                    <img
+                        ref="imgGraf"
+                        :src="graficoURL"
+                        class="grafico"
+                        alt="Analysis graph"
+                        draggable="false"
+                    />
+                </div>
+            </div>
+            <VideoPlayer :videoSource="videoSource" :mimeVideo="mimeVideo" />
+            <Rodape class="rodape"></Rodape>
+        </template>
     </main>
 </template>
+
+<!-- Rest of the code remains the same -->
 
 <script>
 import Rodape from "../layout/Rodape.vue";
 import VideoPlayer from "./VideoPlayer.vue";
 import HeaderSistema from "../layout/HeaderSistema.vue";
-
+import TesteOverlay from "../layout/TesteOverlay.vue";
 import axios from "axios";
 
 export default {
@@ -88,28 +98,25 @@ export default {
             }
         } catch (err) {
             console.error("ERRO AO TENTAR CARREGAR ANALISE: " + err);
+            throw err;
         }
 
         console.log("REPONSE DATA: ", this.responseData);
         this.parseResult();
-        
 
         const urls = await Promise.all([
             this.downloadFile(this.responseData.video),
             this.downloadFile(this.responseData.graficoURL),
         ]);
-        /* AVISO: COMENTANDO PRA EVITAR PROBLEMAS AO GERAR GRAFICO NO SERVIDOR */
         this.videoSource = urls[0];
-        this.resPronto = true;
-        console.log("URL VIDEO: " + String(this.videoSource))
+        console.log("URL VIDEO: " + String(this.videoSource));
         this.graficoURL = urls[1];
-        console.log("URL GRAFICO: " + String(this.graficoURL))
-        
-        
+        console.log("URL GRAFICO: " + String(this.graficoURL));
+
         this.pdfURL = this.responseData.pdfURL;
         console.log("\n\nTHIS.PDF: ", this.pdfURL);
-        this.$refs.imgGraf.src = this.graficoURL;
-        
+        this.resPronto = true;
+        // this.$refs.imgGraf.src = this.graficoURL;
     },
     methods: {
         addFocusClass() {
@@ -138,9 +145,7 @@ export default {
             // Set velocity values
             this.velE = parseFloat(this.responseData.velE).toFixed(2);
             this.velD = parseFloat(this.responseData.velD).toFixed(2);
-            this.percentDif = (parseFloat(this.responseData.percentDif) * 100).toFixed(
-                2
-            );
+            this.percentDif = (parseFloat(this.responseData.percentDif) * 100).toFixed(2);
 
             // Set diagnosis
             const diag = this.responseData.olho_doente;
@@ -156,12 +161,12 @@ export default {
         },
     },
     computed: {
-        controlStyle() {
-            return {
-                height: `${videoplayer.videoHeight / window.innerHeight}%`,
-                width: `${videoplayer.videoWidth / window.innerWidth}%`,
-            };
-        },
+        // controlStyle() {
+        //     return {
+        //         height: `${videoplayer.videoHeight / window.innerHeight}%`,
+        //         width: `${videoplayer.videoWidth / window.innerWidth}%`,
+        //     };
+        // },
         estiloUpload() {
             return {
                 // COR E FONTE
@@ -219,6 +224,8 @@ $fonte-diag: clamp(14px, 4vmin, 22px);
 }
 
 .analysis-view {
+    // border-style: solid;
+    z-index:30;
     width: clamp(100%, 100%, 100%);
     background-color: #fff;
     /* box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.34); */

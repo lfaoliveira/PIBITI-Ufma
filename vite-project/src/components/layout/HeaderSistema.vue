@@ -49,8 +49,8 @@
                     <div class="nav-item" v-if="this.logado">
                         <Sair></Sair>
                     </div>
-
-                    <div class="nav-item" v-if="this.logado">
+<!-- nav-item -->
+                    <div class="" v-if="this.logado">
                         <Salvar :modo="this.modoSalvar" :urlPDF="urlPDF"></Salvar>
                     </div>
                 </li>

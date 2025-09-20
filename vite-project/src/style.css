@@ -104,4 +104,18 @@ button:focus-visible {
     .campos-ficha{
         @apply text-lg sm:text-2xl
     }
+
+    .botao-header {
+        @apply cursor-pointer text-white text-[clamp(13px,1.8vmin,20px)]
+        bg-transparent w-fit no-underline
+        transition-all duration-300 p-[1vmin]
+        inline-block text-center
+        
+        hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110
+        
+        disabled:cursor-default disabled:opacity-50 
+        max-[500px]:text-[clamp(10px,2vmin,14px)];
+    }
+
+
 }
