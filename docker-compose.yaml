@@ -1,43 +1,49 @@
 name: pibiti
 services:
     flask: # Flask + Tensorflow
-        image: lfaoliveira/flask:latest
-        build: 
-            context: .
-            dockerfile: ./DOCKER/flask/dockerfile
-        command: bash -c "uvicorn flask_backend.server:asgi_app --reload --workers 1 --timeout-keep-alive 30 --host 0.0.0.0 --port 5000 --log-level debug"
-        working_dir: /app
-        depends_on:
-            - db
-            - redis
-            - celery_worker
-        ports:
-        - '5000:5000'
-        environment:
-            - FLASK_ENV=production
-            - FLASK_BASE_URL=http://31.97.84.210:5000 #TODO: MUDAR PRA IP DO SERVIDOR DE PROD
-            #USANDO MESMAS CREDENCIAIS DO DB!
-            - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
-            - CELERY_BROKER_URL=redis://redis:6379/0
-            - CELERY_RESULT_BACKEND=redis://redis:6379/0
-            - VUE_FRONT_URL=http://31.97.84.210:5173
-            #--------- SEGREDOS ---------#
-            - MAIL_USERNAME=viplab.psno@nca.ufma.br
-            - MAIL_DEFAULT_SENDER=viplab.psno@nca.ufma.br
-            - MAIL_PASSWORD=lndd gxkj sdlh sgfo
-            - MAIL_SERVER=smtp.gmail.com
-            - MAIL_PORT=587
-            - MAIL_USE_TLS=True
-            - SECRET_KEY=9074578ec4e99fa85eb1267e52861d11356d7b8651172a5eeae6bb85f8928e5e
-            - ID_ROOT_FOLDER_GDRIVE=1HGQRjShCSWINVeIjzizpupv9gHmQJi-B
-        networks:
-            - projeto
-        volumes:
-            - /root/pibiti:/app
-        # env_file:
-        #   - .env
-        restart: unless-stopped
-        
+      image: lfaoliveira/flask:latest
+      build: 
+        context: .
+        dockerfile: ./DOCKER/flask/dockerfile
+      command: bash -c "apt-get update -y && apt-get install -y --no-install-recommends curl &&  uvicorn flask_backend.server:asgi_app --reload --workers 1 --timeout-keep-alive 30 --host 0.0.0.0 --port 5000 --log-level debug"
+      working_dir: /app
+      depends_on:
+        - db
+        - redis
+        - celery_worker
+      ports:
+      - '5000:5000'
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://0.0.0.0:5000/"]
+        interval: 30s
+        timeout: 10s
+        retries: 3
+        start_period: 10s
+      environment:
+        - FLASK_ENV=production
+        - FLASK_BASE_URL=http://31.97.84.210:5000 #TODO: MUDAR PRA IP DO SERVIDOR DE PROD
+        #USANDO MESMAS CREDENCIAIS DO DB!
+        - MONGO_URI=mongodb://admin:Lf123456@db:27017/PARALISIA6_NERVO?authSource=admin #URLS INTERNAS PODEM USAR DNS DO COMPOSE!
+        - CELERY_BROKER_URL=redis://redis:6379/0
+        - CELERY_RESULT_BACKEND=redis://redis:6379/0
+        - VUE_FRONT_URL=http://31.97.84.210:5173
+        #--------- SEGREDOS ---------#
+        - MAIL_USERNAME=viplab.psno@nca.ufma.br
+        - MAIL_DEFAULT_SENDER=viplab.psno@nca.ufma.br
+        - MAIL_PASSWORD=lndd gxkj sdlh sgfo
+        - MAIL_SERVER=smtp.gmail.com
+        - MAIL_PORT=587
+        - MAIL_USE_TLS=True
+        - SECRET_KEY=9074578ec4e99fa85eb1267e52861d11356d7b8651172a5eeae6bb85f8928e5e
+        - ID_ROOT_FOLDER_GDRIVE=1HGQRjShCSWINVeIjzizpupv9gHmQJi-B
+      networks:
+        - projeto
+      volumes:
+        - /root/pibiti:/app
+      # env_file:
+      #   - .env
+      restart: unless-stopped
+      
     frontend: #Vue + Vite
         image: lfaoliveira/frontend:latest
 
@@ -60,6 +66,13 @@ services:
             - /frontend/node_modules
         restart: unless-stopped
         command: "npm run dev -- --host"
+
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+          interval: 30s
+          timeout: 10s
+          retries: 3
+          start_period: 30s
 
 
     celery_worker:

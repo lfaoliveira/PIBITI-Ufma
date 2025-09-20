@@ -350,11 +350,13 @@ def get_file_drive(id_file):
     except FileNotFoundError as e:
         # This new exception provides a more specific error to the client.
         print(f"ERRO AO PEGAR ARQUIVO (NOT FOUND): {e}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), NOT_FOUND
 
     except Exception as e:
         # General catch-all for other errors during setup.
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), INTERNAL_SERVER_ERROR
 
 
