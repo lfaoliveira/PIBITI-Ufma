@@ -11,6 +11,9 @@ import './style.css'
 
 import Popup from "./components/layout/Popup.vue";
 import TesteOverlay from './components/layout/TesteOverlay.vue';
+// import 'tailwindcss/base.css';
+// import 'tailwindcss/components.css';
+// import 'tailwindcss/utilities.css';
 
 axios.defaults.withCredentials = true;
 
