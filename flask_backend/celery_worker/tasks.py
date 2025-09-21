@@ -204,6 +204,9 @@ def processamento_analise(self, res_anterior, **kwargs):
     """
     Funcao deve: registrar dados no BD, pegar o que tiver que pegar pra processar, processar e guardar dados no BD
     """
+    ROTA_PEGAR_ARQ = "get_file"
+    ROTA_RELATORIO = "gerar_relatorio"
+
     # ------------INPUT----------------#
     filename = kwargs.get("filename")
     TEMP_FOLDER = kwargs.get("TEMP_FOLDER")
@@ -327,13 +330,20 @@ def processamento_analise(self, res_anterior, **kwargs):
         dict_dados_pdf = None
 
     print("PEGANDO URLS")
+
     local_url_video_out = posixpath.join(
-        BASE_URL, "get_file", os.path.basename(path_out)
+        BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_out)
     )
 
     local_url_video_in = posixpath.join(
-        BASE_URL, "get_file", os.path.basename(path_arq_input)
+        BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_arq_input)
     )
+
+    url_pdf = posixpath.join(
+        BASE_URL, ROTA_RELATORIO, id_diag
+    )
+    
+
     print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
 
     result = {
@@ -343,6 +353,7 @@ def processamento_analise(self, res_anterior, **kwargs):
         "dataDiag": timestamp,
         "video": local_url_video_out,
         "ultimaModif": timestamp,
+        "url_pdf": url_pdf, 
     }
     # seta resultado no BD
     db.get_collection(self.coll_diags).update_one(

@@ -33,7 +33,7 @@
                 class="w-full !border-b !border-r !border-l border-gray-300/50"
             >
                 <thead
-                    class=" !border-t !border-l border-gray-300/50 bg-purple-700 text-white"
+                    class="!border-t !border-l border-gray-300/50 bg-purple-700 text-white"
                 >
                     <tr>
                         <th
@@ -54,29 +54,29 @@
                             class="w-[500px] !border-t !border-l border-gray-300/50 p-2"
                             v-for="(valor, key) in obj"
                         >
-                            <template v-if="key === 'pdf'">
+                            <template v-if="String(key).includes('pdf', 0)">
                                 <a
                                     @click="baixarRelatorio"
                                     :href="valor"
                                     class="hover:underline hover:bg-transparent"
                                     >Baixar</a
-                                >   
+                                >
                             </template>
                             <template v-else>
                                 {{ valor }}
                             </template>
                         </td>
-                        <td class="w-[500px] !border-t !border-l border-gray-300/50 p-2">
+                        <td class="w-[500px] p-2">
                             <button
                                 @click="fnEditar"
-                                class="aspect-square w-[4.5vmin] bg-transparent cursor-pointer hover:bg-gray-200 hover:rounded-[3vmin] focus:bg-gray-200 focus:rounded-[3vmin] mr-[1vmin]"
+                                class="aspect-square !border-0 w-8 bg-transparent cursor-pointer hover:bg-gray-200 hover:rounded-[3vmin] focus:bg-gray-200 focus:rounded-[3vmin] mr-[1vmin]"
                             >
                                 <img src="../../assets/mdi_pencil-outline.png" />
                             </button>
 
                             <button
                                 @click="fnDeletar"
-                                class="aspect-square w-[4.5vmin] bg-transparent cursor-pointer hover:bg-gray-200 hover:rounded-[3vmin] focus:bg-gray-200 focus:rounded-[3vmin]"
+                                class="aspect-square !border-0 w-8 bg-transparent cursor-pointer hover:bg-gray-200 hover:rounded-[3vmin] focus:bg-gray-200 focus:rounded-[3vmin]"
                             >
                                 <img src="../../assets/mdi_trash.png" />
                             </button>
@@ -92,7 +92,7 @@
                     <button
                         @click="goToFirstPage"
                         :disabled="pagAtual === 1"
-                        class="flex items-center p-2 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 rounded"
+                        class="flex items-center !border-0 p-2 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 rounded"
                     >
                         <span class="text-sm">««</span>
                     </button>
@@ -101,7 +101,7 @@
                     <button
                         @click="fnAtras"
                         :disabled="pagAtual === 1"
-                        class="flex items-center p-0 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex items-center !border-0 p-0 bg-transparent cursor-pointer disabled:opacity-50  hover:bg-gray-100 disabled:cursor-not-allowed"
                     >
                         <img
                             class="p-0 aspect-square w-[4ch]"
@@ -117,9 +117,9 @@
                             @click="goToPage(page)"
                             :class="[
                                 'px-3 py-1 text-sm rounded transition-colors',
-                                page === pagAtual 
-                                    ? 'bg-purple-700 text-white font-semibold' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                page === pagAtual
+                                    ? 'bg-purple-700 text-white font-semibold'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
                             ]"
                         >
                             {{ page }}
@@ -137,7 +137,7 @@
                     <button
                         @click="fnFrente"
                         :disabled="pagAtual === totalPages"
-                        class="flex items-center p-0 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex items-center !border-0 p-0 bg-transparent cursor-pointer disabled:opacity-50 hover:bg-gray-100 disabled:cursor-not-allowed"
                     >
                         <img
                             class="p-0 aspect-square w-[4ch]"
@@ -149,7 +149,7 @@
                     <button
                         @click="goToLastPage"
                         :disabled="pagAtual === totalPages"
-                        class="flex items-center p-2 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 rounded"
+                        class="flex items-center !border-0 p-2 bg-transparent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 rounded"
                     >
                         <span class="text-sm">»»</span>
                     </button>
@@ -159,8 +159,8 @@
             <!-- Items per page selector -->
             <div class="flex items-center gap-2" v-if="temDiags">
                 <label class="text-sm text-gray-600">Itens por página:</label>
-                <select 
-                    v-model="itemsPerPage" 
+                <select
+                    v-model="itemsPerPage"
                     @change="changeItemsPerPage"
                     class="px-2 py-1 border border-gray-300 rounded text-sm"
                 >
@@ -207,7 +207,7 @@ export default {
             });
         } catch (e) {
             if (e.response.status == 401) {
-                this.ajustarEntradasTabela([]);
+                this.entradas = this.ajustarEntradasTabela([]);
             }
             console.log("ERRO AO PEGAR PERFIL!");
         }
@@ -328,23 +328,25 @@ export default {
             const maxVisible = 5;
             let start = Math.max(1, this.pagAtual - Math.floor(maxVisible / 2));
             let end = Math.min(this.totalPages, start + maxVisible - 1);
-            
+
             // Adjust start if we're near the end
             if (end - start + 1 < maxVisible) {
                 start = Math.max(1, end - maxVisible + 1);
             }
-            
+
             for (let i = start; i <= end; i++) {
                 pages.push(i);
             }
             return pages;
         },
         startItem() {
-            return this.totalItems === 0 ? 0 : (this.pagAtual - 1) * this.itemsPerPage + 1;
+            return this.totalItems === 0
+                ? 0
+                : (this.pagAtual - 1) * this.itemsPerPage + 1;
         },
         endItem() {
             return Math.min(this.pagAtual * this.itemsPerPage, this.totalItems);
-        }
+        },
     },
     data() {
         return {
@@ -396,7 +398,6 @@ export default {
 //     height: 100vh;
 //     align-items: center;
 // }
-
 
 // .info {
 //   display: flex;

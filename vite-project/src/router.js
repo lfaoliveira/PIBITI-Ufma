@@ -12,7 +12,6 @@ import Perfil from './components/navigation/Perfil.vue';
 import EsqueciSenha from './components/helper/EsqueciSenha.vue';
 import MudarSenha from './components/helper/MudarSenha.vue';
 // import TesteLoading from './components/analise/TesteLoading.vue';
-import Socket from './Socket.vue';
 
 
 
@@ -53,9 +52,6 @@ const routes = [
     },
     {
         name: 'MudarSenha', path: '/mudarSenha',  component: MudarSenha
-    },
-    {
-        name: 'PaginaDETESTE', path: '/teste', component: Socket,
     },
 ];
 

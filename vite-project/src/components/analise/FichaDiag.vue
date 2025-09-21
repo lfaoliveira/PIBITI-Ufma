@@ -15,7 +15,7 @@
             :subtexto="`Tamanho máximo: 50MB`"
             :srcImg="'src/assets/alert_circle.png'"
         ></TesteOverlay> -->
-        <main>
+        <main class="max-sm: flex-start">
             <p
                 v-if="!this.$store.getters.getLogado"
                 class="sm:text-2xl"
@@ -27,7 +27,7 @@
             <form
                 @keyup.enter="$emit('submit')"
                 ref="form"
-                class="form-cadastro"
+                class="['form-cadastro', 'max-sm: flex-start']"
                 @submit.prevent="enviaDiag"
             >
                 <div class="form-group">
@@ -289,7 +289,7 @@ export default {
             console.log(`URL WS: ${urlWS}`);
 
             try {
-                await this.$store.dispatch("handleWebSocket", {
+                this.$store.dispatch("handleWebSocket", {
                     wsURL: urlWS,
                     taskId: taskId,
                 });
@@ -390,13 +390,13 @@ h1 {
 
 main {
     width: fit-content;
-    margin: auto;
+    margin: 0 auto;
     display: flex;
     align-items: flex-start;
     flex-direction: column;
     justify-content: center;
     gap: 20px;
-    flex: 1 0 0;
+    // flex: 1 0 0;
 
     #aviso-avulso {
         color: #792359;
