@@ -1,5 +1,5 @@
 # Descrição:
-Aplicativo Web projetado para diagnosticar Paralisia do Nervo Abducente, implementando o mesmo modelo utilizado em XXXXXXXXXXXXXXXXXXXXXXXXXXXX.
+Aplicativo Web projetado para diagnosticar Paralisia do Nervo Abducente, implementando o mesmo modelo utilizado em Computational method for aid in the diagnosis of sixth optic nerve palsy through digital videos.
 
 
 
