@@ -196,7 +196,7 @@ print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
-    raise Exception(
+    print(
         f"PESO YOLOv3 NAO EXISTE!!! BAIXE O ARQUIVO: trained_weights_final.h5 PARA PROSSEGUIR"
     )
 
@@ -572,7 +572,6 @@ def gerar_grafico(id_diag, external=True):
     Gera grafico e retorna ele como stream
     """
     try:
-
         diag = Helper.find_one_with_id(
             mongo.db.get_collection(COLLECTION_DIAGS), id_diag
         )
@@ -846,7 +845,7 @@ def registrar_diag_processar():
     stringOlhos = request.form.get("stringOlhos", None)
     desc = request.form.get("desc", None)
 
-    [print(elem ,end="  ") for elem in [video, nomePaciente, stringOlhos, desc]]
+    [print(elem, end="  ") for elem in [video, nomePaciente, stringOlhos, desc]]
     print("")
 
     if any(elem is None for elem in [video, nomePaciente]):
@@ -895,7 +894,7 @@ def registrar_diag_processar():
 
     except Exception as e:
         print(f"EXCECAO NA ANALISE: {e}\n")
-        traceback.print_exc()        
+        traceback.print_exc()
         return make_response("ERRO AO PROCESSAR!", INTERNAL_SERVER_ERROR)
 
 
