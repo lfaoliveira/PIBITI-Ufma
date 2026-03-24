@@ -1,11 +1,11 @@
-FROM python:3.9-slim-bullseye AS builder_cel
+FROM python:3.12-slim-bullseye AS builder_cel
 
 WORKDIR /app
 
 RUN python3 -m venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY flask_backend/requirements.txt .
+COPY flask_backend/pyproject.toml .
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     ffmpeg \
     bash \
@@ -17,7 +17,7 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
 COPY ./flask_backend ./flask_backend 
 # WORKDIR /flask_backend
 

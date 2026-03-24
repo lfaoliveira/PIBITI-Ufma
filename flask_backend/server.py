@@ -276,7 +276,7 @@ def teste_pdf():
 
 @app.route("/deletar_tudo")
 def deletar_tudo():
-    # drive.upload_to_drive("requirements.txt", ROOT_DRIVE)
+    # drive.upload_to_drive("pyproject.toml", ROOT_DRIVE)
     files = drive.fetch_drive_files().copy()
     # print(f"{file.get('name')} deleted in folder {file.get('parents')}\n")
     print("ARQUIVOS DO FETCH")

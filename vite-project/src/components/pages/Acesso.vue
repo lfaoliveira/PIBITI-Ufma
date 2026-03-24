@@ -408,8 +408,8 @@ export default {
 
 <style lang="scss" scoped>
 .frame-pagina {
-    @include frame-pagina($gap: 5vmin);
     height: 100vh;
+    @include frame-pagina($gap: 5vmin);
 }
 
 h1 {
