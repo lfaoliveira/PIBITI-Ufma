@@ -49,7 +49,7 @@ python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy application files
-COPY ./flask_backend ./flask_backend
+COPY ./flask_backend ./.env ./flask_backend/
 
 
 ENV PYTHONPATH=/app:$PYTHONPATH
