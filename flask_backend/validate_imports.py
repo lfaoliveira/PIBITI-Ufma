@@ -6,18 +6,40 @@ Executa verificações de compatibilidade e estabilidade dos módulos principais
 Deve rodar em ambiente Docker ou local para validar stack legada.
 """
 
+from pathlib import Path
 import sys
 import os
+
 
 print("[VALIDATION] Iniciando validação de imports críticos...")
 print(f"[VALIDATION] Python version: {sys.version}")
 print(f"[VALIDATION] Working directory: {os.getcwd()}")
 
+# ⭐ LOAD .ENV FIRST - antes de qualquer import de flask_backend!
+print("\n[0/7] Carregando variáveis de ambiente (.env)...")
+try:
+    from dotenv import load_dotenv
+
+    env_loaded = False
+    env_file = Path("flask_backend", ".env")
+
+    if os.path.exists(env_file):
+        dotenv_path = os.path.abspath(env_file)
+        load_dotenv(dotenv_path)
+        print(f"  ✓ .env carregado de: {env_file}")
+        env_loaded = True
+
+    if not env_loaded:
+        print("  ⚠ Nenhum arquivo .env encontrado (será usado variáveis do sistema)")
+        exit(1)
+except Exception as e:
+    print(f"  ⚠ Aviso ao carregar .env: {e}")
+
 errors = []
 warnings = []
 
 # Test 1: TensorFlow e Keras
-print("\n[1/7] Testando TensorFlow/Keras...")
+print("\n[1/6] Testando TensorFlow/Keras...")
 try:
     import tensorflow as tf
 
@@ -36,7 +58,7 @@ except Exception as e:
     print(f"  ✗ Erro: {e}")
 
 # Test 2: YOLO multi_gpu fallback
-print("\n[2/7] Testando YOLO multi_gpu_model fallback...")
+print("\n[2/6] Testando YOLO multi_gpu_model fallback...")
 try:
     try:
         from tensorflow.python.keras.utils.multi_gpu_utils import multi_gpu_model
@@ -50,7 +72,7 @@ except Exception as e:
     print(f"  ✗ Erro: {e}")
 
 # Test 3: Flask setup
-print("\n[3/7] Testando Flask...")
+print("\n[3/6] Testando Flask...")
 try:
     from flask import Flask
 
@@ -64,7 +86,7 @@ except Exception as e:
     print(f"  ✗ Erro: {e}")
 
 # Test 4: Celery setup
-print("\n[4/7] Testando Celery...")
+print("\n[4/6] Testando Celery...")
 try:
     # Set up environment variables se não estiverem definidas
     if "CELERY_BROKER_URL" not in os.environ:
@@ -81,7 +103,7 @@ except Exception as e:
     print(f"  ⚠ Aviso: {e}")
 
 # Test 5: Core modules
-print("\n[5/7] Testando módulos core...")
+print("\n[5/6] Testando módulos core...")
 try:
     import numpy as np
 
@@ -103,48 +125,8 @@ except Exception as e:
     print(f"  ✗ Erro: {e}")
 
 
-# Test 6: Environment variables (.env)
-print("\n[6/7] Testando carregamento de variáveis de ambiente (.env)...")
-try:
-    from dotenv import load_dotenv
-
-    # Try to load .env from current directory or parent
-    env_loaded = False
-    env_files = [".env", "../.env", "../../.env"]
-
-    for env_file in env_files:
-        if os.path.exists(env_file):
-            dotenv_path = os.path.abspath(env_file)
-            load_dotenv(dotenv_path)
-            print(f"  ✓ .env carregado de: {env_file}")
-            env_loaded = True
-            break
-
-    if not env_loaded:
-        print("  ⚠ Nenhum arquivo .env encontrado (esperado em produção)")
-        warnings.append(".env não encontrado - usar variáveis de ambiente do sistema")
-
-    # Check critical env vars
-    critical_vars = ["CELERY_BROKER_URL", "CELERY_RESULT_BACKEND", "MONGO_URI"]
-    missing_vars = []
-
-    for var in critical_vars:
-        if var in os.environ:
-            print(f"     • {var}: carregado ✓")
-        else:
-            missing_vars.append(var)
-
-    if missing_vars:
-        warnings.append(f"Variáveis de ambiente ausentes: {', '.join(missing_vars)}")
-        print(f"  ⚠ Variáveis não definidas: {', '.join(missing_vars)}")
-
-except Exception as e:
-    errors.append(f"Environment (.env): {e}")
-    print(f"  ✗ Erro: {e}")
-
-
-# Test 7: YOLO initialization test (sem modelo)
-print("\n[7/7] Testando estrutura YOLO...")
+# Test 6: YOLO initialization test (sem modelo)
+print("\n[6/6] Testando estrutura YOLO...")
 try:
     from flask_backend.yolo3.model import yolo_body, tiny_yolo_body
 

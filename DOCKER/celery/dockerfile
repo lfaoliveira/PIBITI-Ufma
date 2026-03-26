@@ -2,11 +2,13 @@ FROM python:3.8-slim-bullseye AS builder_cel
 
 WORKDIR /app
 
-RUN python3 -m venv /opt/venv  
+# RUN python3 -m venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
-COPY flask_backend/pyproject.toml .
-RUN apt-get update -y && apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,id=global-apt-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=global-apt-lib,target=/var/lib/apt,sharing=locked \
+    apt-get update -y && apt-get install -y --no-install-recommends \
     ffmpeg \
     bash \
     gcc \
@@ -14,12 +16,15 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     libxext6 \
     libgl1-mesa-glx \
     #PARTE DO WEASYPRINT!
-    python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 
 
-RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
-COPY ./flask_backend ./flask_backend
+RUN pip install --no-cache-dir --upgrade pip && pip install uv
 
+# RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
+COPY flask_backend/pyproject.toml flask_backend/.python-version ./
+
+RUN --mount=type=cache,id=global-uv-cache,target=/root/.cache/uv,sharing=locked \
+    uv sync
 
 FROM python:3.8-slim-bullseye AS runner_cel
 
@@ -28,9 +33,12 @@ WORKDIR /app
 # Copy the virtualenv from builder
 COPY --from=builder_cel /opt/venv /opt/venv  
 ENV PATH="/opt/venv/bin:$PATH"
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
 # Reinstall only runtime libs (no gcc, no build tools)
-RUN apt-get update -y \
+RUN --mount=type=cache,id=global-apt-cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,id=global-apt-lib,target=/var/lib/apt,sharing=locked \
+    apt-get update -y \
 && apt-get install -y --no-install-recommends \
 ffmpeg \
 bash \
@@ -38,10 +46,13 @@ libsm6 \
 libxext6 \
 libgl1-mesa-glx \
 python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
-&& apt-get clean && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy application files
 COPY ./flask_backend ./flask_backend
+
+
+ENV PYTHONPATH=/app:$PYTHONPATH
 
 # Smoke test: Validar que imports críticos funcionam
 RUN python ./flask_backend/validate_imports.py
