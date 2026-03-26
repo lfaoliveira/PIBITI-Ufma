@@ -68,7 +68,16 @@ from flask_backend.celery_worker.tasks import (
     sync_google_drive,
 )
 from celery.result import AsyncResult
-
+from flask_backend import (
+    COLLECTION_DIAGS,
+    COLLECTION_MEDICOS,
+    PASTA_USUARIO_ANONIMO_GDRIVE,
+    PATH_CRED,
+    ROOT_DRIVE,
+    PACKAGE_WKDIR,
+)
+from starlette.exceptions import WebSocketException
+from celery import chain
 
 @tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
@@ -82,14 +91,7 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
-from flask_backend import (
-    COLLECTION_DIAGS,
-    COLLECTION_MEDICOS,
-    PASTA_USUARIO_ANONIMO_GDRIVE,
-    PATH_CRED,
-    ROOT_DRIVE,
-    PACKAGE_WKDIR,
-)
+
 
 # Read environment variables from CSV
 # arq_config = "./env.csv"
@@ -833,8 +835,7 @@ def logout():
 # ------------------WEBSOCKETS-------------------#
 # -----------------------------------------------#
 # -----------------------------------------------#
-from starlette.exceptions import WebSocketException
-from celery import chain
+
 
 
 @app.route("/analise-ws", methods=["POST"])
@@ -994,7 +995,7 @@ if __name__ != "__main__":
 
     print("\n\n SERVIDOR INICIADO!\n\n")
     # LEGACY: GUnicorn nao sendo mais usado
-    from asgiref.wsgi import WsgiToAsgi
+    # from asgiref.wsgi import WsgiToAsgi
     from starlette.middleware.wsgi import WSGIMiddleware
 
     # --- Combine both ---
