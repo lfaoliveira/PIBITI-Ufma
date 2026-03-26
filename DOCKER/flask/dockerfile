@@ -1,5 +1,5 @@
-# python3.12-slim (debian-based)
-FROM python:3.12-slim-bookworm AS builder
+# python3.8-slim (debian-based) - Legacy stack compatible
+FROM python:3.8-slim-bullseye AS builder
 
 # Set environment variables to avoid user prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
 
 
 
-FROM python:3.12-slim-bookworm AS runner_flask
+FROM python:3.8-slim-bullseye AS runner_flask
 
 WORKDIR /app
 
@@ -52,20 +52,17 @@ python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
 
 # COPY --from=builder /flask_backend ./flask_backend
 # Copy application files
-COPY ./flask_backend ./
+COPY ./flask_backend ./flask_backend
 # COPY ./.env ./
 
+ENV PYTHONPATH=/app:$PYTHONPATH
 
-#----------NOTE: tirando esses testes pq essa validacao vai ser feita ou no Flask ou no docker-compose 
 
-#RUN test -f ./permalink-googleDrive-pibiti6-nervo.json || (echo "permalink-googleDrive-pibiti6-nervo.json file not found in flask_backend directory" && exit 1)
-
-# Verify required files exist
-#RUN test -f ./.env || (echo ".env file not found in flask_backend directory" && exit 1)
-
-# SO PRA TESTAR WEASYPRINT (retirar em producao)
-# RUN weasyprint https://weasyprint.org /tmp/weasyprint-website.pdf
+# Smoke test: Validar que imports críticos funcionam
+RUN python ./flask_backend/validate_imports.py
 
 EXPOSE 5000
-# CMD ["python", "-m", "server"] COMANDO ANTIGO PARA RODAR SERVIDOR DO FLASK
-# CMD ["gunicorn", "--timeout", "30",  "--access-logfile", "-", "--error-logfile", "-", "--capture-output", "--log-level", "debug", "--bind", "0.0.0.0:5000", "server:app"]
+
+# Health check para validar que Flask está rodando
+HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
+    CMD curl -f http://localhost:5000/api || exit 1

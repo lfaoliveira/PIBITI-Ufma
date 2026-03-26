@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye AS builder_cel
+FROM python:3.8-slim-bullseye AS builder_cel
 
 WORKDIR /app
 
@@ -18,17 +18,34 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
-COPY ./flask_backend ./flask_backend 
-# WORKDIR /flask_backend
+COPY ./flask_backend ./flask_backend
 
-# CMD ["celery", "-A", "tasks.celery_app", "worker", "--loglevel=info"]
-# CMD ["celery", "-A", "celery.celery", "worker", "-l", "INFO"]
 
-#/
-# |---flask_backend/
-#     |---__init__.py
-#     |---celery_worker/
-#         |---__init__.py
-#         |---tasks.py
-#         |---celery.py
-#     |---source code files...
+FROM python:3.8-slim-bullseye AS runner_cel
+
+WORKDIR /app
+
+# Copy the virtualenv from builder
+COPY --from=builder_cel /opt/venv /opt/venv  
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Reinstall only runtime libs (no gcc, no build tools)
+RUN apt-get update -y \
+&& apt-get install -y --no-install-recommends \
+ffmpeg \
+bash \
+libsm6 \
+libxext6 \
+libgl1-mesa-glx \
+python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 \
+&& apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy application files
+COPY ./flask_backend ./flask_backend
+
+# Smoke test: Validar que imports críticos funcionam
+RUN python ./flask_backend/validate_imports.py
+
+# Entry point: inicia worker após validação
+ENTRYPOINT ["bash", "-c"]
+CMD ["celery -A flask_backend.celery_worker.celery:app worker -l INFO --pool=solo --max-memory-per-child=400000"]

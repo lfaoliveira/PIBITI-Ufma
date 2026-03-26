@@ -12,16 +12,25 @@ from PIL import Image, ImageFont, ImageDraw
 from flask_backend import PACKAGE_WKDIR
 from flask_backend.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from flask_backend.yolo3.utils import letterbox_image
-import os
-from tensorflow.python.keras.utils.multi_gpu_utils import multi_gpu_model
 
-# from keras.utils import multi_gpu_model
+# Fallback seguro para multi_gpu_model - API interna do TensorFlow pode quebrar em versões diferentes
+try:
+    from tensorflow.python.keras.utils.multi_gpu_utils import multi_gpu_model
+except (ImportError, AttributeError):
+    # Fallback: se importação quebrar, criar dummy function que retorna modelo como está
+    def multi_gpu_model(model, gpus=None):
+        """Fallback para multi_gpu_model quando import falha. Retorna modelo sem modificação."""
+        print(
+            f"[YOLO] multi_gpu_model indisponível (versão TensorFlow incompatível). Usando modelo em CPU/GPU single."
+        )
+        return model
+
+
 import matplotlib.pyplot as plt
 from skimage import io
 
 
 class YOLO(object):
-
     _defaults = {
         "model_path": "trained_weights_final.h5",
         "anchors_path": "yolo_anchors.txt",
@@ -87,9 +96,9 @@ class YOLO(object):
         else:
             assert self.yolo_model.layers[-1].output_shape[-1] == num_anchors / len(
                 self.yolo_model.output
-            ) * (
-                num_classes + 5
-            ), "Mismatch between model and given anchor and class sizes"
+            ) * (num_classes + 5), (
+                "Mismatch between model and given anchor and class sizes"
+            )
 
         # print('{} model, anchors, and classes loaded.'.format(model_path))
 
@@ -179,7 +188,6 @@ class YOLO(object):
                 text_origin = np.array([left, top + 1])
 
             for i in range(thickness):
-
                 draw.rectangle(
                     [left + i, top + i, right - i, bottom - i], outline=self.colors[c]
                 )
