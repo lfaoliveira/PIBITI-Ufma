@@ -39,5 +39,5 @@ trained_weights_final.*
 tmp
 db
 flask_session
-
+last_email_rendered.html
 

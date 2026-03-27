@@ -53,7 +53,7 @@ from datetime import timedelta
 from typing import Any, Union
 import tensorflow as tf
 import numpy as np
-
+from pathlib import Path
 
 from flask_backend.pdf import Converter
 from flask_backend.drive import GoogleDrive
@@ -78,6 +78,7 @@ from flask_backend import (
 )
 from starlette.exceptions import WebSocketException
 from celery import chain
+
 
 @tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
@@ -155,7 +156,7 @@ CORS(app, supports_credentials=True, expose_headers=["Set-Cookie"])
 'Fontconfig error: Cannot load default config file: No such file: (null)', 
 testar se pdfs estao sendo gerados corretamente para ter deploy garantido\n")"""
 
-os.makedirs("tmp", exist_ok=True)
+Path(PACKAGE_WKDIR, "tmp").mkdir(exist_ok=True)
 
 PATH_PIBITI = PACKAGE_WKDIR
 print(f"PATH_PIBITI: {PATH_PIBITI}\n")
@@ -395,6 +396,7 @@ def get_file_local(filename):
             )
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
+        traceback.print_exc()
         return make_response(
             {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
         )
@@ -649,56 +651,60 @@ def autenticar():
     senha = request.form.get("senha")
     medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
 
-    if tipo == "login":
-        session.permanent = True
-        if not email or not senha:
-            return make_response("Email ou senha ausentes", BAD_REQUEST)
-        usuario = medicos.find_one({"email": email})
-        if (
-            usuario
-            and usuario.get("senha") == alg_hash(senha.encode("utf-8")).hexdigest()
-        ):
+    try:
+        if tipo == "login":
+            session.permanent = True
+            if not email or not senha:
+                return make_response("Email ou senha ausentes", BAD_REQUEST)
+            usuario = medicos.find_one({"email": email})
+            if (
+                usuario
+                and usuario.get("senha") == alg_hash(senha.encode("utf-8")).hexdigest()
+            ):
+                user_obj = User(email)
+                login_user(user_obj, remember=True)
+                return make_response("LOGADO", OK)
+            else:
+                return make_response("Credenciais inválidas", UNAUTHORIZED)
+
+        elif tipo == "cadastro":
+            nome = request.form.get("nome")
+            crm = request.form.get("crm")
+            # checando valores
+            if not any(valor for valor in [email, senha, nome, crm]):
+                return make_response("Dados de cadastro ausentes", BAD_REQUEST)
+
+            # Usuario ja existe
+            if medicos.find_one({"email": email}):
+                return make_response("JA_EXISTE", OK)
+
+            senha_hash = alg_hash(senha.encode("utf-8")).hexdigest()
+            medicos.insert_one(
+                {
+                    "email": email,
+                    "nome": nome,
+                    "crm": crm,
+                    "senha": senha_hash,
+                    "validado": False,
+                }
+            )
+
+            # loga usuario
             user_obj = User(email)
             login_user(user_obj, remember=True)
-            return make_response("LOGADO", OK)
+
+            # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
+            urlAceita = url_for("aceitar_cadastro", email_medico=email, _external=True)
+            urlRecusa = url_for("recusar_cadastro", email_medico=email, _external=True)
+            MAILHANDLER.enviar_email_admin(email, nome, crm, urlAceita, urlRecusa)
+            drive.create_folder([email])
+
+            return make_response("CADASTRADO", OK)
         else:
-            return make_response("Credenciais inválidas", UNAUTHORIZED)
-
-    elif tipo == "cadastro":
-        nome = request.form.get("nome")
-        crm = request.form.get("crm")
-        # checando valores
-        if not any(valor for valor in [email, senha, nome, crm]):
-            return make_response("Dados de cadastro ausentes", BAD_REQUEST)
-
-        # Usuario ja existe
-        if medicos.find_one({"email": email}):
-            return make_response("JA_EXISTE", OK)
-
-        senha_hash = alg_hash(senha.encode("utf-8")).hexdigest()
-        medicos.insert_one(
-            {
-                "email": email,
-                "nome": nome,
-                "crm": crm,
-                "senha": senha_hash,
-                "validado": False,
-            }
-        )
-
-        # loga usuario
-        user_obj = User(email)
-        login_user(user_obj, remember=True)
-
-        # TODO: ENVIAR EMAIL DE CADASTRO PARA ADMIN
-        urlAceita = url_for("aceitar_cadastro", email_medico=email, _external=True)
-        urlRecusa = url_for("recusar_cadastro", email_medico=email, _external=True)
-        MAILHANDLER.enviar_email_admin(email, nome, crm, urlAceita, urlRecusa)
-        drive.create_folder([email])
-
-        return make_response("CADASTRADO", OK)
-    else:
-        return make_response("Tipo inválido", BAD_REQUEST)
+            return make_response("Tipo inválido", BAD_REQUEST)
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
 
 
 @app.route("/aceitaCadastro/<email_medico>", methods=["GET", "POST"])
@@ -835,7 +841,6 @@ def logout():
 # ------------------WEBSOCKETS-------------------#
 # -----------------------------------------------#
 # -----------------------------------------------#
-
 
 
 @app.route("/analise-ws", methods=["POST"])

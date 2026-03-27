@@ -52,6 +52,7 @@ RUN --mount=type=cache,id=global-apt-cache,target=/var/cache/apt,sharing=locked 
     && apt-get install -y --no-install-recommends \
     ffmpeg \
     libsm6 \
+    curl \
     libxext6 \
     libgl1-mesa-glx \
     python3-pip python3-cffi python3-brotli libpango-1.0-0 libpangoft2-1.0-0 
