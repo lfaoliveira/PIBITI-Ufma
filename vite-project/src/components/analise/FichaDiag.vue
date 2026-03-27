@@ -247,7 +247,7 @@ export default {
             // const formDiag = this.$store.getters.getFormDiag;
             console.log("FORM: ${JSON.stringify(formData)}");
 
-            const promiseEnviaDiag = axios.post(
+            const promiseEnviaDiag = axios.post(    
                 this.$store.getters.getAnaliseWS,
                 formData,
                 {

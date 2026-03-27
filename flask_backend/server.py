@@ -437,20 +437,24 @@ def get_file(resource_uri) -> Union[Any, Response]:
 @app.route("/analise", methods=["PUT"])
 @cross_origin(supports_credentials=True)
 def analisar():
-    data = request.form
-    id_diag = data.get("id_diag", None)
-    nome_input = data.get("nome_input", None)
-    filename = data.get("filename", None)
+    try:
+        data = request.form
+        id_diag = data.get("id_diag", None)
+        nome_input = data.get("nome_input", None)
+        filename = data.get("filename", None)
 
-    if id_diag is None:
-        return make_response("INPUT NULO!", BAD_REQUEST)
+        if id_diag is None:
+            return make_response("INPUT NULO!", BAD_REQUEST)
+        print()
+        # Enqueue the celery task
+        task = processamento_analise.delay(
+            id_diag, nome_input, filename, app.config["TEMP_FOLDER"]
+        )
 
-    # Enqueue the celery task
-    task = processamento_analise.delay(
-        id_diag, nome_input, filename, app.config["TEMP_FOLDER"]
-    )
-
-    return jsonify({"task_id": task.id, "status": "Processing started"})
+        return jsonify({"task_id": task.id, "status": "Processing started"})
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
 
 
 @app.route("/status/<task_id>", methods=["GET"])
@@ -462,18 +466,27 @@ def task_status(task_id):
                 jsonify({"dados": "", "message": "PENDING"}), NOT_MODIFIED
             )
         elif task.state == "SUCCESS":
-            return make_response(
-                jsonify({"dados": task.result, "message": "SUCCESS"}), OK
-            )
+            # Trata resultado que pode ser Exception
+            dados = task.result
+            if isinstance(dados, Exception):
+                dados = str(dados)
+            return make_response(jsonify({"dados": dados, "message": "SUCCESS"}), OK)
         else:
+            # FAILURE, RETRY, etc.
+            dados = task.result if task.result else ""
+            if isinstance(dados, Exception):
+                dados = str(dados)
             return make_response(
-                jsonify({"dados": task.result, "message": "FAILED"}),
+                jsonify({"dados": dados, "message": task.state}),
                 INTERNAL_SERVER_ERROR,
             )
     except Exception as e:
         print(f"EXCEPTION NO STATUS DA TASK: {e}\n")
+        traceback.print_exc()
         return make_response(
-            f"TASK DOESNT EXIST! OR SOMETHING ELSE FAILED!:\n",
+            jsonify(
+                {"error": "TASK DOESNT EXIST OR SOMETHING FAILED", "details": str(e)}
+            ),
             NOT_FOUND,
         )
 
@@ -636,6 +649,67 @@ def envia_diag():
     )
 
     return jsonify({"task_id": task.id, "status": "Upload queued"})
+
+
+@app.route("/test-login", methods=["PUT"])
+@cross_origin(supports_credentials=True)
+def test_login():
+    """
+    Rota de TESTE para autenticar usuário via token.
+
+    Enviando:
+    PUT /api/test-login
+    {
+        "token": 666,
+        "email": "test@example.com"  opcional
+    }
+
+    Se token=666, autentica o usuário e cria sessão via Flask Login.
+    Útil para testar a API sem fazer login completo.
+    """
+    try:
+        data = request.get_json() or {}
+        token = data.get("token")
+        email = data.get("email", "teste@pibiti.local")
+
+        if token != 666:
+            return make_response(jsonify({"error": "Token inválido"}), UNAUTHORIZED)
+
+        # Verifica se o usuário existe no banco, se não, cria
+        medicos = mongo.db.get_collection(COLLECTION_MEDICOS)
+        usuario_existente = medicos.find_one({"email": email})
+
+        if not usuario_existente:
+            # Cria usuário teste no banco
+            medicos.insert_one(
+                {
+                    "email": email,
+                    "nome": "Usuário Teste",
+                    "crm": "TEST-0001",
+                    "senha": "teste_token",
+                    "validado": True,
+                    "criado_por": "test_login_endpoint",
+                }
+            )
+            print(f"✅ Usuário de teste criado: {email}")
+        else:
+            print(f"✅ Usuário já existe: {email}")
+
+        # Autentica usando Flask Login
+        session.permanent = True
+        user_obj = User(email)
+        login_user(user_obj, remember=True)
+
+        print(f"✅ USUARIO AUTENTICADO VIA TOKEN: {email}")
+
+        return jsonify(
+            {"message": "Autenticado com sucesso", "user": email, "authenticated": True}
+        )
+
+    except Exception as e:
+        print(f"❌ Erro no test-login: {e}")
+        traceback.print_exc()
+        return make_response(jsonify({"error": str(e)}), INTERNAL_SERVER_ERROR)
 
 
 @login_manager.user_loader
@@ -913,7 +987,11 @@ def ver_analise(task_uuid):
         diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
             {"celery_task_id": task_uuid}
         )
+        print(f"DIAG: {diagnostico}")
         if diagnostico:
+            # Extrai dados_pdf com segurança (pode ser None para usuários anônimos)
+            dados_pdf = diagnostico.get("dados_pdf", {}) or {}
+
             retorno = {
                 "video": url_for(
                     "get_file", resource_uri=diagnostico["video"], _external=True
@@ -924,10 +1002,10 @@ def ver_analise(task_uuid):
                 "pdfURL": url_for(
                     "gerar_relatorio", id_diag=diagnostico["_id"], _external=True
                 ),
-                "olho_doente": diagnostico["diagnosticoMedico"],
-                "percentDif": diagnostico["dados_pdf"].get("difVel"),
-                "velD": diagnostico["dados_pdf"].get("velDir"),
-                "velE": diagnostico["dados_pdf"].get("velEsq"),
+                "olho_doente": diagnostico.get("diagnosticoMedico", "Desconhecido"),
+                "percentDif": dados_pdf.get("difVel", None),
+                "velD": dados_pdf.get("velDir", None),
+                "velE": dados_pdf.get("velEsq", None),
             }
 
             return jsonify(retorno)
@@ -935,7 +1013,56 @@ def ver_analise(task_uuid):
             return make_response("Diagnostico nao encontrado", NOT_FOUND)
     except Exception as e:
         print(f"Error retrieving diagnostic: {e}")
+        traceback.print_exc()
         return make_response(f"Error: {str(e)}", INTERNAL_SERVER_ERROR)
+
+
+@app.route("/velocidades/<task_uuid>", methods=["GET"])
+@cross_origin(supports_credentials=True)
+def get_velocidades(task_uuid):
+    """
+    Endpoint simplificado para retornar APENAS dados de velocidade para plotar gráficos.
+
+    Retorna:
+    {
+        "velE": float,         # Velocidade olho esquerdo
+        "velD": float,         # Velocidade olho direito
+        "percentDif": float,   # Percentual de diferença entre velocidades
+        "olho_doente": string  # Diagnóstico: qual olho está afetado
+    }
+
+    Use este endpoint após confirmar que o processamento terminou:
+    1. POST /api/analise-ws → recebe task_id
+    2. GET /api/status/<task_id> → polling até SUCCESS
+    3. GET /api/velocidades/<task_id> → retorna velocidades para plotar
+    """
+    try:
+        print(f"GET VELOCIDADES: {task_uuid}")
+        diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
+            {"celery_task_id": task_uuid}
+        )
+
+        if not diagnostico:
+            return make_response(
+                jsonify({"error": "Diagnóstico não encontrado"}), NOT_FOUND
+            )
+
+        # Extrai dados_pdf com segurança (pode ser None para usuários anônimos)
+        dados_pdf = diagnostico.get("dados_pdf", {}) or {}
+
+        retorno = {
+            "velE": dados_pdf.get("velEsq", None),
+            "velD": dados_pdf.get("velDir", None),
+            "percentDif": dados_pdf.get("difVel", None),
+            "olho_doente": diagnostico.get("diagnosticoMedico", "Desconhecido"),
+        }
+
+        return jsonify(retorno)
+
+    except Exception as e:
+        print(f"Erro ao recuperar velocidades: {e}")
+        traceback.print_exc()
+        return make_response(jsonify({"error": str(e)}), INTERNAL_SERVER_ERROR)
 
 
 async def ws_handler(ws):

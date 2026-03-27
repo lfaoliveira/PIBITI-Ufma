@@ -155,10 +155,13 @@ def envia_diag_task(
 
     print(f"\nCONEXAO MONGO: {self.mongo.get_database(DB_PARALISIA)}\n")
     diagnosticoMedico = stringOlhos
-
+    db = self.mongo.get_database(DB_PARALISIA)
+    # print(
+    #     f"Task iniciada - Video: {video_data is not None} | Arquivo: {filename} | "
+    #     f"Paciente: {nomePaciente} | Olhos: {stringOlhos} | Descrição: {desc} | User: {user_id}"
+    # )
     if user_id:
-        db = self.mongo.get_database(DB_PARALISIA)
-        assert db != None
+        assert db is not None
         medicos = db.get_collection(self.coll_meds)
         medico_atual = medicos.find_one({"email": user_id})
         print(f"\nUSER ID: {user_id}\n")
@@ -182,6 +185,7 @@ def envia_diag_task(
         if value is None:
             dados[key] = "None"
 
+    assert db is not None, f"DB NAO EXISTE! {db}"
     diags = db.get_collection(self.coll_diags)
     result = diags.insert_one(dados)
     id_diag_mongo = str(result.inserted_id)
@@ -339,10 +343,7 @@ def processamento_analise(self, res_anterior, **kwargs):
         BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_arq_input)
     )
 
-    url_pdf = posixpath.join(
-        BASE_URL, ROTA_RELATORIO, id_diag
-    )
-    
+    url_pdf = posixpath.join(BASE_URL, ROTA_RELATORIO, id_diag)
 
     print(f"LOCAL URL VIDEO OUT: {local_url_video_out}")
 
@@ -353,7 +354,7 @@ def processamento_analise(self, res_anterior, **kwargs):
         "dataDiag": timestamp,
         "video": local_url_video_out,
         "ultimaModif": timestamp,
-        "url_pdf": url_pdf, 
+        "url_pdf": url_pdf,
     }
     # seta resultado no BD
     db.get_collection(self.coll_diags).update_one(
@@ -402,9 +403,9 @@ def sync_google_drive(self, res_anterior):
 
         db = self.mongo.get_database(DB_PARALISIA)
         task_id = self.request.id
-        if (task_id == None):
+        if task_id == None:
             raise ValueError("ID NULO!")
-        
+
         # Update the document in the database with the new Google Drive file IDs
         db.get_collection(self.coll_diags).update_one(
             {"_id": ObjectId(id_diag)},
@@ -420,7 +421,9 @@ def sync_google_drive(self, res_anterior):
         res_anterior.pop("storage_strings")
         res_anterior.pop("id_diag")
         res_anterior.pop("email")
-        print(f"ID DA ULTIMA TASK: {task_id} \n UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
+        print(
+            f"ID DA ULTIMA TASK: {task_id} \n UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n"
+        )
         return res_anterior
     except Exception as e:
         print(f"ERRO NA PARTE DE UPLOAD: {e}")
