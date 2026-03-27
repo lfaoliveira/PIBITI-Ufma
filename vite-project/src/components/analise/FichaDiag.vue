@@ -334,14 +334,15 @@ export default {
                     subtexto: `Tamanho máximo: 50MB`,
                     srcImg: "src/assets/alert_circle.png",
                 };
-                console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n");
+                console.log("\nARQUIVO GRANDE DEMAIS!!!\n\n");
                 this.openOverlay(props);
                 return;
             }
             if (file) {
                 const filename = String(file.name).toLowerCase();
-                const ext = filename.split(".")[1];
-
+                const partes = filename.split(".");
+                const ext = partes[partes.length - 1];
+                console.log(`EXTENSAO: ${filename}\n`);
                 if (this.extensoes.includes(`${ext}`)) {
                     this.videoObj = file;
                 } else {
