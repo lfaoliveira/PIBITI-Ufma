@@ -371,6 +371,11 @@ def calculate_metrics(df_res):
     return sensitivity, specificity, accuracy
 
 
+### AVISO: COMO TESTAR: 
+# Criar pastas VideosPacientes, VideosSaudaveis, CSV (marcacoes de olhos para cada frame do video) em uma pasta qualquer 
+# JOgar esse script e esperar calcular performance da API
+
+
 # MODE LOCAL == running outside of Google Colab"
 MODO = "LOCAL"
 if os.path.exists("/content"):

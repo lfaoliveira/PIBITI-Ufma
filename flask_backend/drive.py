@@ -76,7 +76,6 @@ class GoogleDrive:
 
         self.file_state = {}
         for file in files:
-
             if file.get("name") not in self.hash_nomes.keys():
                 self.hash_nomes[file.get("name")] = []
             # self.hash_nomes[file.get('name')].append(file['id'])
@@ -358,7 +357,6 @@ class GoogleDrive:
         """
         # self.fetch_drive_files()
         try:
-
             nomes_parents.insert(0, self.ROOT_DRIVE)
 
             print(f"NO UPLOAD: FILE: {file_path} PARENTS: {nomes_parents}\n\n")
@@ -518,7 +516,17 @@ class GoogleDrive:
     def download_file(self, file_id):
         import io
 
-        # self.fetch_drive_files()
+        # Verifica se o arquivo está no índice, se não, faz um refresh
+        if file_id not in self.file_state.index:
+            print(f"Arquivo {file_id} não encontrado no cache. Atualizando lista...")
+            self.fetch_drive_files()
+
+        # Se ainda não encontrar, retorna erro
+        if file_id not in self.file_state.index:
+            raise FileNotFoundError(
+                f"Arquivo com ID {file_id} não encontrado no Google Drive"
+            )
+
         filename = str(self.file_state.loc[file_id, "name"])
         request = self.drive_service.files().get_media(fileId=file_id)
         print(f"REQUEST DE DOWNLOAD: {request}")
@@ -532,10 +540,8 @@ class GoogleDrive:
 
             done = False
             try:
-
                 while not done:
                     try:
-
                         print(f"Downloading next chunk for {filename}...")
                         status, done = downloader.next_chunk()
                         if status:

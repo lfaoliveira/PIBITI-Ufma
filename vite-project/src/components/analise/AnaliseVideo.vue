@@ -237,6 +237,14 @@ $fonte-diag: clamp(14px, 4vmin, 22px);
 .page-title {
     color: #3a0d75;
     font-size: clamp(35px, 52px, 70px);
+    @media (max-width: 1000px){
+        font-size: clamp(1.8rem, 2rem, 4rem);
+
+    }
+    @media (max-width: 600px){
+        font-size: clamp(1.2rem, 1.4rem, 4rem);
+        
+    }
     margin: clamp(30px, 6vmin, 120px) auto 0px auto;
 }
 
