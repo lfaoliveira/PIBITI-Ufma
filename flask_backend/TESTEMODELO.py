@@ -1,4 +1,5 @@
 from itertools import permutations, product
+import traceback
 import requests
 import os
 import shutil
@@ -647,37 +648,205 @@ def testar_api_single(video_path: str, timeout: int = 900):
     }
 
 
-def testar_api(lista_pessoas, df_labels: pd.DataFrame, df_exp: pd.DataFrame):
-    # testa 3 pacientes na API
-    cont = 1
+def testar_api(
+    lista_pessoas, df_labels: pd.DataFrame, df_exp: pd.DataFrame, timeout: int = 450
+):
+    """
+    Testa múltiplos pacientes na API com fluxo completo.
 
-    url_video = ""
-    for pac in lista_pessoas:
-        # Open the video file in binary read mode
-        with open(pac, "rb") as video_file:
-            id, ext = os.path.splitext(os.path.basename(pac))
-            print(id, ext)
-            mimetype = mimetypes.types_map[ext]
-            # Create a dictionary for the files parameter
-            files = {"file": (f"video.{ext}", video_file, mimetype)}
-            # Send the POST request with the video file
-            response = requests.post(URL_SERVER, files=files)
-            doente_label = str(df_labels.at[id, "DOENTE"])
-            print(f"DOENTE LABEL {id}:", doente_label)
-            array_resp, url_video = parse_response(response)
+    Fluxo para cada paciente:
+    1. Autenticar com token (primeira vez apenas)
+    2. POST /api/analise-ws → upload de vídeo + metadados
+    3. GET /api/status/<task_id> → polling até SUCCESS
+    4. POST /api/ver-analise/<task_id> → recuperar dados
+    5. Calcular erro L2 vs velocidade real
+    6. Gerar gráficos de série temporal
 
-            # guarda informacoes no df de experimentos
-            df_exp.loc[id, ["VEL_ESQ", "VEL_DIR", "DIF", "DOENTE"]] = array_resp
-            # print(response.json())
-        cont += 1
+    Args:
+        lista_pessoas: Lista de caminhos dos vídeos
+        df_labels: DataFrame com labels (ARRAY_VEL, DIF, DOENTE)
+        df_exp: DataFrame para armazenar resultados
+        timeout: Timeout por análise em segundos (padrão: 900s = 15 min)
+    """
+    import time
 
-        """         nome = os.path.basename(url_video)
-        response = requests.get(url_video) 
-        if response.status_code == 200:
-            with open(f'{nome}.mp4', 'wb') as file:
-                file.write(response.content) """
+    # 0. Criar sessão única e autenticar uma vez
+    print("=" * 80)
+    print("🚀 INICIANDO TESTE DE MÚLTIPLOS PACIENTES")
+    print("=" * 80)
+
+    session = requests.Session()
+
+    print("\n✓ Autenticando com token...")
+    try:
+        auth_response = session.put(
+            f"{BASE_URL}/test-login",
+            json={"token": 666, "email": "test@pibiti.local"},
+            timeout=30,
+        )
+        if auth_response.status_code in [200, 201]:
+            print("  ✅ Autenticado com sucesso\n")
+        else:
+            print(f"  ⚠️  Status: {auth_response.status_code}\n")
+    except Exception as e:
+        print(f"  ⚠️  Erro na autenticação: {e}\n")
+
+    # Iterar sobre os pacientes
+    total_pacientes = len(lista_pessoas)
+    pacientes_sucesso = 0
+    pacientes_falha = 0
+
+    for idx, video_path in enumerate(lista_pessoas):
+        patient_id = os.path.splitext(os.path.basename(video_path))[0]
+
+        print(f"\n{'=' * 80}")
+        print(f"📹 Paciente {idx}/{total_pacientes}: {patient_id}")
+        print(f"{'=' * 80}")
+
+        # 1. Carregar CSV e calcular velocidade real
+        csv_path = os.path.join(PATH_CSV, f"{patient_id}.txt")
+
+        if not os.path.exists(csv_path):
+            print(f"❌ Erro: Arquivo CSV {csv_path} não encontrado")
+            pacientes_falha += 1
+            continue
+
+        colunas = ["FRAME", "X_ESQ", "Y_ESQ", "X_DIR", "Y_DIR"]
+        try:
+            df_csv = pd.read_csv(csv_path, index_col=0, names=colunas, delimiter=",")
+            pos_esq = df_csv.loc[:, "X_ESQ"].to_list()
+            pos_dir = df_csv.loc[:, "X_DIR"].to_list()
+
+            xEsquerdo, xDireito = getHampel(pos_esq, pos_dir)
+            xEsquerdoFinal, xDireitaFinal = removeOutliers(xEsquerdo, xDireito)
+
+            vel_real_esq, vel_real_dir = calculaVelocidadeEspacoPercorrido(
+                xEsquerdoFinal, xDireitaFinal
+            )
+
+            print(f"  Vel. real - Esq: {vel_real_esq:.4f}, Dir: {vel_real_dir:.4f}")
+        except Exception as e:
+            print(f"❌ Erro ao processar CSV: {e}")
+            pacientes_falha += 1
+            continue
+
+        # 2. Enviar vídeo para análise
+        print(f"  ✓ Enviando vídeo para análise...")
+        try:
+            with open(video_path, "rb") as f:
+                files = {"video": (os.path.basename(video_path), f, "video/mp4")}
+                data = {
+                    "nomePaciente": f"Paciente_{patient_id}",
+                    "stringOlhos": "true+false",
+                    "desc": f"Análise automática - Paciente {patient_id}",
+                }
+
+                response = session.post(
+                    URL_ANALISE_WS, files=files, data=data, timeout=30
+                )
+
+                if response.status_code != 200:
+                    print(f"  ❌ Erro ao enviar: {response.status_code}")
+                    pacientes_falha += 1
+                    continue
+
+                response_data = response.json()
+                task_id = response_data.get("task_id")
+
+                if not task_id:
+                    print(f"  ❌ task_id não encontrado")
+                    pacientes_falha += 1
+                    continue
+
+                print(f"  Task ID: {task_id}")
+        except Exception as e:
+            print(f"  ❌ Erro ao enviar: {e}")
+            pacientes_falha += 1
+            continue
+
+        # 3. Polling para status
+        print(f"  ✓ Aguardando processamento...")
+        start_time = time.time()
+        elapsed = 0
+        analise_completa = False
+        tentativas = 0
+
+        while elapsed < timeout:
+            elapsed = time.time() - start_time
+            tentativas += 1
+
+            try:
+                response = session.get(f"{URL_STATUS}/{task_id}", timeout=10)
+
+                if response.status_code == 200:
+                    result = response.json()
+                    status_msg = result.get("message", "unknown")
+
+                    if status_msg == "SUCCESS":
+                        analise_completa = True
+                        print(f"    ✅ Concluída em {elapsed:.1f}s")
+                        break
+                    elif status_msg == "PENDING":
+                        print(f"    [{tentativas}] ⏳ {elapsed:.1f}s...")
+                    elif status_msg == "FAILED":
+                        print(f"    ❌ Erro: {result}")
+                        break
+                elif response.status_code == 304:
+                    print(f"    [{tentativas}] ⏳ {elapsed:.1f}s...")
+
+                time.sleep(5)
+            except Exception as e:
+                print(f"    ⚠️  Erro: {e}")
+                time.sleep(5)
+
+        if not analise_completa:
+            print(f"  ❌ Análise não concluída após {timeout}s")
+            pacientes_falha += 1
+            continue
+
+        # 4. Recuperar dados da análise
+        print(f"  ✓ Recuperando dados...")
+        try:
+            response = session.post(f"{URL_VER_ANALISE}/{task_id}", timeout=10)
+
+            if response.status_code != 200:
+                print(f"  ❌ Erro ao recuperar: {response.status_code}")
+                pacientes_falha += 1
+                continue
+
+            dados_analise = response.json()
+
+            vel_pred_esq = float(dados_analise.get("velE", 0))
+            vel_pred_dir = float(dados_analise.get("velD", 0))
+            percent_dif = float(dados_analise.get("percentDif", 0))
+            olho_doente = dados_analise.get("olho_doente", "Desconhecido")
+
+            print(f"  Vel. pred - Esq: {vel_pred_esq:.4f}, Dir: {vel_pred_dir:.4f}")
+            print(f"  Diferença: {percent_dif:.2f}% | Olho doente: {olho_doente}")
+
+            # Guardar em df_exp
+            df_exp.loc[patient_id, "VEL_ESQ"] = vel_pred_esq
+            df_exp.loc[patient_id, "VEL_DIR"] = vel_pred_dir
+            df_exp.loc[patient_id, "DIF"] = percent_dif
+            df_exp.loc[patient_id, "DOENTE"] = olho_doente
+
+        except Exception as e:
+            print(f"  ❌ Erro ao recuperar dados: {e}")
+            pacientes_falha += 1
+            continue
+
+    # Salvar resultados
+    print(f"\n{'=' * 80}")
+    pacientes_sucesso = total_pacientes - pacientes_falha
+    print(
+        f"📊 RESUMO: {pacientes_sucesso}/{total_pacientes} pacientes processados com sucesso"
+    )
+    print(f"{'=' * 80}\n")
+
     print(df_exp)
     df_exp.to_csv("df_exp.csv", sep=";", decimal=",")
+    print("✓ Resultados salvos em df_exp.csv")
+
     df_res = processar_dfs(df_exp, df_labels)
     return df_res
 
@@ -694,6 +863,7 @@ def processar_dfs(df_exp: pd.DataFrame, df_label: pd.DataFrame):
             return "TN"
         else:
             print(label, pred)
+            traceback.print_exc()
             raise Exception("Deu merda aqui")
 
     print("Processando df...")
@@ -732,7 +902,7 @@ def processar_dfs(df_exp: pd.DataFrame, df_label: pd.DataFrame):
     with open("out.txt", "w") as f:
         lista_str = []
         lista_str.append(f"SENS: {sens} SPEC: {spec} ACURACIA: {acc}\n")
-        lista_str.append(f"ERRO MEDIO DE VELOCIDADE:\n")
+        lista_str.append("----ERRO MEDIO DE VELOCIDADE-----\n")
         lista_str.append(
             f"ERRO VELOCIDADE ESQUERDA: {medias_erro_vel[0]}+-{dp_erro_vel[0]}\n"
         )
@@ -808,119 +978,18 @@ if any(not os.path.exists(elem) for elem in [PATH_PACIENTES, PATH_SAUDAVEIS, PAT
     raise SystemError("dados para teste nao existem")
 
 
-def plot_error_comparison(video_path: str, results_csv_path: str = "df_exp.csv"):
-    """
-    Plot L2 error comparison between real and predicted detection for each eye.
-    Função independente que lê dados de arquivos locais.
-
-    Args:
-        video_path: Caminho do vídeo do paciente (ex: "DADOS/VideosPacientes/1.mp4")
-        results_csv_path: Caminho do arquivo CSV com resultados preditos (padrão: "df_exp.csv")
-    """
-    # Extrai o ID do paciente do caminho do vídeo
-    patient_id = os.path.splitext(os.path.basename(video_path))[0]
-
-    # Lê o CSV correspondente do paciente para calcular velocidade real
-    csv_path = os.path.join(PATH_CSV, f"{patient_id}.txt")
-
-    if not os.path.exists(csv_path):
-        print(f"Aviso: Arquivo CSV {csv_path} não encontrado")
-        return
-
-    # Calcula velocidade real a partir do CSV
-    colunas = ["FRAME", "X_ESQ", "Y_ESQ", "X_DIR", "Y_DIR"]
-    df_csv = pd.read_csv(csv_path, index_col=0, names=colunas, delimiter=",")
-
-    pos_esq = df_csv.loc[:, "X_ESQ"].to_list()
-    pos_dir = df_csv.loc[:, "X_DIR"].to_list()
-
-    # Aplica filtros
-    xEsquerdo, xDireito = getHampel(pos_esq, pos_dir)
-    xEsquerdoFinal, xDireitaFinal = removeOutliers(xEsquerdo, xDireito)
-
-    # Calcula velocidade real
-    vel_real_esq, vel_real_dir = calculaVelocidadeEspacoPercorrido(
-        xEsquerdoFinal, xDireitaFinal
-    )
-    vel_real = [vel_real_esq, vel_real_dir]
-
-    # Lê velocidade predita do arquivo de resultados
-    if not os.path.exists(results_csv_path):
-        print(f"Aviso: Arquivo de resultados {results_csv_path} não encontrado")
-        return
-
-    df_results = pd.read_csv(results_csv_path, sep=";", index_col=0, decimal=",")
-
-    if patient_id not in df_results.index:
-        print(f"Aviso: Paciente {patient_id} não encontrado em {results_csv_path}")
-        return
-
-    serie_res = df_results.loc[patient_id]
-    vel_pred_esq = float(serie_res["VEL_ESQ"])
-    vel_pred_dir = float(serie_res["VEL_DIR"])
-
-    # Calcula erros L2 para cada olho
-    l2_esq = np.sqrt((vel_real_esq - vel_pred_esq) ** 2)
-    l2_dir = np.sqrt((vel_real_dir - vel_pred_dir) ** 2)
-
-    # Cria figura com 2 subplots (um para cada olho)
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
-    # Gráfico 1: Olho Esquerdo - Real vs Predito
-    x_pos = np.arange(2)
-    axes[0].bar(
-        x_pos,
-        [vel_real_esq, vel_pred_esq],
-        color=["green", "blue"],
-        alpha=0.7,
-        label=["Real", "Predito"],
-    )
-    axes[0].set_xticks(x_pos)
-    axes[0].set_xticklabels(["Real", "Predito"])
-    axes[0].set_title(
-        f"Olho Esquerdo - Paciente {patient_id}\nL2 Error: {l2_esq:.4f}",
-        fontsize=12,
-        fontweight="bold",
-    )
-    axes[0].set_ylabel("Velocidade (unidades)")
-    axes[0].grid(axis="y", alpha=0.3)
-    axes[0].legend()
-
-    # Gráfico 2: Olho Direito - Real vs Predito
-    axes[1].bar(
-        x_pos,
-        [vel_real_dir, vel_pred_dir],
-        color=["red", "orange"],
-        alpha=0.7,
-        label=["Real", "Predito"],
-    )
-    axes[1].set_xticks(x_pos)
-    axes[1].set_xticklabels(["Real", "Predito"])
-    axes[1].set_title(
-        f"Olho Direito - Paciente {patient_id}\nL2 Error: {l2_dir:.4f}",
-        fontsize=12,
-        fontweight="bold",
-    )
-    axes[1].set_ylabel("Velocidade (unidades)")
-    axes[1].grid(axis="y", alpha=0.3)
-    axes[1].legend()
-
-    plt.tight_layout()
-    plt.savefig(f"erro_paciente_{patient_id}.png", dpi=150, bbox_inches="tight")
-    plt.show()
-
-    print(f"Gráfico salvo como: erro_paciente_{patient_id}.png")
-
-
-
-
-
 #### LOOP PRINCIPAL ####
 # Testa um único paciente com visualização gráfica do erro L2
-lista_saudavel = pegar_lista_paths(PATH_SAUDAVEIS)
-lista_pac = pegar_lista_paths(PATH_PACIENTES)
-lista_pessoas = lista_saudavel + lista_pac
-lista_pessoas.sort(key=lambda x: os.path.basename(x))
+# lista_saudavel = pegar_lista_paths(PATH_SAUDAVEIS)
+# lista_pac = pegar_lista_paths(PATH_PACIENTES)
+# lista_pessoas = lista_saudavel + lista_pac
+# lista_pessoas.sort(key=lambda x: os.path.basename(x))
 
-print("COMECANDO TESTE - PACIENTE ÚNICO")
-resultado = testar_api_single(lista_pessoas[0])
+df_labels, index, lista_pessoas = df_videos(PATH_SAUDAVEIS, PATH_PACIENTES, PATH_CSV)
+coluna_exp = ["VEL_ESQ", "VEL_DIR", "DIF", "DOENTE"]
+
+df_exp = pd.DataFrame(columns=coluna_exp, index=index)
+
+
+print("COMECANDO TESTE")
+resultado = testar_api(lista_pessoas, df_labels, df_exp)

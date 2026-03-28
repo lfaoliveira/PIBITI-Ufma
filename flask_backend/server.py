@@ -729,7 +729,7 @@ def autenticar():
         if tipo == "login":
             session.permanent = True
             if not email or not senha:
-                return make_response("Email ou senha ausentes", BAD_REQUEST)
+                return make_response("Email ou senha ausentes", BAD_REQUEST)    
             usuario = medicos.find_one({"email": email})
             if (
                 usuario
