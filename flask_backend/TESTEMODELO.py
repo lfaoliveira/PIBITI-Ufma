@@ -11,7 +11,9 @@ from PIL import Image
 import cv2
 import os
 import mimetypes
-
+import time
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 """ SCRIPT QUE DEVE SER USADO PARA TESTAR EQUIVALÊNCIA ENTRE API E ARTIGO DE POLYANA"""
 slicer = pd.IndexSlice
@@ -668,7 +670,6 @@ def testar_api(
         df_exp: DataFrame para armazenar resultados
         timeout: Timeout por análise em segundos (padrão: 900s = 15 min)
     """
-    import time
 
     # 0. Criar sessão única e autenticar uma vez
     print("=" * 80)
@@ -993,3 +994,58 @@ df_exp = pd.DataFrame(columns=coluna_exp, index=index)
 
 print("COMECANDO TESTE")
 resultado = testar_api(lista_pessoas, df_labels, df_exp)
+
+# Gerar matriz de confusão com visualização de alta qualidade
+import matplotlib.pyplot as plt
+
+# Extrair labels reais e preditos
+labels_reais = df_labels.loc[resultado.index, "DOENTE"].values
+labels_preditos = resultado.index.map(
+    lambda x: df_exp.loc[x, "DOENTE"] if x in df_exp.index else "desconhecido"
+)
+
+# Mapear labels para valores numéricos
+label_mapping = {"saudavel": 0, "doente": 1}
+labels_reais_numeric = [label_mapping.get(label, -1) for label in labels_reais]
+labels_preditos_numeric = [label_mapping.get(label, -1) for label in labels_preditos]
+
+# Calcular matriz de confusão
+cm = confusion_matrix(labels_reais_numeric, labels_preditos_numeric, labels=[0, 1])
+
+# Criar figura com alta resolução
+fig, ax = plt.subplots(figsize=(12, 10), dpi=150)
+
+# Usar seaborn para visualização melhorada
+sns.heatmap(
+    cm,
+    annot=True,
+    fmt="d",
+    cmap="Blues",
+    cbar=True,
+    square=True,
+    linewidths=3,
+    linecolor="black",
+    annot_kws={"size": 28, "weight": "bold", "color": "white"},
+    xticklabels=["Saudável", "Doente"],
+    yticklabels=["Saudável", "Doente"],
+    ax=ax,
+    cbar_kws={"label": "Frequência", "shrink": 0.8},
+)
+
+# Configurar títulos e labels com fonte grande
+ax.set_xlabel("Predito", fontsize=22, fontweight="bold")
+ax.set_ylabel("Real", fontsize=22, fontweight="bold")
+ax.set_title(
+    "Matriz de Confusão - Classificação de Pacientes",
+    fontsize=26,
+    fontweight="bold",
+    pad=20,
+)
+
+# Aumentar tamanho dos ticks
+ax.tick_params(axis="both", which="major", labelsize=18)
+
+plt.tight_layout()
+plt.savefig("matriz_confusao.png", dpi=150, bbox_inches="tight", facecolor="white")
+plt.show()
+print("✓ Matriz de confusão salva: matriz_confusao.png")
