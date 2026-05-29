@@ -1,125 +1,129 @@
 name: pibiti
 services:
-    flask: # Flask + Tensorflow
-      image: lfaoliveira/flask:latest
-      build: 
-        context: .
-        dockerfile: ./DOCKER/flask/dockerfile
-      container_name: backend
-      command: bash -c "uvicorn flask_backend.server:asgi_app --reload --workers 1 --timeout-keep-alive 30 --host 0.0.0.0 --port 5000 --log-level debug"
-      working_dir: /app
-      depends_on:
-        - db
-        - redis
-        - celery_worker
-      ports:
-      - '5000:5000'
-      healthcheck:
-        test: ["CMD-SHELL", "curl -f http://localhost:5000/api/"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
-        start_period: 60s
+  flask: # Flask + Tensorflow
+    image: lfaoliveira/flask:latest
+    build: 
+      context: .
+      dockerfile: ./DOCKER/flask/dockerfile
+    container_name: backend
+    command: bash -c "uvicorn flask_backend.server:asgi_app --reload --workers 1 --timeout-keep-alive 30 --host 0.0.0.0 --port 5000 --log-level debug"
+    working_dir: /app
+    depends_on:
+      - db
+      - redis
+      - celery_worker
+    ports:
+    - '5000:5000'
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
-      env_file:
-        - .env
-      networks:
-        - projeto
-      volumes:
-        - .:/app
-      # env_file:
-      #   - .env
-      restart: unless-stopped
-      
-    frontend: #Vue + Vite
-        image: lfaoliveira/frontend:latest
+    env_file:
+      - .env
+    networks:
+      - projeto
+    volumes:
+      - .:/app
+      - ./flask_backend/trained_weights_final.h5:/app/flask_backend/trained_weights_final.h5:ro
+    # env_file:
+    #   - .env
+    restart: unless-stopped
 
-        build: 
-            context: .
-            dockerfile: ./DOCKER/frontend/dockerfile
-        depends_on:
-            - flask
-        ports:
-        - '5173:5173'
-        env_file:
-          - .env
-        networks:
-            - projeto
-        volumes:
-            - ./vite-project:/frontend
-            - /frontend/node_modules
-        restart: unless-stopped
-        command: "npm run dev -- --host"
+  celery_worker:
+    image: lfaoliveira/celery_worker:latest
+    build:
+      context: .
+      dockerfile: ./DOCKER/celery/dockerfile
+    entrypoint:
+      - python
+      - -m
+      - celery
+    command:
+      - -A
+      - flask_backend.celery_worker.celery:app
+      - worker
+      - -l
+      - INFO
+      - --pool=solo
+      - --max-memory-per-child=400000
+    working_dir: /app
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    networks:
+      - projeto
+    volumes:
+      - .:/app
+      - ./flask_backend/trained_weights_final.h5:/app/flask_backend/trained_weights_final.h5:ro
+    restart: unless-stopped
+    
+  frontend: #Vue + Vite
+    image: lfaoliveira/frontend:latest
 
-        healthcheck:
-          test: ["CMD", "curl", "-f", "http://localhost:5173/"]
-          interval: 30s
-          timeout: 10s
-          retries: 3
-          start_period: 30s
-    celery_worker:
-      image: lfaoliveira/celery_worker:latest
-      build:
-        context: .
-        dockerfile: ./DOCKER/celery/dockerfile
-      entrypoint:
-        - python
-        - -m
-        - celery
-      command:
-        - -A
-        - flask_backend.celery_worker.celery:app
-        - worker
-        - -l
-        - INFO
-        - --pool=solo
-        - --max-memory-per-child=400000
-      working_dir: /app
-      depends_on:
-        - redis
-      env_file:
-        - .env
-      networks:
-        - projeto
-      volumes:
-        - .:/app
-      restart: unless-stopped
+    build: 
+      context: .
+      dockerfile: ./DOCKER/frontend/dockerfile
+    depends_on:
+      - flask
+    ports:
+    - '5173:5173'
+    env_file:
+      - .env
+    networks:
+      - projeto
+    volumes:
+      - ./vite-project:/frontend
+      - /frontend/node_modules
+    restart: unless-stopped
+    command: "npm run dev -- --host"
 
-    redis:
-        image: redis:7-alpine
-        ports:
-            - "6379:6379"
-        networks:
-            - projeto
-        healthcheck:
-          test: ["CMD", "redis-cli", "ping"]
-          interval: 5s
-          timeout: 3s
-          retries: 5
-        restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+  
 
-    db: # MongoDB
-        image: mongo:7.0.23
-        ports: [27017:27017]
-        env_file:
-          - .env
-        volumes:
-            - db:/data/db
-        networks:
-        - projeto
-        restart: unless-stopped
-        healthcheck:
-            test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-            interval: 10s
-            timeout: 5s
-            retries: 5
-            start_period: 40s
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - projeto
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  db: # MongoDB
+    image: mongo:7.0.23
+    ports: [27017:27017]
+    env_file:
+      - .env
+    volumes:
+      - db:/data/db
+    networks:
+    - projeto
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
 networks:
-    projeto:
-        driver: bridge
+  projeto:
+    driver: bridge
 
 volumes:
-    db: 
-    backend: 
-    frontend: 
+  db: 
+  backend: 
+  frontend: 
