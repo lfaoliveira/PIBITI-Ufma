@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./DOCKER/flask/dockerfile
     container_name: backend
-    command: bash -c "uvicorn flask_backend.server:asgi_app --reload --workers 1 --timeout-keep-alive 30 --host 0.0.0.0 --port 5000 --log-level debug"
+    command: ["uvicorn", "flask_backend.server:asgi_app", "--reload", "--workers", "1", "--timeout-keep-alive", "30", "--host", "0.0.0.0", "--port", "5000", "--log-level", "debug"]
     working_dir: /app
     depends_on:
       - db
@@ -15,7 +15,7 @@ services:
     ports:
     - '5000:5000'
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5000/api/"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/')"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -82,7 +82,7 @@ services:
     command: "npm run dev -- --host"
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:5173/').then(()=>process.exit(0)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
