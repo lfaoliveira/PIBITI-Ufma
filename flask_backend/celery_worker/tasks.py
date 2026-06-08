@@ -24,7 +24,7 @@ from flask import (
     stream_with_context,
     send_file,
 )
-import tensorflow as tf
+# Import do TensorFlow foi movido para import lazy dentro das funções
 from celery import Task
 import numpy as np
 
@@ -84,6 +84,7 @@ class MainTask(Task):
 
 # @tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
+    import tensorflow as tf
     # modelo = analisador.modelo
 
     str_res, dict_graf = analisador.funcao_metodo(
@@ -266,6 +267,7 @@ def processamento_analise(self, res_anterior, **kwargs):
     # --------- executando predicao ------------
     print(res_tensor, type(res_tensor))
     print(dict_graf_tensor, type(dict_graf_tensor))
+    import tensorflow as tf
     with tf.compat.v1.Session() as sess:
         # Run the session to get the tensor's value
         res_np = sess.run(res_tensor)

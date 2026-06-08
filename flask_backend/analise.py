@@ -4,12 +4,11 @@ from PIL import Image
 import os
 import numpy as np
 import cv2
-from tensorflow.python.framework.ops import disable_eager_execution
 from shapely.geometry import Polygon
 
 from traceback import print_exc
 
-disable_eager_execution()
+# TensorFlow 2.8+ works fine with eager execution enabled by default
 
 # from yolo import YOLO
 
@@ -82,12 +81,12 @@ class AnaliseParalisia:
 
             if velE < velD:
                 print(
-                    f"O olho esquerdo se move {percentDif*100:.2f}% mais devagar que o olho direito."
+                    f"O olho esquerdo se move {percentDif * 100:.2f}% mais devagar que o olho direito."
                 )
                 olho_doente = "Esquerdo"
             else:
                 print(
-                    f"O olho direito se move {percentDif*100:.2f}% mais devagar que o olho esquerdo."
+                    f"O olho direito se move {percentDif * 100:.2f}% mais devagar que o olho esquerdo."
                 )
                 olho_doente = "Direito"
 
@@ -125,7 +124,6 @@ class AnaliseParalisia:
         olhoDireito = []
         frames = []
         try:
-
             for x in range(0, length - 1):
                 image = []
                 return_value, frame = vid.read()
@@ -332,34 +330,57 @@ def getCenter(bbox):
 
 
 def getIntersection(bbox1, bbox2):
-    #bbox:xmin[0],ymin[1],xmax[2],ymax[3] left top right bottom
+    # bbox:xmin[0],ymin[1],xmax[2],ymax[3] left top right bottom
     # xmin, ymin ; xmax,ymin ; xmax, ymax ; xmin, ymax
-    [[bbox1[0], bbox1[1]], [bbox1[2], bbox1[1]], [bbox1[2], bbox1[3]], [bbox1[0], bbox1[3]]]
-    box_1 = [[bbox1[0], bbox1[1]], [bbox1[2], bbox1[1]], [bbox1[2], bbox1[3]], [bbox1[0], bbox1[3]]]#[[bbox1[0], bbox1[1]], [bbox1[3], bbox1[1]], [bbox1[2], bbox1[3]], [bbox1[0], bbox1[3]]]
-    box_2 = [[bbox2[0], bbox2[1]], [bbox2[2], bbox2[1]], [bbox2[2], bbox2[3]], [bbox2[0], bbox2[3]]]
+    [
+        [bbox1[0], bbox1[1]],
+        [bbox1[2], bbox1[1]],
+        [bbox1[2], bbox1[3]],
+        [bbox1[0], bbox1[3]],
+    ]
+    box_1 = [
+        [bbox1[0], bbox1[1]],
+        [bbox1[2], bbox1[1]],
+        [bbox1[2], bbox1[3]],
+        [bbox1[0], bbox1[3]],
+    ]  # [[bbox1[0], bbox1[1]], [bbox1[3], bbox1[1]], [bbox1[2], bbox1[3]], [bbox1[0], bbox1[3]]]
+    box_2 = [
+        [bbox2[0], bbox2[1]],
+        [bbox2[2], bbox2[1]],
+        [bbox2[2], bbox2[3]],
+        [bbox2[0], bbox2[3]],
+    ]
     poly_1 = Polygon(box_1)
     poly_2 = Polygon(box_2)
     intersec = poly_1.intersection(poly_2).area
-    #/ poly_1.union(poly_2).area
+    # / poly_1.union(poly_2).area
     a1 = poly_1.area
     a2 = poly_2.area
-    if(a1<a2):
-        return intersec/a1
+    if a1 < a2:
+        return intersec / a1
     else:
-        return intersec/a2
+        return intersec / a2
+
 
 def getBoundingBoxArea(boundingBox):
-    return np.abs(boundingBox[2] - boundingBox[0])*np.abs(boundingBox[3] - boundingBox[1])
+    return np.abs(boundingBox[2] - boundingBox[0]) * np.abs(
+        boundingBox[3] - boundingBox[1]
+    )
 
-#bounding Box format (x, y, xmax, ymax)
+
+# bounding Box format (x, y, xmax, ymax)
 def getCenter(boundingBox):
-    return (int(boundingBox[0]+((boundingBox[2]-boundingBox[0])/2)), int(boundingBox[1]+((boundingBox[3]-boundingBox[1])/2)))
+    return (
+        int(boundingBox[0] + ((boundingBox[2] - boundingBox[0]) / 2)),
+        int(boundingBox[1] + ((boundingBox[3] - boundingBox[1]) / 2)),
+    )
 
-#c1 = it the leftmost and uppermost center
-#c2 is the rightmost
+
+# c1 = it the leftmost and uppermost center
+# c2 is the rightmost
 def getAngle(c1, c2):
-    point1 = np.array([c1[0],c1[1]])
-    point2 = np.array([c2[0],c2[1]])
+    point1 = np.array([c1[0], c1[1]])
+    point2 = np.array([c2[0], c2[1]])
     point3 = np.array([c2[0], c1[1]])
     ba = point3 - point1
     bc = point2 - point1
@@ -374,23 +395,23 @@ def selectBoundingBoxes(listBbox):
     intersections = {}
     angles = {}
 
-    for i in range(0, len(listBbox)-1):
+    for i in range(0, len(listBbox) - 1):
         auxArea = getBoundingBoxArea(listBbox[i])
         areas.append(auxArea)
         auxCenter = getCenter(listBbox[i])
         centers.append(auxCenter)
-        for j in range(i+1, len(listBbox)):
-            if(i!=j):
-                intersections[(i,j)] = (getIntersection(listBbox[i], listBbox[j]))
+        for j in range(i + 1, len(listBbox)):
+            if i != j:
+                intersections[(i, j)] = getIntersection(listBbox[i], listBbox[j])
 
-    areas.append(getBoundingBoxArea(listBbox[len(listBbox)-1]))
-    centers.append(getCenter(listBbox[len(listBbox)-1]))
+    areas.append(getBoundingBoxArea(listBbox[len(listBbox) - 1]))
+    centers.append(getCenter(listBbox[len(listBbox) - 1]))
     listValues = sorted(intersections.items(), key=lambda x: x[1], reverse=False)
     for p in listValues:
         auxAngulo = getAngle(centers[p[0][0]], centers[p[0][1]])
     for p in listValues:
         auxAngulo = getAngle(centers[p[0][0]], centers[p[0][1]])
-        angles[(p[0][0],p[0][1])] = auxAngulo
-        if(auxAngulo < 20.0):
+        angles[(p[0][0], p[0][1])] = auxAngulo
+        if auxAngulo < 20.0:
             return (p[0][0], p[0][1]), auxAngulo
     return []

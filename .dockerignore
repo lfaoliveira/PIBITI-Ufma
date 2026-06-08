@@ -1,11 +1,9 @@
 **/node_modules
 **/env-pibiti
 **/.conda
-tmp
 **/tmp
 trained_weights_final.h5
 **/trained_weights_final.h5
-flask_backend/tmp
 
 
 **/.eggs/
@@ -14,6 +12,8 @@ flask_backend/tmp
 **/parts/
 **/share/python-wheels/
 **/wheels/
+.git
+.github
 
 MANIFEST
 
@@ -37,6 +37,9 @@ MANIFEST
 **/.pytype/
 **/.ruff_cache/
 **/__pycache__/
+*.pyc
+*.pyo
+*.pyd
 **/cython_debug/
 **/downloads/
 
@@ -56,10 +59,9 @@ pip-delete-this-directory.txt
 **/env/
 **/env.bak/
 **/venv/
+**/.venv/
 **/venv.bak/
 **/virtualenv/
-
-.venv/
 
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 # Logs & Debug

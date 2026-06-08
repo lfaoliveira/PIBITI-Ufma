@@ -51,7 +51,6 @@ import mimetypes
 import hashlib
 from datetime import timedelta
 from typing import Any, Union
-import tensorflow as tf
 import numpy as np
 from pathlib import Path
 
@@ -80,15 +79,22 @@ from starlette.exceptions import WebSocketException
 from celery import chain
 
 
-@tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
+    import tensorflow as tf
+
     modelo = analisador.modelo
-    with modelo.sess.graph.as_default():
+    # Usar graph/session apenas se o modelo expor essa API
+    if hasattr(modelo, "sess") and modelo.sess is not None:
+        with modelo.sess.graph.as_default():
+            str_res, dict_graf = analisador.funcao_metodo(
+                path_processamento_arq, path_out, timestamp
+            )
+    else:
         str_res, dict_graf = analisador.funcao_metodo(
             path_processamento_arq, path_out, timestamp
         )
 
-        return str_res, dict_graf
+    return str_res, dict_graf
 
 
 # ------------- VARIAVEIS GLOBAIS--------------#
@@ -589,9 +595,7 @@ def gerar_grafico(id_diag, external=True):
     Gera grafico e retorna ele como stream
     """
     try:
-        diag = Helper.find_one_with_id(
-            mongo.db.get_collection(COLLECTION_DIAGS), id_diag
-        )
+        diag = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_DIAGS), id_diag)
         dados_grafico = diag.get("dados_grafico", None)
         if str(dados_grafico) == "None":
             return make_response("NAO TEM GRAFICO!", BAD_REQUEST)
@@ -729,7 +733,7 @@ def autenticar():
         if tipo == "login":
             session.permanent = True
             if not email or not senha:
-                return make_response("Email ou senha ausentes", BAD_REQUEST)    
+                return make_response("Email ou senha ausentes", BAD_REQUEST)
             usuario = medicos.find_one({"email": email})
             if (
                 usuario
@@ -1120,9 +1124,7 @@ starlette_app.add_middleware(
 )
 
 
-if __name__ != "__main__":
-    # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
-    # app.run(host="0.0.0.0")
+def main():
     from flask_backend.helpers import Helper
 
     print("\n\n SERVIDOR INICIADO!\n\n")
@@ -1139,3 +1141,9 @@ if __name__ != "__main__":
     # gunicorn_logger = logging.getLogger("gunicorn.error")
     # app.logger.handlers = gunicorn_logger.handlers
     # app.logger.setLevel(gunicorn_logger.level)
+
+
+if __name__ != "__main__":
+    # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
+    # app.run(host="0.0.0.0")
+    main()

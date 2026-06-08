@@ -27,7 +27,7 @@ dist-ssr
 #Python
 __pycache__
 .venv
-.env
+*.env
 env.csv
 **/permalink-googleDrive-pibiti6-nervo.json
 env-pibiti
