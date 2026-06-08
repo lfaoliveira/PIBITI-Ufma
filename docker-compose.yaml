@@ -1,7 +1,7 @@
 name: pibiti
 services:
   flask: # Flask + Tensorflow
-    image: lfaoliveira/flask:latest
+    # image: lfaoliveira/flask:latest
     build: 
       context: .
       dockerfile: ./DOCKER/flask/dockerfile
@@ -33,10 +33,10 @@ services:
     restart: unless-stopped
 
   celery_worker:
-    image: lfaoliveira/celery_worker:latest
+    # image: lfaoliveira/celery_worker:latest
     build:
       context: .
-      dockerfile: ./DOCKER/celery/dockerfile
+      dockerfile: ./DOCKER/flask/dockerfile
     entrypoint:
       - python
       - -m
@@ -62,7 +62,8 @@ services:
     restart: unless-stopped
     
   frontend: #Vue + Vite
-    image: lfaoliveira/frontend:latest
+    # image: lfaoliveira/frontend:latest
+    container_name: frontend_pibiti
 
     build: 
       context: .

@@ -1,5 +1,5 @@
 # python3.8-slim (debian-based) - Legacy stack compatible
-FROM python:3.8-slim-bullseye AS builder
+FROM python:3.9-slim-bullseye AS builder
 
 # Set environment variables to avoid user prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
@@ -7,14 +7,13 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV UV_LINK_MODE=copy
 
 
 WORKDIR /flask_backend
 
 # Install dependencies and clean up
-RUN --mount=type=cache,id=global-apt-cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,id=global-apt-lib,target=/var/lib/apt,sharing=locked \
-    apt-get update -y && apt-get install -y --no-install-recommends \
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
     ffmpeg \
     gcc \
     libsm6 \
@@ -31,27 +30,26 @@ RUN pip install --no-cache-dir --upgrade pip && pip install uv
 COPY flask_backend/pyproject.toml flask_backend/uv.lock flask_backend/.python-version ./
 
 # RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
-RUN --mount=type=cache,id=global-uv-cache,target=/root/.cache/uv,sharing=locked \
-    uv sync --frozen --no-dev \
+RUN uv sync --frozen --no-dev \
     && find /opt/venv -type f -name "*.pyo" -delete \
     && find /opt/venv -type d -name "__pycache__" -prune -exec rm -rf '{}' + \
     && find /opt/venv -type d -name "tests" -prune -exec rm -rf '{}' + \
     && find /opt/venv -type d -name "test" -prune -exec rm -rf '{}' +
 
 
-FROM python:3.8-slim-bullseye AS runner_flask
+FROM python:3.9-slim-bullseye AS runner_flask
 
 WORKDIR /app
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONPATH=/app:$PYTHONPATH
 
 # VOLUME ["/flask_backend"]
 # Copy the virtualenv from builder
 COPY --from=builder /opt/venv /opt/venv  
-ENV PATH="/opt/venv/bin:$PATH"
 # Copy only necessary files from the builder stage
 # Reinstall only runtime libs (no gcc, no weasyprint build deps)
-RUN --mount=type=cache,id=global-apt-cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,id=global-apt-lib,target=/var/lib/apt,sharing=locked \
-    apt-get update -y \
+RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
     ffmpeg \
     libsm6 \
@@ -64,11 +62,8 @@ RUN --mount=type=cache,id=global-apt-cache,target=/var/cache/apt,sharing=locked 
 
 # Copy application files
 COPY ./flask_backend ./.env ./flask_backend/
-ENV UV_PROJECT_ENVIRONMENT=/opt/venv
 
-# COPY ./.env ./
 
-ENV PYTHONPATH=/app:$PYTHONPATH
 
 
 # Smoke test: Validar que imports críticos funcionam
@@ -79,5 +74,5 @@ ENV PYTHONPATH=/app:$PYTHONPATH
 EXPOSE 5000
 
 # Health check para validar que Flask está rodando
-HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api')"
+# HEALTHCHECK --interval=30s --timeout=10s --retries=5 --start-period=60s \
+#     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api')"

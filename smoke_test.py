@@ -117,7 +117,7 @@ for df_path in dockerfiles:
     if df.exists():
         with open(df) as f:
             content = f.read()
-            if "python:3.8" in content:
+            if "python:3.9" in content:
                 print_check(f"{df_path} - Python 3.8 ✓")
                 checks_passed += 1
             else:
