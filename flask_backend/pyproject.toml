@@ -1,9 +1,9 @@
 [project]
 name = "flask-backend"
-version = "1.0"
+version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9,<3.12"
+requires-python = ">=3.8,<3.12"
 #EM CASO DE PROBLEMAS DE DEPENDENCIA, OMITIR VERSOES DOS PACOTES PRA TENTAR FAZER O UV RESOLVER
 dependencies = [
     "beautifulsoup4>=4.9,<5",
@@ -19,7 +19,7 @@ dependencies = [
     "google-api-python-client>=2.0.0,<2.60.0",
     "google-auth>=1.30.0,<3",
     "google-auth-oauthlib>=0.4.1,<0.5",
-    "keras>=2.12.0,<3",
+    "keras==2.8.0",
     "matplotlib>=3.0,<3.8",
     "numpy>=1.19,<1.24",
     "opencv-python>=4.0,<4.8",
@@ -32,13 +32,14 @@ dependencies = [
     "scipy>=1.5,<1.10",
     "shapely>=1.7,<2.0",
     "starlette>=0.13,<0.45",
-    "tensorboard>=2.12.0,<2.16",
-    "tensorflow>=2.12.0,<2.16",
-    "tensorflow-io-gcs-filesystem>=0.32.0",
-    "protobuf>=3.20,<4",
+    "tensorboard==2.8.*",
+    "tensorflow==2.8.0",                       #EM DEV, COMENTAR pra nao dar conflito de dependencia
+    "tensorflow-io-gcs-filesystem<0.32",
+    "protobuf==3.20.*",
     "typing-extensions>=3.7,<5",
     "uvicorn>=0.12,<0.20",
     "weasyprint>=51.0,<60.0",
     "websockets>=7.0,<12.0",
     "werkzeug>=2.0,<3.0",
+    "bson>=0.5.10",
 ]

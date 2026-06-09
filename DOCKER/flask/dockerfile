@@ -31,9 +31,7 @@ COPY flask_backend/pyproject.toml flask_backend/uv.lock flask_backend/.python-ve
 
 RUN uv sync --frozen --no-dev \
     && find /opt/venv -type f -name "*.pyo" -delete \
-    && find /opt/venv -type d -name "__pycache__" -prune -exec rm -rf '{}' + \
-    && find /opt/venv -type d -name "tests" -prune -exec rm -rf '{}' + \
-    && find /opt/venv -type d -name "test" -prune -exec rm -rf '{}' +
+    && find /opt/venv -type d -name "__pycache__" -prune -exec rm -rf '{}' + 
 
 
 FROM python:3.9-slim-bullseye AS runner_flask

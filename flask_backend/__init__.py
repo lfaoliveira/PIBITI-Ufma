@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 PACKAGE_WKDIR = Path(os.getcwd(), str(__package__))
 
 COLLECTION_DIAGS = "Diagnosticos"

@@ -1124,26 +1124,23 @@ starlette_app.add_middleware(
 )
 
 
-def main():
+# gunicorn_logger = logging.getLogger("gunicorn.error")
+# app.logger.handlers = gunicorn_logger.handlers
+# app.logger.setLevel(gunicorn_logger.level)
+
+
+if __name__ != "__main__":
+    # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
+    # app.run(host="0.0.0.0")
+    from starlette.middleware.wsgi import WSGIMiddleware
     from flask_backend.helpers import Helper
 
     print("\n\n SERVIDOR INICIADO!\n\n")
     # LEGACY: GUnicorn nao sendo mais usado
     # from asgiref.wsgi import WsgiToAsgi
-    from starlette.middleware.wsgi import WSGIMiddleware
 
     # --- Combine both ---
     # Mount Flask under /api, WebSockets under /
     flask_app = app
     starlette_app.mount("/api", WSGIMiddleware(flask_app))
     asgi_app = starlette_app
-
-    # gunicorn_logger = logging.getLogger("gunicorn.error")
-    # app.logger.handlers = gunicorn_logger.handlers
-    # app.logger.setLevel(gunicorn_logger.level)
-
-
-if __name__ != "__main__":
-    # NOTE: para poder adicionar um sheduler de tasks de background, adicionar use_reloader=False
-    # app.run(host="0.0.0.0")
-    main()
