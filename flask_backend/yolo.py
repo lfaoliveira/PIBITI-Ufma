@@ -4,24 +4,28 @@ import os
 from timeit import default_timer as timer
 import numpy as np
 import sys
-from keras import backend as K
-from keras.models import load_model
-from keras.layers import Input
+
+# TensorFlow 2.x - usar tensorflow.keras em vez de keras standalone
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import backend as K
+from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Input
 from PIL import Image, ImageFont, ImageDraw
 
 from flask_backend import PACKAGE_WKDIR
 from flask_backend.yolo3.model import yolo_eval, yolo_body, tiny_yolo_body
 from flask_backend.yolo3.utils import letterbox_image
 
-# Fallback seguro para multi_gpu_model - API interna do TensorFlow pode quebrar em versões diferentes
+# Fallback seguro para multi_gpu_model - API interna do TensorFlow pode quebrar em versoes diferentes
 try:
     from tensorflow.python.keras.utils.multi_gpu_utils import multi_gpu_model
 except (ImportError, AttributeError):
-    # Fallback: se importação quebrar, criar dummy function que retorna modelo como está
+    # Fallback: se importacao quebrar, criar dummy function que retorna modelo como esta
     def multi_gpu_model(model, gpus=None):
-        """Fallback para multi_gpu_model quando import falha. Retorna modelo sem modificação."""
+        """Fallback para multi_gpu_model quando import falha. Retorna modelo sem modificacao."""
         print(
-            f"[YOLO] multi_gpu_model indisponível (versão TensorFlow incompatível). Usando modelo em CPU/GPU single."
+            "[YOLO] multi_gpu_model indisponivel (versao TensorFlow incompativel). Usando modelo em CPU/GPU single."
         )
         return model
 
@@ -54,8 +58,9 @@ class YOLO(object):
         self.__dict__.update(kwargs)
         self.class_names = self._get_class()
         self.anchors = self._get_anchors()
-        self.sess = K.get_session()
-        self.boxes, self.scores, self.classes = self.generate()
+        # TensorFlow 2.x - nao precisa de sessao
+        # Removido: self.sess = K.get_session()
+        self.yolo_model = self.generate()
 
     def _get_class(self):
         classes_path = os.path.expanduser(self.classes_path)
@@ -79,9 +84,9 @@ class YOLO(object):
         num_classes = len(self.class_names)
         is_tiny_version = num_anchors == 6  # default setting
         try:
-            self.yolo_model = load_model(model_path, compile=False)
+            yolo_model = load_model(model_path, compile=False)
         except:
-            self.yolo_model = (
+            yolo_model = (
                 tiny_yolo_body(
                     Input(shape=(None, None, 3)), num_anchors // 2, num_classes
                 )
@@ -90,12 +95,12 @@ class YOLO(object):
                     Input(shape=(None, None, 3)), num_anchors // 3, num_classes
                 )
             )
-            self.yolo_model.load_weights(
+            yolo_model.load_weights(
                 self.model_path
             )  # make sure model, anchors and classes match
         else:
-            assert self.yolo_model.layers[-1].output_shape[-1] == num_anchors / len(
-                self.yolo_model.output
+            assert yolo_model.layers[-1].output_shape[-1] == num_anchors / len(
+                yolo_model.output
             ) * (num_classes + 5), (
                 "Mismatch between model and given anchor and class sizes"
             )
@@ -119,19 +124,12 @@ class YOLO(object):
         )  # Shuffle colors to decorrelate adjacent classes.
         np.random.seed(None)  # Reset seed to default.
 
-        # Generate output tensor targets for filtered bounding boxes.
-        self.input_image_shape = K.placeholder(shape=(2,))
+        # TensorFlow 2.x - multi_gpu_model soh funciona com 2+ GPUs
         if self.gpu_num >= 2:
-            self.yolo_model = multi_gpu_model(self.yolo_model, gpus=self.gpu_num)
-        boxes, scores, classes = yolo_eval(
-            self.yolo_model.output,
-            self.anchors,
-            len(self.class_names),
-            self.input_image_shape,
-            score_threshold=self.score,
-            iou_threshold=self.iou,
-        )
-        return boxes, scores, classes
+            yolo_model = multi_gpu_model(yolo_model, gpus=self.gpu_num)
+
+        # Nao chamamos yolo_eval aqui - faremos isso em detect_image
+        return yolo_model
 
     def detect_image(self, image):
         area = []
@@ -152,14 +150,28 @@ class YOLO(object):
         image_data /= 255.0
         image_data = np.expand_dims(image_data, 0)
 
-        out_boxes, out_scores, out_classes = self.sess.run(
-            [self.boxes, self.scores, self.classes],
-            feed_dict={
-                self.yolo_model.input: image_data,
-                self.input_image_shape: [image.size[1], image.size[0]],
-                K.learning_phase(): 0,
-            },
+        # TensorFlow 2.x - usar predict() em vez de sess.run com feed_dict
+        # Primeiro, obter as saidas do modelo
+        model_output = self.yolo_model.predict(image_data, verbose=0)
+
+        # yolo_eval espera (image_shape) como segundo argumento
+        # Converter para formato correto: (height, width)
+        input_image_shape = np.array([image.size[1], image.size[0]], dtype=np.float32)
+
+        # Chamar yolo_eval com as saidas do modelo
+        out_boxes, out_scores, out_classes = yolo_eval(
+            model_output,
+            self.anchors,
+            len(self.class_names),
+            input_image_shape,
+            score_threshold=self.score,
+            iou_threshold=self.iou,
         )
+
+        # Converter tensores para numpy arrays
+        out_boxes = out_boxes.numpy() if hasattr(out_boxes, 'numpy') else out_boxes
+        out_scores = out_scores.numpy() if hasattr(out_scores, 'numpy') else out_scores
+        out_classes = out_classes.numpy() if hasattr(out_classes, 'numpy') else out_classes
 
         font = ImageFont.truetype(
             font=os.path.join(PACKAGE_WKDIR, "font/FiraMono-Medium.otf"),
@@ -175,7 +187,7 @@ class YOLO(object):
             draw = ImageDraw.Draw(image)
             label_size = draw.textlength(label, font)
 
-            # as coordenadas são dadas em top (y min), left(x min), bottom(y max) e right(x max)
+            # as coordenadas sao dadas em top (y min), left(x min), bottom(y max) e right(x max)
             top, left, bottom, right = box
             top = max(0, np.floor(top + 0.5).astype("int32"))
             left = max(0, np.floor(left + 0.5).astype("int32"))
@@ -202,4 +214,6 @@ class YOLO(object):
         return image, area, classes
 
     def close_session(self):
-        self.sess.close()
+        # TensorFlow 2.x - Keras gerencia a memoria automaticamente
+        # Nao precisa fechar sessao
+        pass

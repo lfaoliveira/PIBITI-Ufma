@@ -24,6 +24,7 @@ from flask import (
     stream_with_context,
     send_file,
 )
+
 # Import do TensorFlow foi movido para import lazy dentro das funções
 from celery import Task
 import numpy as np
@@ -84,26 +85,43 @@ class MainTask(Task):
 
 # @tf.function
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
-    import tensorflow as tf
     # modelo = analisador.modelo
 
     str_res, dict_graf = analisador.funcao_metodo(
         path_processamento_arq, path_out, timestamp
     )
-    str_res = tf.convert_to_tensor(str_res)
+
+    # Se a deteccao falhou, analisador.funcao_metodo pode ter retornado uma string de erro
+    # Protegemos contra isso: garantir que dict_graf seja um dict antes de indexar
+    if not isinstance(dict_graf, dict):
+        print(
+            f"predict: dict_graf nao eh dict (valor={dict_graf}). Substituindo por dict vazio."
+        )
+        dict_graf = {"vel_esq": [], "vel_dir": []}
 
     # essa parte transforma qualquer elemento que nao seja int em int
     dict_graf["vel_esq"] = list(
-        map(lambda x: x.item() if type(x) == np.int64 else x, dict_graf["vel_esq"])
+        map(
+            lambda x: x.item() if isinstance(x, np.integer) else x,
+            dict_graf.get("vel_esq", []),
+        )
     )
     dict_graf["vel_dir"] = list(
-        map(lambda x: x.item() if type(x) == np.int64 else x, dict_graf["vel_dir"])
+        map(
+            lambda x: x.item() if isinstance(x, np.integer) else x,
+            dict_graf.get("vel_dir", []),
+        )
     )
-    dict_graf = dumps(dict_graf)
-    print(f"DICT GRAF DUMP: {dict_graf}\n")
-    dict_graf = tf.convert_to_tensor(dict_graf)
 
-    return str_res, dict_graf
+    # Serializar para JSON e retornar strings Python (não tensores)
+    dict_graf_json = dumps(dict_graf)
+    print(f"DICT GRAF DUMP: {dict_graf_json}\n")
+
+    # Garantir que str_res seja string
+    if isinstance(str_res, bytes):
+        str_res = str_res.decode("utf-8")
+
+    return str_res, dict_graf_json
 
 
 # WARNING: Tasks foram criadas para serem executadas em sequencia, mas fora do FLASK!!!!!!!
@@ -260,24 +278,18 @@ def processamento_analise(self, res_anterior, **kwargs):
     path_out_antes_conv = os.path.join(TEMP_FOLDER, f"OUT_PRE_{nome_local}")
 
     # --------- executando predicao ------------
-    res_tensor, dict_graf_tensor = predict(
+    str_res, dict_graf_string = predict(
         self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp
     )
 
     # --------- executando predicao ------------
-    print(res_tensor, type(res_tensor))
-    print(dict_graf_tensor, type(dict_graf_tensor))
-    import tensorflow as tf
-    with tf.compat.v1.Session() as sess:
-        # Run the session to get the tensor's value
-        res_np = sess.run(res_tensor)
-        if "ERRO" in res_np.decode("utf-8"):
-            raise Exception("DEU ERRO: ", BAD_REQUEST)
-        graf_np = sess.run(dict_graf_tensor)
+    print(str_res, type(str_res))
+    print(dict_graf_string, type(dict_graf_string))
 
-    # Decode bytes to string since predict returns all output as tensor
-    str_res = res_np.decode("utf-8")
-    dict_graf_string = graf_np.decode("utf-8")
+    # predict() agora retorna strings Python; validar erro
+    if "ERRO" in str_res:
+        raise Exception("DEU ERRO: ", BAD_REQUEST)
+
     dict_graf = json.loads(dict_graf_string)
 
     dict_graf["vel_esq"] = np.array(dict_graf["vel_esq"]).tolist()
@@ -423,9 +435,7 @@ def sync_google_drive(self, res_anterior):
         res_anterior.pop("storage_strings")
         res_anterior.pop("id_diag")
         res_anterior.pop("email")
-        print(
-            f"ID DA ULTIMA TASK: {task_id} \n UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n"
-        )
+        print(f"ID DA ULTIMA TASK: {task_id} \n UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
         return res_anterior
     except Exception as e:
         print(f"ERRO NA PARTE DE UPLOAD: {e}")
