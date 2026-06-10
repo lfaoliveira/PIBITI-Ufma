@@ -41,5 +41,4 @@ dependencies = [
     "weasyprint>=51.0,<60.0",
     "websockets>=7.0,<12.0",
     "werkzeug>=2.0,<3.0",
-    "bson>=0.5.10",
 ]
