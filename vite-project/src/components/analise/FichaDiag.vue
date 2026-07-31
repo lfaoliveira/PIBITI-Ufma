@@ -373,7 +373,7 @@ $font-size-labels: clamp(16px, 2.2vmin, 19px);
     display: flex;
     flex-direction: column;
     gap: 5vmin;
-    height: 100vh;
+    // height: 100vh;
 }
 
 h1 {
