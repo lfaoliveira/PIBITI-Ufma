@@ -1,4 +1,5 @@
-// GLOBAL CSS VARIABLES
+// GLOBAL CSS VARIABLES - Mantido para compatibilidade
+// Prefira usar Tailwind classes nos componentes
 @import "../src/assets/main.css";
 *{
     font-family: 'Montserrat', sans-serif;
@@ -9,94 +10,6 @@ $sec-color: #6113C6;
 $terc-color: #792359;
 $quart-color: #3A0D75;
 $quint-color: #0E0021;
-
-$alt-headers: clamp(5vmin, 70px, 10vmin);
-
-
-$fonte-titulo-secao: clamp(22px,10vmin, 32px);
-$fonte-titulo-maior: 48px;
-$fonte-p-info: 20px;
-$fonte-but-grande: 24px;
-$fonte-but-medio: 20px;
-$fonte-but-pequeno: 20px;
-
-$form-fonte-peq: 16px;
-$form-fonte-titulo: 2.5vmin;
-
-
-// h1{
-//     font-size: $fonte-titulo-secao;
-// }
-// p{
-//     font-size: $form-fonte-peq;
-// }
-// a{
-//     padding: 0px;
-// }
-
-@mixin overlay{
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: absolute;
-    margin: auto;
-    background: white;
-    border: 1px solid black;
-    
-    height: 90vmin;
-    transition: all 0.5s ease-in;
-
-    width: 50%;
-    @media (max-width: 870px), (max-height: 870px){
-        width: 100%;
-        height: 90%;
-    }
-
-}
-
-@mixin frame-pagina($gap: 20px){
-    display: flex;
-    flex-direction: column;
-    gap: $gap;
-    @media (max-width: 500px), (max-height:500px){
-        gap: calc($gap*0.5);
-    }
-}
-@mixin botao-header($escala: 1.1) {
-    cursor: pointer;
-    
-    color: white;
-    font-size: clamp(13px, 1.8vmin, 20px);
-    background:none;
-    width: fit-content;
-    font-weight: 500;
-    text-decoration: none;
-    transition: all 0.3s; /* Change to all to animate both font-size and padding */
-    padding: 1vmin;
-    /* Add this to prevent layout shift */
-    display: inline-block;
-    text-align: center;
-
-    @media (max-width: 500px), (max-height: 500px) {
-        font-size: clamp(10px, 2vmin, 14px);
-}
-
-    &:not(&:disabled){
-        &:hover {
-            background: hsla(267, 81%, 37%, 0.63);
-            font-weight:600;
-            transform: scale($escala);
-        }
-    }
-    &:disabled{
-        cursor: default;
-        opacity: 0.5;
-    }
-    
-    
-
-  }
 
 
 

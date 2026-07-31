@@ -1,7 +1,7 @@
 <template>
-  <div class="frame" @click="deslogar">
-    <p class="texto">Sair</p>
-    <img class="img" src="../../assets/Log_out.png" />
+  <div class="flex flex-row items-center gap-[2vmin] cursor-pointer text-white w-fit font-medium no-underline transition-all duration-300 p-[1vmin] text-center text-[clamp(13px,1.8vmin,20px)] hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110" @click="deslogar">
+    <p class="text-white font-semibold m-0">Sair</p>
+    <img class="aspect-square w-[3.5vmin]" src="../../assets/Log_out.png" />
   </div>
 </template>
 
@@ -42,25 +42,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.frame {
-  gap: 2vmin;
-  @include botao-header;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-p {
-  color: white;
-  @include botao-header;
-  font-weight: 600;
-  &:hover {
-    background: hsl(0, 0%, 100%);
-    font-weight: 600;
-    transform: scale(0.9);
-  }
-}
-img {
-  aspect-ratio: 1/1;
-  width: 3.5vmin;
-}
+/* Estilos substituídos por Tailwind */
 </style>

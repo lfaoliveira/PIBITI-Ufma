@@ -370,23 +370,20 @@ export default {
 $font-size-labels: clamp(16px, 2.2vmin, 19px);
 
 .frame-pagina {
-    @include frame-pagina($gap: 5vmin);
+    display: flex;
+    flex-direction: column;
+    gap: 5vmin;
     height: 100vh;
 }
 
 h1 {
     color: #3a0d75;
-
     width: max-content;
     margin: 0px;
     text-align: center;
     align-self: center;
     font-weight: 400;
     line-height: normal;
-}
-
-.overlay-aviso {
-    top: calc($alt-headers * 1.05);
 }
 
 main {
@@ -397,12 +394,10 @@ main {
     flex-direction: column;
     justify-content: center;
     gap: 20px;
-    // flex: 1 0 0;
 
     #aviso-avulso {
         color: #792359;
-        @apply .h1-text
-        font-size: 1.8rem;
+        @apply text-xl sm:text-4xl;
         font-weight: 400;
         line-height: normal;
     }
@@ -437,8 +432,7 @@ form {
         }
 
         label {
-            // font-size: $font-size-labels;
-            @apply campos-ficha
+            @apply text-lg sm:text-2xl;
             font-weight: 600;
         }
         input,
@@ -446,7 +440,7 @@ form {
             width: 100%;
             padding: 1%;
             height: 2lh;
-            font-size: $form-fonte-peq;
+            font-size: 16px;
             border: 2px solid #b3b3b3;
             border-radius: 1vmin;
             background-color: white;
@@ -488,14 +482,13 @@ form {
         gap: 1vmin;
         input[type="radio"] {
             appearance: none;
-            -moz-appearance: none; /* Ensure Firefox support */
-            border: calc(30vmin / 100) solid black; /* Outer circle */
+            -moz-appearance: none;
+            border: calc(30vmin / 100) solid black;
             border-radius: 100%;
             height: 2.8vmin;
             width: 2.8vmin;
             padding: 0px;
             margin: auto;
-
             display: inline-block;
             justify-content: center;
             align-items: flex-start;
@@ -507,7 +500,7 @@ form {
                 aspect-ratio: 1/1;
                 width: 59%;
                 height: 59%;
-                background-color: $sec-color;
+                background-color: #6113C6;
                 border-radius: 1000%;
                 position: absolute;
                 top: 50%;
@@ -515,9 +508,8 @@ form {
                 transform: translate(-50%, -50%) scale(0);
                 transition: all 0.1s ease-in;
             }
-            /* Show inner circle when checked */
             &:checked {
-                border-color: $sec-color;
+                border-color: #6113C6;
 
                 &::before {
                     transform: translate(-50%, -50%) scale(1);

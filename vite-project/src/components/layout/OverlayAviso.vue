@@ -1,14 +1,14 @@
 <template>
-    <section v-if="aberto" class="overlay">
-        <div class="alerta">
-            <img :src="srcImg" />
-            <ul class="textos">
+    <section v-if="aberto" class="z-20 flex flex-col items-center absolute mx-auto bg-white border border-black h-[90vmin] transition-all duration-500 ease-in w-1/2 max-[870px]:w-full max-[870px]:h-[90%] gap-[5vmin]">
+        <div class="flex justify-center items-start gap-[2vmin]">
+            <img :src="srcImg" class="ml-[5vmin] w-[10vmin] h-[10vmin]" />
+            <ul class="flex w-fit flex-col items-start gap-[5vmin] self-stretch">
                 <h1>{{ titulo }}</h1>
                 <h1>{{ subtexto }}</h1>
-                <h1 v-if="opcional !== ''" id="opcional">{{ opcional }}</h1>
+                <h1 v-if="opcional !== ''" id="opcional" class="text-[#792359]">{{ opcional }}</h1>
             </ul>
         </div>
-        <div class="div-but">
+        <div class="w-[22vmin]">
             <Button @click="closeOverlay" :texto="'OK'" :ativo="true"></Button>
         </div>
     </section>
@@ -63,38 +63,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.overlay {
-    @include overlay;
-    background: white;
-
-    gap: 5vmin;
-
-    img {
-        margin-left: 5vmin;
-        width: 10vmin;
-        height: 10vmin;
-    }
-
-    .alerta {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 2vmin;
-
-        .textos {
-            display: flex;
-            width: fit-content;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5vmin;
-            align-self: stretch;
-        }
-        #opcional {
-            color: #792359;
-        }
-    }
-    .div-but {
-        width: 22vmin;
-    }
-}
+/* Estilos substituídos por Tailwind */
 </style>

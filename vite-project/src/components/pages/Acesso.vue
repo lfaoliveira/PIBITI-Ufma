@@ -1,7 +1,7 @@
 <template>
-    <section class="frame-pagina">
+    <section class="flex flex-col items-center gap-[clamp(20px,4vmin,40px)]">
         <HeaderSistema :activeIndex="5"></HeaderSistema>
-        <main>
+        <main class="w-full">
             <OverlayAviso
                 :eventoAviso="'cadastroRepetido'"
                 :titulo="'Já há um usuário cadastrado com este email'"
@@ -20,37 +20,35 @@
             ></OverlayAviso>
 
             <!-- PARTE DO LOGIN -->
-            <section v-if="tipo === 'login'" class="login">
-                <h1
-                    class="text-[#3a0d75] text-xl sm:text-4xl m-0 text-center self-center font-light leading-normal"
-                >
+            <section v-if="tipo === 'login'" class="flex flex-col items-center w-full">
+                <h1 class="text-[#3a0d75] text-xl sm:text-4xl m-0 text-center self-center font-light leading-normal">
                     Fazer Login
                 </h1>
-                <form @submit.prevent="valAcesso">
-                    <div class="form-group">
-                        <label>Email</label>
+                <form @submit.prevent="valAcesso" class="flex flex-col gap-[2vmin] w-[clamp(280px,50vmin,500px)] mx-auto mt-[3vmin]">
+                    <div class="flex flex-col gap-[1vmin]">
+                        <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Email</label>
                         <input
                             type="text"
                             v-model="this.email"
                             placeholder="exemplo@email.com"
+                            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                         />
                     </div>
-                    <div class="form-group">
-                        <label>Senha</label>
+                    <div class="flex flex-col gap-[1vmin]">
+                        <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Senha</label>
                         <input
                             @input="checkSenha"
                             type="text"
                             v-model="this.senha"
                             placeholder=""
+                            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                         />
                     </div>
-                    <p v-if="this.boolErros.senha.login" class="erro">
-                        {{ this.stringErros.senha.login }}
-                    </p>
-                    <a href="/esqueceuSenha" id="esqueci">Esqueci minha senha</a>
-                    <p id="semLogin">
+                    <p v-if="this.boolErros.senha.login" class="text-red-500 text-sm">{{ this.stringErros.senha.login }}</p>
+                    <a href="/esqueceuSenha" id="esqueci" class="text-blue-600 underline text-sm">Esqueci minha senha</a>
+                    <p id="semLogin" class="text-sm text-gray-600">
                         Não Possui Login?
-                        <a @click="trocaAcesso">Cadastre-se</a>
+                        <a @click="trocaAcesso" class="text-blue-600 underline cursor-pointer">Cadastre-se</a>
                     </p>
 
                     <Button
@@ -61,53 +59,47 @@
                 </form>
             </section>
             <!-- PARTE DO CADASTRO -->
-            <section class="sec-cadastro" v-if="tipo === 'cadastro'">
-                <h1
-                    class="text-[#3a0d75] text-xl sm:text-4xl m-0 text-center self-center font-light leading-normal"
-                >
+            <section class="flex flex-col items-center w-full" v-if="tipo === 'cadastro'">
+                <h1 class="text-[#3a0d75] text-xl sm:text-4xl m-0 text-center self-center font-light leading-normal">
                     Cadastro
                 </h1>
                 <form
                     @keyup.enter="$emit('submit')"
                     ref="formCadastro"
-                    class="form-cadastro"
+                    class="flex flex-col gap-[2vmin] w-[clamp(280px,50vmin,500px)] mx-auto mt-[3vmin]"
                     @submit.prevent="valAcesso"
                 >
-                    <div class="form-group">
-                        <label>Email</label>
-                        <p v-if="this.boolErros.email" class="erro">
-                            {{ this.stringErros.email }}
-                        </p>
+                    <div class="flex flex-col gap-[1vmin]">
+                        <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Email</label>
+                        <p v-if="this.boolErros.email" class="text-red-500 text-sm">{{ this.stringErros.email }}</p>
                         <input
                             @input="checkEmail"
                             type="text"
                             v-model="this.email"
                             placeholder="exemplo@email.com"
+                            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                         />
                     </div>
-                    <div class="form-group">
-                        <label>Nome Completo</label>
+                    <div class="flex flex-col gap-[1vmin]">
+                        <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Nome Completo</label>
                         <input
                             @input="checkNome"
                             type="text"
                             v-model="this.nome"
                             placeholder=""
+                            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                         />
                     </div>
 
-                    <div class="form-group">
-                        <label>CRM</label>
-                        <p v-if="this.boolErros.crm.uf" class="erro">
-                            {{ this.stringErros.crm.uf }}
-                        </p>
-                        <p v-if="this.boolErros.crm.numero" class="erro">
-                            {{ this.stringErros.crm.numero }}
-                        </p>
-                        <div class="grupo-crm">
+                    <div class="flex flex-col gap-[1vmin]">
+                        <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">CRM</label>
+                        <p v-if="this.boolErros.crm.uf" class="text-red-500 text-sm">{{ this.stringErros.crm.uf }}</p>
+                        <p v-if="this.boolErros.crm.numero" class="text-red-500 text-sm">{{ this.stringErros.crm.numero }}</p>
+                        <div class="flex gap-[1vmin]">
                             <select
                                 @change="checkCRM"
                                 v-model="this.uf"
-                                class="select-crm"
+                                class="w-[30%] p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                             >
                                 <option value="" key="">UF</option>
                                 <option
@@ -124,45 +116,37 @@
                                 type="text"
                                 v-model="this.crm"
                                 placeholder=""
+                                class="flex-1 p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                             />
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Senha</label>
+                    <div class="flex flex-col gap-[1vmin]">
+                        <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Senha</label>
                         <input
                             @input="checkSenha"
                             type="text"
                             v-model="this.senha"
                             placeholder=""
+                            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
                         />
-                        <ul class="errors-senha">
-                            <li
-                                v-if="this.boolErros.senha.cadastro.numCaracteres"
-                                class="erro"
-                            >
-                                {{ this.stringErros.senha.cadastro.numCaracteres }}
-                            </li>
-                            <li
-                                v-if="this.boolErros.senha.cadastro.maiusculas"
-                                class="erro"
-                            >
-                                {{ this.stringErros.senha.cadastro.maiusculas }}
-                            </li>
+                        <ul class="list-none p-0 m-0">
+                            <li v-if="this.boolErros.senha.cadastro.numCaracteres" class="text-red-500 text-sm">{{ this.stringErros.senha.cadastro.numCaracteres }}</li>
+                            <li v-if="this.boolErros.senha.cadastro.maiusculas" class="text-red-500 text-sm">{{ this.stringErros.senha.cadastro.maiusculas }}</li>
                         </ul>
                     </div>
 
-                    <div class="div-termos-label">
-                        <input type="checkbox" v-model="this.checks" id="checkTermos" />
-                        <label id="termos-label" for="checkTermos"
+                    <div class="flex items-center gap-[1vmin] my-[1vmin]">
+                        <input type="checkbox" v-model="this.checks" id="checkTermos" class="w-[18px] h-[18px]" />
+                        <label id="termos-label" for="checkTermos" class="text-sm text-gray-600"
                             >Concordo com os
-                            <a href="/termos" id="link-termos">Termos e Condições</a>
+                            <a href="/termos" id="link-termos" class="text-blue-600 bg-white p-0 hover:bg-gray-200 hover:rounded-lg hover:p-[0.25vmin]">Termos e Condições</a>
                         </label>
                     </div>
 
-                    <p id="possuiLogin">
+                    <p id="possuiLogin" class="text-sm text-gray-600">
                         Já Possui Login?
-                        <a @click="trocaAcesso">Fazer Login</a>
+                        <a @click="trocaAcesso" class="text-blue-600 underline cursor-pointer">Fazer Login</a>
                     </p>
 
                     <Button
@@ -407,150 +391,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.frame-pagina {
-    height: 100vh;
-    @include frame-pagina($gap: 5vmin);
-}
-
-h1 {
-    // font-weight: 600;
-    width: max-content;
-    margin: 0px;
-    text-align: center;
-}
-
-main {
-    width: fit-content;
-    margin: auto;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 20px;
-    flex: 1 0 0;
-}
-a {
-    color: $terc-color;
-    font-weight: 500;
-    cursor: pointer;
-    &:hover {
-        background: none;
-
-        color: $terc-color;
-        text-decoration: underline;
-    }
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 2vmin;
-    width: 100%;
-}
-
-.form-cadastro {
-    width: 100%;
-}
-.sec-cadastro {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 5vmin;
-}
-
-.but-cadastro {
-    position: relative;
-    margin: 0px 2vmin;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-
-    label {
-        font-size: $form-fonte-titulo;
-        font-weight: 600;
-    }
-
-    input {
-        width: 100%;
-        padding: 1%;
-        height: 2lh;
-        font-size: $form-fonte-peq;
-        border: 2px solid #b3b3b3;
-        border-radius: 1vmin;
-        background-color: white;
-        outline: none;
-        transition: border-color 0.3s ease-in-out;
-
-        &::placeholder {
-            color: #757575;
-        }
-
-        &:focus {
-            border-color: #444444;
-        }
-    }
-}
-
-.grupo-crm {
-    flex-direction: row;
-    display: flex;
-    gap: 1vmin;
-    .select-crm {
-        background: white;
-        border: 2px solid #b3b3b3;
-        border-radius: 1vmin;
-        padding: 0vmin 1.5vmin 0vmin 0.5vmin;
-        &:focus,
-        &:hover {
-            border-color: #444444;
-        }
-    }
-}
-
-.login {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1vmin;
-}
-
-.linha {
-    width: clamp(2px, 2px, 2px);
-
-    height: 100%;
-    background: $sec-color;
-    @media (max-width: 900px) {
-        padding: clamp(1px, 1px, 1px);
-    }
-}
-
-input[type="checkbox"] {
-    accent-color: #2c2c2c; /* Changes the check color */
-}
-
-.div-termos-label {
-    display: flex;
-    gap: 1vmin;
-}
-
-#possuiLogin,
-#semLogin {
-    font-weight: bold;
-    a {
-        font-weight: 600;
-    }
-}
-
-.errors-senha {
-    padding: 0px;
-    margin-left: 1vmin;
-    list-style-type: circle;
-}
-
-.erro {
-    color: red;
-    margin-left: 1vmin;
-}
+/* Estilos substituídos por Tailwind */
 </style>

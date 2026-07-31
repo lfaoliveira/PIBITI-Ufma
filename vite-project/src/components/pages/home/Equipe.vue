@@ -1,31 +1,31 @@
 <template>
-  <div class="frame-pagina">
+  <div class="flex flex-col items-center gap-[clamp(20px,4vmin,40px)]">
     <HeaderSistema :activeIndex="2"></HeaderSistema>
 
-    <div id="divisor" class="secao">
+    <div id="divisor" class="flex justify-center flex-row items-center gap-[clamp(15vmin,120px,20vmin)] self-stretch w-full h-[clamp(80px,15vmin,140px)] max-[575px]:h-[clamp(50px,14vmin,80px)]">
       <img
         src="../../../assets/logo_VIP_Lab.png"
         alt="Logo VIpLab"
-        class="img-logos"
+        class="h-full self-stretch aspect-[150.11/105.92]"
         id="logo-vip"
       />
       <img
         src="../../../assets/logo ufma.png"
         alt="Logo UFMA"
-        class="img-logos"
+        class="h-full self-stretch aspect-square"
         id="logo-ufma"
       />
       <img
         src="../../../assets/LogoNCAFundBranco2000_2021.png"
         alt="Logo VIpLab"
-        class="img-logos"
+        class="h-full self-stretch aspect-[189.36/105.92]"
         id="logo-nca"
       />
     </div>
 
     <!-- TODO: BOTAR FOTOS DO POVO E PARTICIPAÇÃO -->
 
-    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[0].tipo}`">
+    <section :class="`flex gap-[clamp(10px,2vmin,20px)] justify-center items-start w-[min(85%,1000px)]` + ` ` + `${this.lista_dados[0].tipo}`">
       <div class="div-img">
         <img class="img-pessoa" :src="this.lista_dados[0].img" />
       </div>
@@ -37,7 +37,7 @@
       </div>
     </section>
 
-    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[1].tipo}`">
+    <section :class="`flex gap-[clamp(10px,2vmin,20px)] justify-center items-start w-[min(85%,1000px)]` + ` ` + `${this.lista_dados[1].tipo}`">
       <div class="div-img">
         <img class="img-pessoa" :src="this.lista_dados[1].img" />
       </div>
@@ -49,7 +49,7 @@
       </div>
     </section>
 
-    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[2].tipo}`">
+    <section :class="`flex gap-[clamp(10px,2vmin,20px)] justify-center items-start w-[min(85%,1000px)]` + ` ` + `${this.lista_dados[2].tipo}`">
       <div class="div-img">
         <img class="img-pessoa" :src="this.lista_dados[2].img" />
       </div>
@@ -61,7 +61,7 @@
       </div>
     </section>
 
-    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[3].tipo}`">
+    <section :class="`flex gap-[clamp(10px,2vmin,20px)] justify-center items-start w-[min(85%,1000px)]` + ` ` + `${this.lista_dados[3].tipo}`">
       <div class="div-img">
         <img class="img-pessoa" :src="this.lista_dados[3].img" />
       </div>
@@ -73,7 +73,7 @@
       </div>
     </section>
 
-    <section :class="`secao-participacao` + ` ` + `${this.lista_dados[4].tipo}`">
+    <section :class="`flex gap-[clamp(10px,2vmin,20px)] justify-center items-start w-[min(85%,1000px)]` + ` ` + `${this.lista_dados[4].tipo}`">
       <div class="div-img">
         <img class="img-pessoa" :src="this.lista_dados[4].img" />
       </div>
@@ -85,9 +85,9 @@
       </div>
     </section>
 
-    <section class="team secao">
+    <section class="flex flex-col items-center gap-5 w-full px-5">
       <h2 class="section-title" id="titulo-equipe">Equipe do NCA</h2>
-      <div class="team-content">
+      <div class="flex flex-col md:flex-row items-center gap-5 w-full">
         <p class="texto-secoes" id="team-description">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fringilla mi a
           lorem tincidunt imperdiet. Duis ac nisl pellentesque, posuere dui eu, iaculis
@@ -99,7 +99,7 @@
         <img
           alt="Imagem Time do VipLab"
           class="team-image"
-          src="../../assets/Foto-NCA.png"
+          src="../../../assets/Foto-NCA.png"
         />
       </div>
     </section>
@@ -163,46 +163,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.frame-pagina {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  gap: clamp(20px, 4vmin, 40px);
-}
-
-#divisor {
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-  align-items: center;
-  gap: clamp(15vmin, 120px, 20vmin);
-  align-self: stretch;
-  width: 100%;
-  height: clamp(80px, 15vmin, 140px);
-}
-@media (max-width: 575px) {
-  #divisor {
-    height: clamp(50px, 14vmin, 80px);
-  }
-}
-
-#logo-ufma {
-  height: 100%;
-  align-self: stretch;
-  aspect-ratio: 146.33/146.33;
-}
-
-#logo-vip {
-  height: 100%;
-  aspect-ratio: 150.11/105.92;
-}
-
-#logo-nca {
-  height: 100%;
-  align-self: stretch;
-  aspect-ratio: 188.08/146.33;
-}
-
 .tipo1 {
   background-color: white;
   color: black;
@@ -211,37 +171,5 @@ export default {
 .tipo2 {
   background: #6113c6;
   color: white;
-}
-
-.secao-participacao {
-  display: flex;
-  padding: 4vmin 0px;
-  align-items: flex-start;
-  gap: 0.5%;
-  align-self: stretch;
-
-  .div-img {
-    display: flex;
-    padding: 0px 1vmin;
-    align-items: center;
-
-    .img-pessoa {
-      width: clamp(83px, 23vmin, 160px);
-      aspect-ratio: 3/4;
-    }
-  }
-  .textos {
-    display: flex;
-    height: fit-content;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1.5vmin;
-    flex: 1 0 0;
-
-    .desc {
-      font-size: 24px;
-      width: 75%;
-    }
-  }
 }
 </style>

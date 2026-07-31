@@ -39,15 +39,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-
-// .button-container {
-//     @include container-botoes;
-//     .button {
-//         @include botao-acao($escala: 1.05, $height: $alt-botao);
-//         font-weight: $peso-fonte-butao;
-//         font-size: $fonte-but-medio;
-//         color: white;
-//     }
-// }
+/* Estilos substituídos por Tailwind - usando classes .botao-acao do style.css global */
 </style>

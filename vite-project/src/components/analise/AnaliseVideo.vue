@@ -271,7 +271,7 @@ $fonte-diag: clamp(14px, 4vmin, 22px);
 }
 
 .diagnostico {
-    color: $sec-color;
+    color: #6113C6;
 }
 
 .custom-file-upload {

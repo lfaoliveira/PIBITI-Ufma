@@ -1,11 +1,11 @@
 <template>
-    <div class="frame-pagina">
+    <div class="flex flex-col items-center gap-[2vmin] max-[500px]:gap-[1vmin] h-max">
         <HeaderSistema tipo="outro" />
-        <h1>Termos e Condições</h1>
-        <main>
+        <h1 class="text-center">Termos e Condições</h1>
+        <main class="border border-black w-[90%] self-center flex flex-col justify-start items-center overflow-auto h-[50vmin]">
             <h1>Título dos Termos e Condições</h1>
-            <ol class="texto-termos">
-                <li class="subsecao-termos" v-for="(obj, index) in termos">
+            <ol class="flex flex-col w-full px-[4vmin] items-start list-decimal">
+                <li class="flex flex-col justify-center items-center" v-for="(obj, index) in termos">
                     <h2>{{ `${index + 1}. ${obj.titulo}` }}</h2>
                     <p>{{ obj.p }}</p>
                 </li>
@@ -49,48 +49,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.frame-pagina {
-    @include frame-pagina($gap: 2vmin);
-    height: max-content;
-}
-h1 {
-    text-align: center;
-}
-
-main {
-    border: 1px solid black;
-    width: 90%;
-    align-self: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    @include webkit-scrollbar;
-
-    overflow: auto; // Ensure the element is scrollable
-    height: 50vmin;
-}
-
-@supports not (-webkit-animation: alternate) {
-    // Firefox
-    main {
-        scrollbar-width: thin;
-        scrollbar-color: #6b3eff #ff3b3b;
-    }
-}
-
-.texto-termos {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0vmin 4vmin;
-    align-items: flex-start;
-}
-
-.subsecao-termos {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
+/* Estilos substituídos por Tailwind */
 </style>

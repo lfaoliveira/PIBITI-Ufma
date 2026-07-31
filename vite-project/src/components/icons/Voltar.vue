@@ -1,7 +1,7 @@
 <template>
-  <button class="containerSeta" @click="fnVoltar">
-    <img src="../../assets/seta.png" alt="Seta" id="imagemSeta" />
-    <div class="texto">Voltar</div>
+  <button class="inline-flex flex-row items-center cursor-pointer text-white w-fit font-medium no-underline transition-all duration-300 p-[1vmin] text-center text-[clamp(13px,1.8vmin,20px)] hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110" @click="fnVoltar">
+    <img src="../../assets/seta.png" alt="Seta" class="aspect-[4/3] w-[clamp(25px,32px,5vmin)] h-auto mr-[clamp(10px,2vmin,50px)]" />
+    <div class="text-white font-normal">Voltar</div>
   </button>
 </template>
 
@@ -22,23 +22,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.containerSeta {
-  @include botao-header;
-  display: inline-flex;
-  flex-direction: row;
-}
-
-#imagemSeta {
-  aspect-ratio: 4/3;
-  width: clamp(25px, 32px, 5vmin);
-  height: auto;
-  margin-right: clamp(10px, 2vmin, 50px);
-}
-
-.texto {
-  position: relative;
-  //   font-size: $fonte-header;
-  color: #fff;
-  font-weight: normal;
-}
+/* Estilos substituídos por Tailwind */
 </style>

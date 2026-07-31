@@ -1,7 +1,7 @@
 <template>
-  <section class="frame-pagina">
+  <section class="flex flex-col items-center gap-[clamp(20px,4vmin,40px)]">
     <HeaderSistema :activeIndex="5"></HeaderSistema>
-    <main>
+    <main class="flex flex-col items-center w-[clamp(280px,50vmin,500px)]">
       <OverlayAviso
         :eventoAviso="'sucesso'"
         :titulo="'Email de recuperação enviado!'"
@@ -15,40 +15,37 @@
         :srcImg="'src/assets/check_circle.png'"
       ></OverlayAviso>
 
-      <h1>Recuperar Senha</h1>
-      <form @submit.prevent="mudarSenha">
-        <div class="form-group">
-          <label>Email</label>
-          <input @input="checkEmail" type="text" v-model="this.email" />
-          <p v-if="this.boolErros.email" class="erro">Insira um email válido!</p>
+      <h1 class="text-2xl font-semibold text-center my-4">Recuperar Senha</h1>
+      <form @submit.prevent="mudarSenha" class="flex flex-col gap-[2vmin] w-full">
+        <div class="flex flex-col gap-[1vmin]">
+          <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Email</label>
+          <input @input="checkEmail" type="text" v-model="this.email" class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]" />
+          <p v-if="this.boolErros.email" class="text-red-500 text-sm">Insira um email válido!</p>
         </div>
-        <div class="form-group">
-          <label>Nova Senha</label>
+        <div class="flex flex-col gap-[1vmin]">
+          <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Nova Senha</label>
           <input
             @input="checkSenha"
             type="text"
             v-model="this.novaSenha"
-            placeholder="Insira a nova confirmnovaSenha"
+            placeholder="Insira a nova senha"
+            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
           />
-          <li v-if="this.boolErros.senha.cadastro.numCaracteres" class="erro">
-            A senha deve ter de 8 a 20 caracteres
-          </li>
-          <li v-if="this.boolErros.senha.cadastro.maiusculas" class="erro">
-            A senha deve ter pelo menos 1 letra maiúscula
-          </li>
+          <ul class="list-none p-0 m-0">
+            <li v-if="this.boolErros.senha.cadastro.numCaracteres" class="text-red-500 text-sm">A senha deve ter de 8 a 20 caracteres</li>
+            <li v-if="this.boolErros.senha.cadastro.maiusculas" class="text-red-500 text-sm">A senha deve ter pelo menos 1 letra maiúscula</li>
+          </ul>
         </div>
-        <div class="form-group">
-          <label>Confirmar Senha</label>
+        <div class="flex flex-col gap-[1vmin]">
+          <label class="text-[#333] text-[clamp(14px,1.8vmin,18px)]">Confirmar Senha</label>
           <input
             @input="checkConfirmacaoSenha"
             type="text"
             v-model="this.confirmNovaSenha"
+            class="w-full p-[clamp(8px,1.2vmin,14px)] border border-[#ddd] rounded text-[clamp(14px,1.6vmin,18px)] focus:outline-none focus:border-[#6113C6]"
           />
-          <p v-if="this.boolErros.senha.cadastro.confirm" class="erro">
-            As senhas devem ser iguais!
-          </p>
+          <p v-if="this.boolErros.senha.cadastro.confirm" class="text-red-500 text-sm">As senhas devem ser iguais!</p>
         </div>
-        <!-- BUG AO CLICAR!!!!! -->
         <Button type="submit" :ativo="checkCampos()" texto="Enviar"></Button>
       </form>
     </main>
@@ -176,73 +173,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.frame-pagina {
-  @include frame-pagina($gap: 5vmin);
-  height: 100vh;
-}
-
-h1 {
-  font-weight: 600;
-  width: max-content;
-  margin: 0px;
-  text-align: center;
-}
-
-main {
-  width: fit-content;
-  margin: auto;
-  height: 60%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 1vmin;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 3vmin;
-  width: 100%;
-}
-
-.form-cadastro {
-  width: 50%;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-
-  label {
-    font-size: $form-fonte-titulo;
-    font-weight: 600;
-  }
-
-  input {
-    width: 100%;
-    padding: 1%;
-    height: 2lh;
-    font-size: $form-fonte-peq;
-    border: 2px solid #b3b3b3;
-    border-radius: 1vmin;
-    background-color: white;
-    outline: none;
-    transition: border-color 0.3s ease-in-out;
-
-    &::placeholder {
-      color: #757575;
-    }
-
-    &:focus {
-      border-color: #444444;
-    }
-  }
-}
-
-.erro {
-  color: red;
-  margin-left: 1vmin;
-}
+/* Estilos substituídos por Tailwind */
 </style>

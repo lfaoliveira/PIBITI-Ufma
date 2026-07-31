@@ -1,6 +1,6 @@
 <template>
     <a
-        class="['botao-header flex flex-row items-center justify-center w-fit gap-[1vmin] m-[0.5vmin] auto cursor-pointer p-0 disabled:hover:!scale-90']"
+        class="inline-flex flex-row items-center justify-center w-fit gap-[1vmin] m-[0.5vmin] cursor-pointer p-0 text-white font-medium no-underline transition-all duration-300 text-[clamp(13px,1.8vmin,20px)] text-center hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110 disabled:opacity-50 disabled:cursor-default disabled:hover:scale-90"
         :href="urlPDF"
         :disabled="butDisabled"
     >
@@ -9,7 +9,7 @@
             alt="Save icon"
             src="../../assets/download.png"
         />
-        <div class="flex w-fit m-auto text-white !font-bold underline">
+        <div class="flex w-fit m-auto text-white font-bold underline">
             Baixar Resultado
         </div>
     </a>
