@@ -34,7 +34,7 @@ body {
         @apply w-full h-16 inline-flex justify-center items-center
             rounded-[4vmin] px-2
             font-semibold text-white
-            text-sm
+            text-lg
             bg-[hsl(267,81%,37%)]
             transition duration-300 ease-out
             hover:scale-105 hover:brightness-125
