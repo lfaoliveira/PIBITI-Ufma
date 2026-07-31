@@ -8,11 +8,11 @@
 </template>
 
 <script>
-import Modal from "./components/layout/Modal.vue";
-import { mapActions } from "vuex";
+import Modal from "./components/layout/Modal.vue"
+import { mapActions } from "vuex"
 
-const popup = "popup";
-const overlay = "overlay";
+const popup = "popup"
+const overlay = "overlay"
 
 export default {
     name: "App",
@@ -31,12 +31,12 @@ export default {
     data() {
         return {
             _: 0,
-        };
+        }
     },
     mounted() {
         // console.log("LOGADO: ", this.$store.getters.getLogado);
     },
-};
+}
 </script>
 
 <style lang="scss">

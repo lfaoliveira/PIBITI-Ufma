@@ -190,9 +190,9 @@
 </style>
 
 <script>
-import Voltar from "./icons/Voltar.vue";
-import Rodape from "./layout/Rodape.vue";
-import { VueElement } from "vue";
+import Voltar from "./icons/Voltar.vue"
+import Rodape from "./layout/Rodape.vue"
+import { VueElement } from "vue"
 
 export default {
     components: {
@@ -207,49 +207,49 @@ export default {
             cpf: "",
             crm: "",
             checks: false,
-        };
+        }
     },
     mounted() {
         //funcao pra botar ponto e traço visualmente no CPF
-        const input = document.querySelector("#inputCPF");
+        const input = document.querySelector("#inputCPF")
         input.addEventListener("keypress", () => {
             //tira espacos
-            input.value = input.value.replace(/\s/g, "");
-            let tamanho = input.value.length;
+            input.value = input.value.replace(/\s/g, "")
+            let tamanho = input.value.length
 
             if (tamanho == 3 || tamanho == 7) {
                 if (input.value[tamanho - 1] == ".") {
-                    console.log("retornou");
-                    return;
+                    console.log("retornou")
+                    return
                 }
-                input.value += ".";
+                input.value += "."
             } else if (tamanho == 11) {
                 if (input.value[tamanho - 1] == "-") {
-                    return;
+                    return
                 }
-                input.value += "-";
+                input.value += "-"
             }
-        });
-        console.log("MOUNTED CADASTRO");
+        })
+        console.log("MOUNTED CADASTRO")
     },
     props: {},
     methods: {
         fnVoltar() {
-            this.$router.push({ name: "home" });
+            this.$router.push({ name: "home" })
         },
         handleTipoErro(str = String, referencia = VueElement, tipo = String) {
             // armazenar resposta
-            const resposta = referencia.checkErro(tipo.toLowerCase(), str);
+            const resposta = referencia.checkErro(tipo.toLowerCase(), str)
         },
         cadastro($evt) {
-            this.handleTipoErro(this.email, this.$refs.erro1, "Email");
-            this.handleTipoErro(this.cpf, this.$refs.erro2, "CPF");
-            this.handleTipoErro(this.crm, this.$refs.erro3, "CRM");
+            this.handleTipoErro(this.email, this.$refs.erro1, "Email")
+            this.handleTipoErro(this.cpf, this.$refs.erro2, "CPF")
+            this.handleTipoErro(this.crm, this.$refs.erro3, "CRM")
 
-            const referencia = this.$refs.erro4;
-            referencia.checkErro("checks", this.checks);
-            console.log("FIM CADASTRO");
+            const referencia = this.$refs.erro4
+            referencia.checkErro("checks", this.checks)
+            console.log("FIM CADASTRO")
         },
     },
-};
+}
 </script>

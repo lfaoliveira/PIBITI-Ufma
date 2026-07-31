@@ -57,8 +57,8 @@
                                 type="radio"
                                 @input="
                                     () => {
-                                        this.olhoEsquerdo = 'false';
-                                        this.olhoDireito = 'false';
+                                        this.olhoEsquerdo = 'false'
+                                        this.olhoDireito = 'false'
                                     }
                                 "
                                 v-model="this.paralisia"
@@ -146,20 +146,20 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState } from "vuex"
 
-import HeaderSistema from "../layout/HeaderSistema.vue";
-import Button from "../navigation/Button.vue";
-import Rodape from "../layout/Rodape.vue";
-import TesteOverlay from "../layout/TesteOverlay.vue";
-import emitter from "../../eventBus";
+import HeaderSistema from "../layout/HeaderSistema.vue"
+import Button from "../navigation/Button.vue"
+import Rodape from "../layout/Rodape.vue"
+import TesteOverlay from "../layout/TesteOverlay.vue"
+import emitter from "../../eventBus"
 
-import axios from "axios";
+import axios from "axios"
 // const eventoFormatoErrado = "formatoErrado";
 // const eventoTamanhoErrado = "tamanhoErrado";
 
 //em bytes
-const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 export default {
     name: "fichaDiag",
@@ -181,7 +181,7 @@ export default {
             taskId: null,
             // "avi"
             extensoes: ["mpg", "mpeg", "webm", "mkv", "ogv", "ogg", "mp4", "avi"],
-        };
+        }
     },
     props: {},
     computed: {
@@ -193,7 +193,7 @@ export default {
                 this.videoObj != undefined &&
                 (Boolean(this.olhoEsquerdo) != false ||
                     Boolean(this.olhoDireito) != false)
-            );
+            )
         },
     },
     methods: {
@@ -205,7 +205,7 @@ export default {
                 {
                     withCredentials: true,
                 }
-            );
+            )
         },
 
         openPopup() {
@@ -220,7 +220,7 @@ export default {
                         link: "https://google.com",
                     },
                 },
-            });
+            })
         },
         openOverlay(props) {
             this.$store.dispatch("modal/openModal", {
@@ -229,73 +229,73 @@ export default {
                     component: "Teste",
                     props: { ...props },
                 },
-            });
+            })
         },
 
         async enviaDiag() {
             //envia dados pro back comecar processamento
-            const formData = new FormData();
-            formData.append("video", this.videoObj);
-            formData.append("nomePaciente", this.nomePac);
-            formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
-            formData.append("desc", this.desc);
-            console.log("video", this.videoObj);
-            console.log("nomePaciente", this.nomePac);
-            console.log("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`);
-            console.log("desc", this.desc);
+            const formData = new FormData()
+            formData.append("video", this.videoObj)
+            formData.append("nomePaciente", this.nomePac)
+            formData.append("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`)
+            formData.append("desc", this.desc)
+            console.log("video", this.videoObj)
+            console.log("nomePaciente", this.nomePac)
+            console.log("stringOlhos", `${this.olhoEsquerdo}+${this.olhoDireito}`)
+            console.log("desc", this.desc)
 
             // const formDiag = this.$store.getters.getFormDiag;
-            console.log("FORM: ${JSON.stringify(formData)}");
+            console.log("FORM: ${JSON.stringify(formData)}")
 
-            const promiseEnviaDiag = axios.post(    
+            const promiseEnviaDiag = axios.post(
                 this.$store.getters.getAnaliseWS,
                 formData,
                 {
                     withCredentials: true,
                 }
-            );
+            )
 
-            let res = "None";
+            let res = "None"
             //lida com falha no envio
             try {
-                res = await promiseEnviaDiag;
-                this.objEnviaDiag = res.data;
+                res = await promiseEnviaDiag
+                this.objEnviaDiag = res.data
                 console.log(
                     "UPLOAD FEITO COM SUCESSO!: " + JSON.stringify(this.objEnviaDiag)
-                );
+                )
                 const mensagemOK = {
                     titulo: "Vídeo enviado com sucesso!",
                     subtexto: `Uma notificação chegará quando estiver tudo pronto.`,
                     srcImg: "src/assets/check_circle.png",
-                };
-                this.openOverlay(mensagemOK);
+                }
+                this.openOverlay(mensagemOK)
             } catch (error) {
-                this.msgErro = res.data; //data eh mensagem de erro vindo do servidor
-                console.error("DEU RUIM: " + JSON.stringify(this.msgErro));
+                this.msgErro = res.data //data eh mensagem de erro vindo do servidor
+                console.error("DEU RUIM: " + JSON.stringify(this.msgErro))
                 const msgErro = {
                     titulo: "Formato de vídeo não suportado!",
                     subtexto: `Formatos aceitos: ${this.extensoes}`,
                     srcImg: "src/assets/alert_circle.png",
-                };
-                this.openOverlay(msgErro);
-                throw error;
+                }
+                this.openOverlay(msgErro)
+                throw error
             }
 
-            console.log("MOUNTED RESPONSE: ", this.objEnviaDiag);
-            const taskId = this.objEnviaDiag?.task_id;
-            this.taskId = this.objEnviaDiag?.task_id;
+            console.log("MOUNTED RESPONSE: ", this.objEnviaDiag)
+            const taskId = this.objEnviaDiag?.task_id
+            this.taskId = this.objEnviaDiag?.task_id
 
-            const urlWS = `${this.$store.getters.getWSBackend}/ws`;
-            console.log(`URL WS: ${urlWS}`);
+            const urlWS = `${this.$store.getters.getWSBackend}/ws`
+            console.log(`URL WS: ${urlWS}`)
 
             try {
                 this.$store.dispatch("handleWebSocket", {
                     wsURL: urlWS,
                     taskId: taskId,
-                });
-                console.log("CONEXAO COM WEBSOCKET OK");
+                })
+                console.log("CONEXAO COM WEBSOCKET OK")
             } catch (err) {
-                console.error("Falha ao estabelecer a conexão WebSocket:", err);
+                console.error("Falha ao estabelecer a conexão WebSocket:", err)
             }
 
             // const ws = new WebSocket(`${this.$store.getters.getWSBackend}/ws`);
@@ -325,36 +325,36 @@ export default {
         },
         getVideo($evt) {
             //checagem por tipos de video e tamanho
-            const file = $evt.target.files[0];
+            const file = $evt.target.files[0]
             if (file.size > MAX_FILE_SIZE) {
-                emitter.emit(eventoTamanhoErrado);
-                this.videoObj = null;
+                emitter.emit(eventoTamanhoErrado)
+                this.videoObj = null
                 const props = {
                     titulo: "Vídeo muito grande!",
                     subtexto: `Tamanho máximo: 50MB`,
                     srcImg: "src/assets/alert_circle.png",
-                };
-                console.log("\nARQUIVO GRANDE DEMAIS!!!\n\n");
-                this.openOverlay(props);
-                return;
+                }
+                console.log("\nARQUIVO GRANDE DEMAIS!!!\n\n")
+                this.openOverlay(props)
+                return
             }
             if (file) {
-                const filename = String(file.name).toLowerCase();
-                const partes = filename.split(".");
-                const ext = partes[partes.length - 1];
-                console.log(`EXTENSAO: ${filename}\n`);
+                const filename = String(file.name).toLowerCase()
+                const partes = filename.split(".")
+                const ext = partes[partes.length - 1]
+                console.log(`EXTENSAO: ${filename}\n`)
                 if (this.extensoes.includes(`${ext}`)) {
-                    this.videoObj = file;
+                    this.videoObj = file
                 } else {
                     const props = {
                         titulo: "Formato de vídeo não suportado!",
                         subtexto: `Formatos aceitos: ${this.extensoes}`,
                         srcImg: "src/assets/alert_circle.png",
-                    };
-                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n");
-                    this.openOverlay(props);
-                    this.videoObj = null;
-                    console.log("DEPOIS DE ABRIR OVERLAY!");
+                    }
+                    console.log("\nFORMATO INVALIDO< ABRINDO OVERLAY!\n\n")
+                    this.openOverlay(props)
+                    this.videoObj = null
+                    console.log("DEPOIS DE ABRIR OVERLAY!")
                 }
             }
         },
@@ -363,7 +363,7 @@ export default {
         // listener pra quando fileInput recebe mudança
         // document.getElementById("fileInput").onchange = this.handleFileUpload;
     },
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -500,7 +500,7 @@ form {
                 aspect-ratio: 1/1;
                 width: 59%;
                 height: 59%;
-                background-color: #6113C6;
+                background-color: #6113c6;
                 border-radius: 1000%;
                 position: absolute;
                 top: 50%;
@@ -509,7 +509,7 @@ form {
                 transition: all 0.1s ease-in;
             }
             &:checked {
-                border-color: #6113C6;
+                border-color: #6113c6;
 
                 &::before {
                     transform: translate(-50%, -50%) scale(1);
