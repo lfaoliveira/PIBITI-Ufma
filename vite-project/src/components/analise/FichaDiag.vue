@@ -117,6 +117,7 @@
                             name="video"
                             accept="video/*"
                             required
+                            class="hidden"
                         />
                         <p v-if="this.videoObj != null">Vídeo Carregado</p>
                     </div>
