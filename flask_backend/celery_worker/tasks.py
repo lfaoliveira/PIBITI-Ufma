@@ -87,16 +87,12 @@ class MainTask(Task):
 def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, timestamp):
     # modelo = analisador.modelo
 
-    str_res, dict_graf = analisador.funcao_metodo(
-        path_processamento_arq, path_out, timestamp
-    )
+    str_res, dict_graf = analisador.funcao_metodo(path_processamento_arq, path_out, timestamp)
 
     # Se a deteccao falhou, analisador.funcao_metodo pode ter retornado uma string de erro
     # Protegemos contra isso: garantir que dict_graf seja um dict antes de indexar
     if not isinstance(dict_graf, dict):
-        print(
-            f"predict: dict_graf nao eh dict (valor={dict_graf}). Substituindo por dict vazio."
-        )
+        print(f"predict: dict_graf nao eh dict (valor={dict_graf}). Substituindo por dict vazio.")
         dict_graf = {"vel_esq": [], "vel_dir": []}
 
     # essa parte transforma qualquer elemento que nao seja int em int
@@ -170,6 +166,7 @@ def envia_diag_task(
     user_id,
     TEMP_FOLDER: str,
     timestamp,
+    analysis_uuid: str,
 ):
 
     print(f"\nCONEXAO MONGO: {self.mongo.get_database(DB_PARALISIA)}\n")
@@ -197,6 +194,7 @@ def envia_diag_task(
         "id_medico": str(id_medico),
         "diagnosticoMedico": diagnosticoMedico,
         "desc": desc,
+        "celery_task_id": analysis_uuid,  # UUID explícito = mesmo retornado ao frontend
     }
 
     # Convert None to string "None"
@@ -278,9 +276,7 @@ def processamento_analise(self, res_anterior, **kwargs):
     path_out_antes_conv = os.path.join(TEMP_FOLDER, f"OUT_PRE_{nome_local}")
 
     # --------- executando predicao ------------
-    str_res, dict_graf_string = predict(
-        self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp
-    )
+    str_res, dict_graf_string = predict(self.analisador, path_arq_input_conv, path_out_antes_conv, timestamp)
 
     # --------- executando predicao ------------
     print(str_res, type(str_res))
@@ -349,13 +345,9 @@ def processamento_analise(self, res_anterior, **kwargs):
 
     print("PEGANDO URLS")
 
-    local_url_video_out = posixpath.join(
-        BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_out)
-    )
+    local_url_video_out = posixpath.join(BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_out))
 
-    local_url_video_in = posixpath.join(
-        BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_arq_input)
-    )
+    local_url_video_in = posixpath.join(BASE_URL, ROTA_PEGAR_ARQ, os.path.basename(path_arq_input))
 
     url_pdf = posixpath.join(BASE_URL, ROTA_RELATORIO, id_diag)
 
@@ -371,9 +363,7 @@ def processamento_analise(self, res_anterior, **kwargs):
         "url_pdf": url_pdf,
     }
     # seta resultado no BD
-    db.get_collection(self.coll_diags).update_one(
-        {"_id": ObjectId(id_diag)}, {"$set": result}
-    )
+    db.get_collection(self.coll_diags).update_one({"_id": ObjectId(id_diag)}, {"$set": result})
 
     result["diagAutom"] = str_res
 
@@ -416,9 +406,6 @@ def sync_google_drive(self, res_anterior):
         print(f"ID_IN: {id_in} ID_OUT: {id_out}")
 
         db = self.mongo.get_database(DB_PARALISIA)
-        task_id = self.request.id
-        if task_id == None:
-            raise ValueError("ID NULO!")
 
         # Update the document in the database with the new Google Drive file IDs
         db.get_collection(self.coll_diags).update_one(
@@ -427,7 +414,6 @@ def sync_google_drive(self, res_anterior):
                 "$set": {
                     "video_in": id_in,
                     "video": id_out,
-                    "celery_task_id": task_id,
                 }
             },
         )
@@ -435,7 +421,7 @@ def sync_google_drive(self, res_anterior):
         res_anterior.pop("storage_strings")
         res_anterior.pop("id_diag")
         res_anterior.pop("email")
-        print(f"ID DA ULTIMA TASK: {task_id} \n UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
+        print("UPLOAD COMPLETO! ANÁLISE TERMINADA!\n\n")
         return res_anterior
     except Exception as e:
         print(f"ERRO NA PARTE DE UPLOAD: {e}")

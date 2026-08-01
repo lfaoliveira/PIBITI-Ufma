@@ -86,13 +86,9 @@ def predict(analisador: AnaliseParalisia, path_processamento_arq, path_out, time
     # Usar graph/session apenas se o modelo expor essa API
     if hasattr(modelo, "sess") and modelo.sess is not None:
         with modelo.sess.graph.as_default():
-            str_res, dict_graf = analisador.funcao_metodo(
-                path_processamento_arq, path_out, timestamp
-            )
+            str_res, dict_graf = analisador.funcao_metodo(path_processamento_arq, path_out, timestamp)
     else:
-        str_res, dict_graf = analisador.funcao_metodo(
-            path_processamento_arq, path_out, timestamp
-        )
+        str_res, dict_graf = analisador.funcao_metodo(path_processamento_arq, path_out, timestamp)
 
     return str_res, dict_graf
 
@@ -205,9 +201,7 @@ print(f"\nHOME: {app.config['WKDIR']}\n\n")
 
 path_pesos_yolo = os.path.join(app.config["WKDIR"], "trained_weights_final.h5")
 if not os.path.exists(path_pesos_yolo):
-    print(
-        f"PESO YOLOv3 NAO EXISTE!!! BAIXE O ARQUIVO: trained_weights_final.h5 PARA PROSSEGUIR"
-    )
+    print(f"PESO YOLOv3 NAO EXISTE!!! BAIXE O ARQUIVO: trained_weights_final.h5 PARA PROSSEGUIR")
 
 
 app.config["TEMP_FOLDER"] = os.path.join(app.config["WKDIR"], "tmp")
@@ -278,9 +272,7 @@ def teste_pdf():
         return make_response("PDF created successfully!", OK)
     except Exception as e:
         print(e)
-        return make_response(
-            "An error occurred during PDF creation.", INTERNAL_SERVER_ERROR
-        )
+        return make_response("An error occurred during PDF creation.", INTERNAL_SERVER_ERROR)
 
 
 @app.route("/deletar_tudo")
@@ -348,8 +340,7 @@ def get_file_drive(id_file):
 
         headers = {
             "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Type": mimetypes.guess_type(filename)[0]
-            or "application/octet-stream",
+            "Content-Type": mimetypes.guess_type(filename)[0] or "application/octet-stream",
         }
 
         # The generator is wrapped in a Response object.
@@ -396,16 +387,13 @@ def get_file_local(filename):
                 stream_with_context(file_generator(filename)),
                 headers={
                     "Content-Disposition": f'attachment; filename="{os.path.basename(filename)}"',
-                    "Content-Type": mimetypes.guess_type(filename)[0]
-                    or "application/octet-stream",
+                    "Content-Type": mimetypes.guess_type(filename)[0] or "application/octet-stream",
                 },
             )
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
         traceback.print_exc()
-        return make_response(
-            {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
-        )
+        return make_response({"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR)
 
 
 @app.route("/get-file/<resource_uri>", methods=["GET"])
@@ -420,9 +408,7 @@ def get_file(resource_uri) -> Union[Any, Response]:
         if resource_uri:
             print("PEGANDO ARQUIVO!")
             # Check local storage first
-            local_path = os.path.join(
-                app.config["TEMP_FOLDER"], os.path.basename(resource_uri)
-            )
+            local_path = os.path.join(app.config["TEMP_FOLDER"], os.path.basename(resource_uri))
             if os.path.exists(local_path):
                 print("RETORNANDO ARQUIVO LOCAL")
                 return get_file_local(os.path.basename(resource_uri))
@@ -435,9 +421,7 @@ def get_file(resource_uri) -> Union[Any, Response]:
             raise Exception("RECURSO NULO!")
     except Exception as e:
         print(f"ERRO AO PEGAR ARQUIVO: {e}")
-        return make_response(
-            {"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR
-        )
+        return make_response({"error": f"{str(e)}", "file_url": "None"}, INTERNAL_SERVER_ERROR)
 
 
 @app.route("/analise", methods=["PUT"])
@@ -453,9 +437,7 @@ def analisar():
             return make_response("INPUT NULO!", BAD_REQUEST)
         print()
         # Enqueue the celery task
-        task = processamento_analise.delay(
-            id_diag, nome_input, filename, app.config["TEMP_FOLDER"]
-        )
+        task = processamento_analise.delay(id_diag, nome_input, filename, app.config["TEMP_FOLDER"])
 
         return jsonify({"task_id": task.id, "status": "Processing started"})
     except Exception as e:
@@ -468,9 +450,7 @@ def task_status(task_id):
     try:
         task = AsyncResult(task_id)
         if task.state == "PENDING":
-            return make_response(
-                jsonify({"dados": "", "message": "PENDING"}), NOT_MODIFIED
-            )
+            return make_response(jsonify({"dados": "", "message": "PENDING"}), NOT_MODIFIED)
         elif task.state == "SUCCESS":
             # Trata resultado que pode ser Exception
             dados = task.result
@@ -490,9 +470,7 @@ def task_status(task_id):
         print(f"EXCEPTION NO STATUS DA TASK: {e}\n")
         traceback.print_exc()
         return make_response(
-            jsonify(
-                {"error": "TASK DOESNT EXIST OR SOMETHING FAILED", "details": str(e)}
-            ),
+            jsonify({"error": "TASK DOESNT EXIST OR SOMETHING FAILED", "details": str(e)}),
             NOT_FOUND,
         )
 
@@ -503,13 +481,18 @@ def task_status(task_id):
 def pega_perfil():
     maxItensPag = 16
     pagAtual = request.args.get("pagAtual", None)
-    if pagAtual != None:
+    if pagAtual is None:
+        print("INPUT NULO!")
+        return make_response("INPUT NULO!", BAD_REQUEST)
+
+    try:
         pagAtual = int(pagAtual)
 
         email_medico = str(current_user.id)
-        medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one(
-            {"email": email_medico}
-        )
+        medico = mongo.db.get_collection(COLLECTION_MEDICOS).find_one({"email": email_medico})
+        if medico is None:
+            print(f"MEDICO NAO ENCONTRADO: {email_medico}")
+            return make_response("MEDICO NAO ENCONTRADO!", UNAUTHORIZED)
         validado = bool(medico.get("validado", None))
         if not validado:
             print("MEDICO NAO VALIDADADO!")
@@ -534,9 +517,7 @@ def pega_perfil():
         lista_res = list(res)[0]["data"]
         # print(f"DIAGS: \n\n{lista_res}\n\n")
 
-        medico = Helper.find_one_with_id(
-            mongo.db.get_collection(COLLECTION_MEDICOS), id_medico
-        )
+        medico = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)
         # res = list(mongo.db.get_collection(COLLECTION_DIAGS).find())
         return jsonify(
             {
@@ -546,11 +527,10 @@ def pega_perfil():
                 "maxItensPag": maxItensPag,
             }
         )
-
-    else:
-        print("INPUT NULO!")
-
-        return make_response("INPUT NULO!", BAD_REQUEST)
+    except Exception as e:
+        print(f"ERRO NO PEGA_PERFIL: {e}")
+        traceback.print_exc()
+        return make_response(f"ERRO: {str(e)}", INTERNAL_SERVER_ERROR)
 
 
 @app.route("/gerar_relatorio/<id_diag>", methods=["GET"])
@@ -566,9 +546,7 @@ def gerar_relatorio(id_diag):
     if str(dados_pdf) == "None":
         return make_response("NAO TEM PDF!", BAD_REQUEST)
 
-    path_out_pdf = os.path.join(
-        app.config["TEMP_FOLDER"], f"{dados_pdf['nomePaciente']}.pdf"
-    )
+    path_out_pdf = os.path.join(app.config["TEMP_FOLDER"], f"{dados_pdf['nomePaciente']}.pdf")
     relpath_output = os.path.relpath(path_out_pdf, app.config["WKDIR"])
     try:
         print(f"DADOS DO PDF: {dados_pdf}")
@@ -579,9 +557,7 @@ def gerar_relatorio(id_diag):
         uri_pdf = relpath_output
         if download:
             print(f"BAIXANDO PDF {relpath_output}...")
-            return send_file(
-                path_out_pdf, as_attachment=True, download_name="Relatorio.pdf"
-            )
+            return send_file(path_out_pdf, as_attachment=True, download_name="Relatorio.pdf")
         else:
             return get_file(uri_pdf)
     except Exception as e:
@@ -706,9 +682,7 @@ def test_login():
 
         print(f"✅ USUARIO AUTENTICADO VIA TOKEN: {email}")
 
-        return jsonify(
-            {"message": "Autenticado com sucesso", "user": email, "authenticated": True}
-        )
+        return jsonify({"message": "Autenticado com sucesso", "user": email, "authenticated": True})
 
     except Exception as e:
         print(f"❌ Erro no test-login: {e}")
@@ -735,10 +709,7 @@ def autenticar():
             if not email or not senha:
                 return make_response("Email ou senha ausentes", BAD_REQUEST)
             usuario = medicos.find_one({"email": email})
-            if (
-                usuario
-                and usuario.get("senha") == alg_hash(senha.encode("utf-8")).hexdigest()
-            ):
+            if usuario and usuario.get("senha") == alg_hash(senha.encode("utf-8")).hexdigest():
                 user_obj = User(email)
                 login_user(user_obj, remember=True)
                 return make_response("LOGADO", OK)
@@ -955,6 +926,7 @@ def registrar_diag_processar():
     try:
         timestamp = time.time()
         temp_folder = app.config["TEMP_FOLDER"]
+        analysis_uuid = str(uuid.uuid4())  # UUID proprio para o MongoDB
         workflow = chain(
             envia_diag_task.s(
                 video_data,
@@ -965,16 +937,20 @@ def registrar_diag_processar():
                 user_id,
                 temp_folder,
                 timestamp,
+                analysis_uuid,  # UUID explícito p/ gravar no MongoDB
             ),
-            processamento_analise.s(
-                filename=filename, TEMP_FOLDER=temp_folder, timestamp=timestamp
-            ),  # receives previous result as args
-            sync_google_drive.s(),  # receives result of processamento_analise
+            processamento_analise.s(filename=filename, TEMP_FOLDER=temp_folder, timestamp=timestamp),
+            sync_google_drive.s(),
         )
 
-        result = workflow.apply_async()
+        result = workflow.apply_async(task_id=analysis_uuid)
 
-        return jsonify({"task_id": result.id, "status": "enviando"})
+        return jsonify(
+            {
+                "task_id": analysis_uuid,  # UUID proprio = ID da chain = chave MongoDB
+                "status": "enviando",
+            }
+        )
 
     except Exception as e:
         print(f"EXCECAO NA ANALISE: {e}\n")
@@ -988,24 +964,16 @@ def ver_analise(task_uuid):
     """Get diagnostic from Mongo DB collection and return as JSON"""
     try:
         print(f"VER ANALISE: {task_uuid}")
-        diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
-            {"celery_task_id": task_uuid}
-        )
+        diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one({"celery_task_id": task_uuid})
         print(f"DIAG: {diagnostico}")
         if diagnostico:
             # Extrai dados_pdf com segurança (pode ser None para usuários anônimos)
             dados_pdf = diagnostico.get("dados_pdf", {}) or {}
 
             retorno = {
-                "video": url_for(
-                    "get_file", resource_uri=diagnostico["video"], _external=True
-                ),
-                "graficoURL": url_for(
-                    "gerar_grafico", id_diag=diagnostico["_id"], _external=True
-                ),
-                "pdfURL": url_for(
-                    "gerar_relatorio", id_diag=diagnostico["_id"], _external=True
-                ),
+                "video": url_for("get_file", resource_uri=diagnostico["video"], _external=True),
+                "graficoURL": url_for("gerar_grafico", id_diag=diagnostico["_id"], _external=True),
+                "pdfURL": url_for("gerar_relatorio", id_diag=diagnostico["_id"], _external=True),
                 "olho_doente": diagnostico.get("diagnosticoMedico", "Desconhecido"),
                 "percentDif": dados_pdf.get("difVel", None),
                 "velD": dados_pdf.get("velDir", None),
@@ -1042,14 +1010,10 @@ def get_velocidades(task_uuid):
     """
     try:
         print(f"GET VELOCIDADES: {task_uuid}")
-        diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one(
-            {"celery_task_id": task_uuid}
-        )
+        diagnostico = mongo.db.get_collection(COLLECTION_DIAGS).find_one({"celery_task_id": task_uuid})
 
         if not diagnostico:
-            return make_response(
-                jsonify({"error": "Diagnóstico não encontrado"}), NOT_FOUND
-            )
+            return make_response(jsonify({"error": "Diagnóstico não encontrado"}), NOT_FOUND)
 
         # Extrai dados_pdf com segurança (pode ser None para usuários anônimos)
         dados_pdf = diagnostico.get("dados_pdf", {}) or {}

@@ -145,9 +145,7 @@ class GoogleDrive:
 
             print("update_state: ATUALIZOU")
             if verbose:
-                with pd.option_context(
-                    "display.max_rows", None, "display.max_columns", 2
-                ):
+                with pd.option_context("display.max_rows", None, "display.max_columns", 2):
                     print(f"DF FILE STATE DEPOIS DAS MODIF: \n{self.file_state}\n")
         else:
             self.file_state = modificacoes.copy()
@@ -227,9 +225,7 @@ class GoogleDrive:
     def check_id(self, id_drive):
         try:
             file = (
-                self.drive_service.files()
-                .get(fileId=id_drive, fields="id", supportsAllDrives=True)
-                .execute()
+                self.drive_service.files().get(fileId=id_drive, fields="id", supportsAllDrives=True).execute()
             )
             return file is not None
         except HttpError as error:
@@ -329,11 +325,7 @@ class GoogleDrive:
                     "parents": [id_parents[i - 1]],
                     "mimeType": "application/vnd.google-apps.folder",
                 }
-                folder_drive = (
-                    self.drive_service.files()
-                    .create(body=folder_metadata, fields="id")
-                    .execute()
-                )
+                folder_drive = self.drive_service.files().create(body=folder_metadata, fields="id").execute()
                 print(
                     f"FOLDER CRIADO: {folder_list[i]}, FOLDER METADATA: NAME AND PARENT:{folder_metadata['name'], folder_metadata['parents']}"
                 )
@@ -384,9 +376,7 @@ class GoogleDrive:
 
             mime = mimetypes.guess_type(file_path)
             if mime[0]:
-                media = MediaFileUpload(
-                    file_path, mimetype=mime[0], resumable=resumable
-                )
+                media = MediaFileUpload(file_path, mimetype=mime[0], resumable=resumable)
 
                 file_metadata = {
                     "name": filename,
@@ -470,11 +460,7 @@ class GoogleDrive:
                 media = MediaFileUpload(new_data, mimetype=mime[0])
 
                 # Update the file
-                updated_file = (
-                    self.drive_service.files()
-                    .update(fileId=file_id, media_body=media)
-                    .execute()
-                )
+                updated_file = self.drive_service.files().update(fileId=file_id, media_body=media).execute()
 
                 # self.fetch_drive_files()   #Update local state
                 return updated_file.get("id")
@@ -501,9 +487,7 @@ class GoogleDrive:
             if file_id == self.ID_ROOT_DADOS:
                 raise ValueError("NAO PODE DELETAR ROOT_DADOS!!!!!!!")
             # Delete the file
-            self.drive_service.files().delete(
-                fileId=file_id, supportsAllDrives=True
-            ).execute()
+            self.drive_service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
 
             # self.fetch_drive_files()
 
@@ -516,16 +500,31 @@ class GoogleDrive:
     def download_file(self, file_id):
         import io
 
-        # Verifica se o arquivo está no índice, se não, faz um refresh
+        # Verifica se o arquivo está no índice, se não, busca diretamente na API
         if file_id not in self.file_state.index:
-            print(f"Arquivo {file_id} não encontrado no cache. Atualizando lista...")
-            self.fetch_drive_files()
-
-        # Se ainda não encontrar, retorna erro
-        if file_id not in self.file_state.index:
-            raise FileNotFoundError(
-                f"Arquivo com ID {file_id} não encontrado no Google Drive"
-            )
+            print(f"Arquivo {file_id} não encontrado no cache. Buscando diretamente na API...")
+            try:
+                file = (
+                    self.drive_service.files()
+                    .get(
+                        fileId=file_id,
+                        fields="id, name, mimeType, modifiedTime, parents",
+                        supportsAllDrives=True,
+                    )
+                    .execute()
+                )
+                # Adiciona ao cache local
+                id_parent = file.get("parents")
+                id_parent = id_parent[0] if id_parent else self.ID_ROOT_DADOS
+                self.file_state.loc[file_id] = {
+                    "name": file.get("name"),
+                    "modified": file.get("modifiedTime"),
+                    "parents": [id_parent],
+                    "mimeType": file.get("mimeType"),
+                }
+                print(f"Arquivo {file_id} adicionado ao cache via API direta.")
+            except HttpError as e:
+                raise FileNotFoundError(f"Arquivo com ID {file_id} não encontrado no Google Drive: {e}")
 
         filename = str(self.file_state.loc[file_id, "name"])
         request = self.drive_service.files().get_media(fileId=file_id)
@@ -534,9 +533,7 @@ class GoogleDrive:
         def file_generator():
             # We use an in-memory buffer to hold one chunk at a time.
             chunk_buffer = io.BytesIO()
-            downloader = MediaIoBaseDownload(
-                chunk_buffer, request, chunksize=1024 * 1024
-            )
+            downloader = MediaIoBaseDownload(chunk_buffer, request, chunksize=1024 * 1024)
 
             done = False
             try:
@@ -547,9 +544,7 @@ class GoogleDrive:
                         if status:
                             print(f"Download progress: {int(status.progress() * 100)}%")
                     except HttpError as error:
-                        print(
-                            f"!!! Google Drive API error during chunk download: {error}"
-                        )
+                        print(f"!!! Google Drive API error during chunk download: {error}")
                         # Stop the generator cleanly if an API error occurs mid-stream
                         return
                     # Yield the content of the buffer (the chunk we just downloaded)
