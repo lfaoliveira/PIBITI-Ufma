@@ -75,7 +75,8 @@ services:
             context: .
             dockerfile: ./DOCKER/frontend/dockerfile
         depends_on:
-            - flask
+            flask:
+                condition: service_healthy
         ports:
             - "5173:5173"
         env_file:
@@ -139,3 +140,4 @@ volumes:
     db:
     backend:
     frontend:
+
