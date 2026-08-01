@@ -1,5 +1,7 @@
 <template>
-    <main class="overflow-x-hidden shadow-[0px_0px_0px_0.05rem_rgb(0,0,0)] grid grid-rows-[repeat(auto-fit,60vmin)] grid-cols-[repeat(auto-fit,minmax(100%,1fr))] mx-auto w-[clamp(90vmin,90%,100%)] h-[clamp(20em,450px,91vmin)] gap-0 mt-[5vmin] relative text-white mb-[2%] self-center">
+    <main
+        class="shadow-[0px_0px_0px_0.05rem_rgb(0,0,0)] mx-auto w-[clamp(90vmin,90%,100%)] h-[22rem] md:h-[25rem] lg:h-[30rem] mt-[5vmin] relative text-white mb-[2%] self-center"
+    >
         <!-- @loadedmetadata="getLoadedVideo" -->
         <video
             class="video-js vjs-custom-skin"
@@ -18,7 +20,12 @@
 <style scoped>
 /* Video.js custom overrides - mantidos porque afetam o player globalmente */
 .video-js .vjs-control-bar {
-    background: linear-gradient(180deg, rgba(95,95,95,0.66) 0%, rgba(33,33,33,0.85) 39%, rgba(17,0,0,1) 97%);
+    background: linear-gradient(
+        180deg,
+        rgba(95, 95, 95, 0.66) 0%,
+        rgba(33, 33, 33, 0.85) 39%,
+        rgba(17, 0, 0, 1) 97%
+    );
 }
 
 .video-js .vjs-play-control {

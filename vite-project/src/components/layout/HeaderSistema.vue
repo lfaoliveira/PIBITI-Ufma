@@ -1,14 +1,11 @@
 <template>
-    <nav class="flex w-full z-10 bg-[#0E0021]">
+    <nav class="flex w-full z-40 bg-[#0E0021]">
         <ul class="flex items-center gap-[2vmin] p-[1vmin] flex-1">
             <img
                 class="rounded-lg border-2 border-initial aspect-[320/200] h-full max-h-[8vmin]"
                 src="../../../public/logo_app2.png"
             />
-            <li
-                v-for="(item, index) in itensEsquerdo"
-                :key="index"
-            >
+            <li v-for="(item, index) in itensEsquerdo" :key="index">
                 <a
                     class="cursor-pointer text-white text-xs sm:text-sm bg-transparent w-fit font-medium no-underline transition-all duration-300 p-1 inline-block text-center hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110 max-[940px]:p-0"
                     :class="{ 'font-extrabold underline': activeIndex === index }"
@@ -60,7 +57,10 @@
                         <li v-if="!this.logado" class="w-full">
                             <a
                                 class="flex items-center justify-end gap-3 w-full text-white text-xs sm:text-sm font-medium py-2 px-3 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-                                :class="{ 'font-extrabold underline': activeIndex === itensEsquerdo.length }"
+                                :class="{
+                                    'font-extrabold underline':
+                                        activeIndex === itensEsquerdo.length,
+                                }"
                                 @click="setActive('Acessar Sistema')"
                             >
                                 Acessar Sistema
@@ -87,9 +87,12 @@
             <li v-show="!this.logado && !this.isOpen" class="hidden sm:block">
                 <a
                     class="cursor-pointer text-white text-xs sm:text-sm bg-transparent w-fit font-medium no-underline transition-all duration-300 p-1 inline-block text-center hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110 max-[940px]:p-0"
-                    :class="{ 'font-extrabold underline': activeIndex === itensEsquerdo.length }"
+                    :class="{
+                        'font-extrabold underline': activeIndex === itensEsquerdo.length,
+                    }"
                     @click="setActive('Acessar Sistema')"
-                >Acessar Sistema</a>
+                    >Acessar Sistema</a
+                >
             </li>
         </ul>
     </nav>

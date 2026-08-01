@@ -515,6 +515,10 @@ def pega_perfil():
             allowDiskUse=True,
         )
         lista_res = list(res)[0]["data"]
+        # Converte ObjectId para string em cada documento
+        for doc in lista_res:
+            if "_id" in doc:
+                doc["_id"] = str(doc["_id"])
         # print(f"DIAGS: \n\n{lista_res}\n\n")
 
         medico = Helper.find_one_with_id(mongo.db.get_collection(COLLECTION_MEDICOS), id_medico)

@@ -202,10 +202,15 @@ export default {
                 withCredentials: true,
             })
         } catch (e) {
-            if (e.response.status == 401) {
+            if (e.response && e.response.status === 401) {
                 this.entradas = this.ajustarEntradasTabela([])
             }
-            console.log("ERRO AO PEGAR PERFIL!")
+            console.error("ERRO AO PEGAR PERFIL!", e)
+            return  // sai sem tentar acessar res2.data
+        }
+        if (!res2 || !res2.data) {
+            console.error("RESPOSTA VAZIA DO PERFIL!")
+            return
         }
         this.entradas = this.ajustarEntradasTabela(res2.data.lista)
         this.nomeMedico = res2.data.nomeMedico
