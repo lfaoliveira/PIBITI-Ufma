@@ -40,8 +40,5 @@ export default {
 </script>
 
 <style lang="scss">
-$fonte-maior: 48px;
-$fonte-secao: 32px;
-$fonte-paragrafo-info: 20px;
-$fonte-but-grande: 24px;
+/* Variáveis SCSS removidas - usar Tailwind */
 </style>

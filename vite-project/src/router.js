@@ -11,7 +11,6 @@ import FichaDiag from './components/analise/FichaDiag.vue';
 import Perfil from './components/navigation/Perfil.vue';
 import EsqueciSenha from './components/helper/EsqueciSenha.vue';
 import MudarSenha from './components/helper/MudarSenha.vue';
-// import TesteLoading from './components/analise/TesteLoading.vue';
 
 
 

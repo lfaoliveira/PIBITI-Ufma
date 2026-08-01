@@ -1,17 +1,11 @@
 <template>
     <a
-        class="inline-flex flex-row items-center justify-center w-fit gap-[1vmin] m-[0.5vmin] cursor-pointer p-0 text-white font-medium no-underline transition-all duration-300 text-[clamp(13px,1.8vmin,20px)] text-center hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110 disabled:opacity-50 disabled:cursor-default disabled:hover:scale-90"
+        class="flex items-center justify-end gap-3 w-full text-white text-xs sm:text-sm font-medium py-2 px-3 rounded-lg hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         :href="urlPDF"
         :disabled="butDisabled"
     >
-        <img
-            class="w-12 aspect-square p-[0.5vmin]"
-            alt="Save icon"
-            src="../../assets/download.png"
-        />
-        <div class="flex w-fit m-auto text-white font-bold underline">
-            Baixar Resultado
-        </div>
+        <span>Baixar Resultado</span>
+        <img class="w-5 h-5" alt="Save icon" src="../../assets/download.png" />
     </a>
 </template>
 
@@ -20,14 +14,14 @@ export default {
     name: "salvar",
     created() {},
     data() {
-        return {};
+        return {}
     },
     mounted() {
         this.$el.addEventListener("click", (event) => {
             if (event.target.closest(".salvar")) {
-                console.log("Salvar element clicked");
+                console.log("Salvar element clicked")
             }
-        });
+        })
     },
     props: {
         modo: "off",
@@ -36,8 +30,8 @@ export default {
     methods: {},
     computed: {
         butDisabled() {
-            return this.modo == "off";
+            return this.modo == "off"
         },
     },
-};
+}
 </script>

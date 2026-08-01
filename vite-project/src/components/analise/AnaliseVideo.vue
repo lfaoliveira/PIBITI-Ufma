@@ -1,48 +1,48 @@
 <template>
     <HeaderSistema :activeIndex="5" :urlPDF="pdfURL" />
-    <main class="analysis-view">
+    <main class="z-30 w-full bg-white flex flex-col items-center overflow-x-hidden overflow-y-auto">
         <!-- Loading screen -->
         <div
             v-if="!resPronto"
-            class=" fixed inset-[10%] bg-black/75 flex items-center justify-center z-10"
+            class="fixed inset-[10%] bg-black/75 flex items-center justify-center z-10"
         >
-            <div class="border-solid bg-white p-8 rounded-lg shadow-xl flex flex-col items-center z-12">
+            <div class="bg-white p-8 rounded-lg shadow-xl flex flex-col items-center">
                 <div
-                    class="w-12 h-12  !border-4 !border-purple-700 !border-t-transparent !rounded-4xl !animate-spin z-13"
+                    class="w-12 h-12 border-4 border-purple-700 border-t-transparent rounded-full animate-spin"
                 ></div>
-                <p class="text-gray-700 text-lg font-semibold z-2">Carregando análise...</p>
+                <p class="text-gray-700 text-lg font-semibold mt-4">Carregando análise...</p>
             </div>
-
-            
         </div>
 
         <!-- Main content -->
         <template v-else>
-            <h1 class="page-title">Análise de Paralisia</h1>
+            <h1 class="text-[#3a0d75] text-[clamp(35px,52px,70px)] max-[1000px]:text-[clamp(1.8rem,2rem,4rem)] max-[600px]:text-[clamp(1.2rem,1.4rem,4rem)] mt-[clamp(30px,6vmin,120px)] mx-auto mb-0 text-center font-bold">
+                Análise de Paralisia
+            </h1>
 
-            <div class="analysis-grid">
-                <div class="diagnosis-card">
-                    <h2 class="diagnostico texto-diag">Diagnóstico: {{ olho_doente }}</h2>
-                    <p class="dif-velocidade texto-diag">
+            <div class="grid grid-rows-[repeat(auto-fill,minmax(40vmin,2fr))] grid-cols-[repeat(auto-fit,minmax(85vmin,1fr))] gap-[clamp(2%,20px,4vmin)] w-[97%] mt-[2%]">
+                <div class="rounded-[13px] bg-white shadow-[0_0_5px_4px_rgba(0,0,0,0.21)] text-black w-full flex flex-col justify-self-center overflow-x-hidden">
+                    <h2 class="text-[#6113C6] font-semibold text-[clamp(14px,4vmin,22px)] my-[clamp(3%,20px,50px)] mx-[4%]">Diagnóstico: {{ olho_doente }}</h2>
+                    <p class="font-semibold text-[clamp(14px,4vmin,22px)] my-[clamp(3%,20px,50px)] mx-[4%]">
                         Diferença de Velocidade: {{ percentDif }} %
                     </p>
-                    <p class="velocidade-dir texto-diag">Olho Direito: {{ velD }} mm/s</p>
-                    <p class="velocidade-esq texto-diag">
+                    <p class="font-semibold text-[clamp(14px,4vmin,22px)] my-[clamp(3%,20px,50px)] mx-[4%]">Olho Direito: {{ velD }} mm/s</p>
+                    <p class="font-semibold text-[clamp(14px,4vmin,22px)] my-[clamp(3%,20px,50px)] mx-[4%]">
                         Olho Esquerdo: {{ velE }} mm/s
                     </p>
                 </div>
-                <div class="div-grafico">
+                <div class="flex w-full aspect-[464/200] rounded-[10px] shadow-[0_0_7px_rgba(0,0,0,0.5)] overflow-x-hidden">
                     <img
                         ref="imgGraf"
                         :src="graficoURL"
-                        class="grafico"
+                        class="object-contain w-full"
                         alt="Analysis graph"
                         draggable="false"
                     />
                 </div>
             </div>
             <VideoPlayer :videoSource="videoSource" :mimeVideo="mimeVideo" />
-            <Rodape class="rodape"></Rodape>
+            <Rodape class="mt-auto"></Rodape>
         </template>
     </main>
 </template>
@@ -188,188 +188,6 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-$fonte-diag: clamp(14px, 4vmin, 22px);
-
-.texto-diag {
-    font-weight: 600;
-    font-size: $fonte-diag;
-    margin: clamp(3%, 20px, 50px) 4%;
-}
-
-.responsive-container {
-    width: 97%;
-    display: flex;
-    flex-wrap: wrap; /* Allows the items to wrap to the next line */
-    gap: 20px;
-}
-
-.div-grafico {
-    display: flex;
-    /* Minimum width before breaking */
-    width: clamp(100%, 100%, 100%); /* Make the image responsive */
-    aspect-ratio: 464/200;
-
-    border-radius: 10px;
-    box-shadow: 0 0px 7px rgba(0, 0, 0, 0.5);
-}
-
-.grafico {
-    object-fit: contain;
-    width: clamp(100%, 100%, 100%);
-}
-.video-exemplo {
-    width: 100%;
-    height: 50%;
-}
-
-.analysis-view {
-    // border-style: solid;
-    z-index:30;
-    width: clamp(100%, 100%, 100%);
-    background-color: #fff;
-    /* box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.34); */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.page-title {
-    color: #3a0d75;
-    font-size: clamp(35px, 52px, 70px);
-    @media (max-width: 1000px){
-        font-size: clamp(1.8rem, 2rem, 4rem);
-
-    }
-    @media (max-width: 600px){
-        font-size: clamp(1.2rem, 1.4rem, 4rem);
-        
-    }
-    margin: clamp(30px, 6vmin, 120px) auto 0px auto;
-}
-
-.analysis-grid {
-    --tam-grid: 97%;
-    display: grid;
-    grid-template-rows: repeat(auto-fill, minmax(40vmin, 2fr));
-    grid-template-columns: repeat(auto-fit, minmax(85vmin, 2fr));
-    gap: clamp(2%, 20px, 4vmin);
-    width: var(--tam-grid);
-    margin-top: 2%;
-}
-
-.diagnosis-card {
-    border-radius: 13px;
-    background-color: #fff;
-    box-shadow: 0 0 5px 4px rgba(0, 0, 0, 0.21);
-    color: black;
-    width: clamp(200px, 100vmin, 100%);
-    flex: 0.3;
-    display: flex;
-    flex-direction: column;
-    justify-self: center;
-}
-
-.diagnostico {
-    color: #6113C6;
-}
-
-.custom-file-upload {
-    background-color: #43c3dd;
-    --butao-height: 6vmin;
-    --butao-width: 30vmin;
-    height: clamp(4rem, var(--butao-height), 6rem);
-    width: clamp(6rem, var(--butao-width), 10rem);
-    font-size: clamp(2rem, 4vmin, 6rem);
-}
-
-.custom-file-upload:focus {
-    background-color: #ffffff;
-    height: clamp(
-        4vmin + 1vmin,
-        var(--butao-height) + 2 vmin,
-        var(--butao-height) + 4vmin
-    );
-    width: clamp(6rem, var(--butao-width), 10rem);
-    font-size: clamp(2rem, 4vmin, 6rem);
-}
-
-.custom-file-upload:hover {
-    background-color: #39abc2;
-    --butao-height: 8vmin;
-    --butao-width: 30vmin;
-    height: clamp(
-        2vmin + 4vmin,
-        var(--butao-height) + 4vmin,
-        var(--butao-height) + 12vmin
-    );
-    width: clamp(6rem, var(--butao-width), 10rem);
-    font-size: clamp(3vmin, 5vmin, 7vmin);
-}
-
-// CSS ORIGINAL
-
-.edicaoVideo {
-    font-family: "Roboto Serif", serif !important;
-}
-.setaClasse {
-    position: absolute;
-    aspect-ratio: 4/3;
-    top: 0.2vmin;
-    left: 5vmin;
-}
-.videoplayer {
-    display: grid;
-    width: 100%;
-    height: 100%;
-}
-button {
-    font-family: "Roboto Serif", serif !important;
-}
-
-.videoplayer-controls {
-    display: block flex;
-    width: 80%;
-    height: 80%;
-}
-
-.videoplayer-controls-toggleplay,
-.videoplayer-controls-togglemute {
-    background-color: #43c3dd;
-    border-radius: 51px;
-    color: #001b2c;
-    position: relative;
-    height: 1.5em;
-    width: 6em;
-    white-space: nowrap;
-    line-height: normal;
-    display: flex;
-    left: 0;
-    justify-content: center;
-
-    flex-shrink: 1;
-    border: none;
-}
-
-.videoplayer-controls-toggleplay {
-    margin-right: 20px;
-}
-
-.videoplayer-controls-time {
-    text-align: left;
-    font-weight: 400;
-    line-height: 2;
-    color: #001b2c;
-    margin-right: 1rem;
-    width: 20%;
-}
-
-.videoplayer-controls-track {
-    line-height: 2;
-    margin-right: 1rem;
-}
-
-.rodape {
-    margin-top: clamp(20px, 6vmin, 5rem);
-}
+<style scoped>
+/* Estilos de customização do video.js mantidos via CSS global */
 </style>

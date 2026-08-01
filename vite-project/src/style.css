@@ -19,10 +19,10 @@ body {
     font-weight: normal;
     background-color: white;
     flex-direction: column;
-    flex-wrap: wrap;
     height: auto;
     color: black;
     width: 100%;
+    overflow-x: hidden;
 }
 
 /* Botao de acao do site */

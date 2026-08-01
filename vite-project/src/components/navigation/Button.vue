@@ -9,7 +9,7 @@
         >
             {{ texto }}
         </button>
-        <button :type="type" v-if="ativo == false" class="botao-acao classeInativo" disabled>
+        <button :type="type" v-if="ativo == false" class="botao-acao text classeInativo" disabled>
             {{ texto }}
         </button>
     </div>

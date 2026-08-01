@@ -1,25 +1,13 @@
 <template>
-    <section class="frame-pagina">
+    <section class="flex flex-col items-center gap-5 w-full overflow-x-hidden">
         <HeaderSistema :activeIndex="4" />
 
-        <h1 class="h1-text">Ficha do Diagnóstico</h1>
+        <h1 class="text-[#3a0d75] text-xl sm:text-4xl w-max m-0 text-center self-center font-normal">Ficha do Diagnóstico</h1>
 
-        <!-- <TesteOverlay
-            class="overlay-aviso"
-
-        ></TesteOverlay>
-        <TesteOverlay
-            class="overlay-aviso"
-            :eventoAviso="'tamanhoErrado'"
-            :titulo="'Vídeo muito grande!'"
-            :subtexto="`Tamanho máximo: 50MB`"
-            :srcImg="'src/assets/alert_circle.png'"
-        ></TesteOverlay> -->
-        <main class="max-sm: flex-start">
+        <main class="w-fit mx-auto flex flex-col items-start gap-5">
             <p
                 v-if="!this.$store.getters.getLogado"
-                class="sm:text-2xl"
-                id="aviso-avulso"
+                class="text-[#792359] text-xl sm:text-2xl font-normal"
             >
                 Aviso! A Análise Avulsa não salvará nenhuma informação dos pacientes
             </p>
@@ -27,32 +15,33 @@
             <form
                 @keyup.enter="$emit('submit')"
                 ref="form"
-                class="['form-cadastro', 'max-sm: flex-start']"
+                class="flex flex-col gap-[2vmin] w-full"
                 @submit.prevent="enviaDiag"
             >
-                <div class="form-group">
-                    <label>Nome do Paciente</label>
-
+                <div class="flex flex-col gap-[5px]">
+                    <label class="text-lg sm:text-2xl font-semibold">Nome do Paciente</label>
                     <input
                         @input="checkNome"
                         type="text"
                         v-model="this.nomePac"
                         required="true"
+                        class="w-full p-[1%] h-2lh text-base border-2 border-[#b3b3b3] rounded-[1vmin] bg-white outline-none transition-colors duration-300 focus:border-[#444] placeholder-[#757575]"
                     />
                 </div>
-                <div class="form-group grupo-paralisia">
-                    <label>Possui Paralisia?</label>
-                    <span class="opcoes">
-                        <div class="label-input">
+                <div class="flex flex-col gap-[5px]">
+                    <label class="text-lg sm:text-2xl font-semibold">Possui Paralisia?</label>
+                    <span class="flex gap-[2vmin]">
+                        <div class="flex items-center gap-[1vmin]">
                             <input
                                 type="radio"
                                 v-model="this.paralisia"
                                 value="Sim"
                                 name="paralisia"
+                                class="appearance-none border-[calc(30vmin/100)] solid black rounded-full h-[2.8vmin] w-[2.8vmin] p-0 cursor-pointer accent-[#3a0d75]"
                             />
                             <label>Sim</label>
                         </div>
-                        <div class="label-input">
+                        <div class="flex items-center gap-[1vmin]">
                             <input
                                 type="radio"
                                 @input="
@@ -64,52 +53,61 @@
                                 v-model="this.paralisia"
                                 value="Nao"
                                 name="paralisia"
+                                class="appearance-none border-[calc(30vmin/100)] solid black rounded-full h-[2.8vmin] w-[2.8vmin] p-0 cursor-pointer accent-[#3a0d75]"
                             />
                             <label>Não</label>
                         </div>
-                        <div class="label-input">
+                        <div class="flex items-center gap-[1vmin]">
                             <input
                                 type="radio"
                                 v-model="this.paralisia"
                                 value="Inconclusivo"
                                 name="paralisia"
+                                class="appearance-none border-[calc(30vmin/100)] solid black rounded-full h-[2.8vmin] w-[2.8vmin] p-0 cursor-pointer accent-[#3a0d75]"
                             />
                             <label>Inconclusivo</label>
                         </div>
                     </span>
                 </div>
 
-                <div class="form-group grupo-olho">
-                    <label>Olho Paralítico</label>
-                    <span class="opcoes">
-                        <div class="label-input">
+                <div class="flex flex-col gap-[5px]">
+                    <label class="text-lg sm:text-2xl font-semibold">Olho Paralítico</label>
+                    <span class="flex gap-[2vmin]">
+                        <div class="flex items-center gap-[1vmin]"
+                            :class="{ 'opacity-50 pointer-events-none': this.paralisia !== 'Sim' }"
+                        >
                             <input
-                                :enabled="this.paralisia === 'Sim'"
                                 :disabled="this.paralisia !== 'Sim'"
                                 type="checkbox"
                                 v-model="this.olhoEsquerdo"
                                 id="leftEye"
                                 value="esquerdo"
+                                class="accent-[#3a0d75] w-[2.5vmin]"
                             />
                             <label id="leftEyeLabel" for="leftEye">Esquerdo</label>
                         </div>
-                        <div class="label-input">
+                        <div class="flex items-center gap-[1vmin]"
+                            :class="{ 'opacity-50 pointer-events-none': this.paralisia !== 'Sim' }"
+                        >
                             <input
-                                :enabled="this.paralisia === 'Sim'"
                                 :disabled="this.paralisia !== 'Sim'"
                                 type="checkbox"
                                 v-model="this.olhoDireito"
                                 id="rightEye"
                                 value="direito"
+                                class="accent-[#3a0d75] w-[2.5vmin]"
                             />
                             <label for="rightEye">Direito</label>
                         </div>
                     </span>
                 </div>
 
-                <div class="form-group">
-                    <div id="div-lateral">
-                        <label id="label-upload" for="videoUpload">Enviar Vídeo</label>
+                <div class="flex flex-col gap-[5px]">
+                    <div class="gap-[2vmin] flex items-center">
+                        <label
+                            for="videoUpload"
+                            class="bg-gradient-to-br from-[#d2d2d2] to-[#e5e5e5] w-max rounded-[5vmin] border border-[rgb(180,179,179)] px-[2%] py-[1%] text-[2vmin] font-normal hover:border-[rgb(97,97,97)] focus:border-[rgb(97,97,97)] cursor-pointer max-[560px]:font-semibold"
+                        >Enviar Vídeo</label>
                         <input
                             @change="getVideo"
                             type="file"
@@ -123,19 +121,20 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="patientDescription">Descrição (opcional)</label>
+                <div class="flex flex-col gap-[5px]">
+                    <label for="patientDescription" class="text-lg sm:text-2xl font-semibold">Descrição (opcional)</label>
                     <textarea
                         v-model="this.desc"
                         id="patientDescription"
                         name="description"
                         rows="4"
                         placeholder="Descrição curta do paciente e do porquê de seu diagnóstico"
+                        class="w-full p-[1%] h-8ch text-base border-2 border-[#b3b3b3] rounded-[1vmin] bg-white outline-none transition-colors duration-300 focus:border-[#444] placeholder-[#757575]"
                     ></textarea>
                 </div>
 
                 <Button
-                    class="but-cadastro"
+                    class="relative mx-[2vmin]"
                     type="submit"
                     :ativo="checkCampos"
                     texto="Analisar"
@@ -367,174 +366,6 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-$font-size-labels: clamp(16px, 2.2vmin, 19px);
-
-.frame-pagina {
-    display: flex;
-    flex-direction: column;
-    gap: 5vmin;
-    // height: 100vh;
-}
-
-h1 {
-    color: #3a0d75;
-    width: max-content;
-    margin: 0px;
-    text-align: center;
-    align-self: center;
-    font-weight: 400;
-    line-height: normal;
-}
-
-main {
-    width: fit-content;
-    margin: 0 auto;
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    gap: 20px;
-
-    #aviso-avulso {
-        color: #792359;
-        @apply text-xl sm:text-4xl;
-        font-weight: 400;
-        line-height: normal;
-    }
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 2vmin;
-    width: 100%;
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-
-        .opcoes {
-            display: flex;
-            gap: 2vmin;
-            #leftEyeLabel {
-                margin-right: 1vmin;
-            }
-            .label-input:has(input[type="checkbox"]:disabled) {
-                filter: brightness(0.5) opacity(0.5);
-                pointer-events: none;
-            }
-        }
-
-        #div-lateral {
-            gap: 2vmin;
-            display: flex;
-            align-items: center;
-        }
-
-        label {
-            @apply text-lg sm:text-2xl;
-            font-weight: 600;
-        }
-        input,
-        textarea {
-            width: 100%;
-            padding: 1%;
-            height: 2lh;
-            font-size: 16px;
-            border: 2px solid #b3b3b3;
-            border-radius: 1vmin;
-            background-color: white;
-            outline: none;
-            transition: border-color 0.3s ease-in-out;
-
-            &::placeholder {
-                color: #757575;
-            }
-
-            &:focus {
-                border-color: #444444;
-            }
-        }
-        #patientDescription {
-            height: 8ch;
-        }
-    }
-
-    .grupo-olho {
-        input[type="checkbox"] {
-            accent-color: #3a0d75;
-            width: 2.5vmin;
-        }
-    }
-
-    .grupo-paralisia {
-        display: flex;
-        gap: 2vmin;
-        input {
-            width: 1.25em;
-            padding: 1%;
-        }
-    }
-
-    .label-input {
-        display: flex;
-        align-items: center;
-        gap: 1vmin;
-        input[type="radio"] {
-            appearance: none;
-            -moz-appearance: none;
-            border: calc(30vmin / 100) solid black;
-            border-radius: 100%;
-            height: 2.8vmin;
-            width: 2.8vmin;
-            padding: 0px;
-            margin: auto;
-            display: inline-block;
-            justify-content: center;
-            align-items: flex-start;
-            position: relative;
-            cursor: pointer;
-
-            &::before {
-                content: "";
-                aspect-ratio: 1/1;
-                width: 59%;
-                height: 59%;
-                background-color: #6113c6;
-                border-radius: 1000%;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%) scale(0);
-                transition: all 0.1s ease-in;
-            }
-            &:checked {
-                border-color: #6113c6;
-
-                &::before {
-                    transform: translate(-50%, -50%) scale(1);
-                }
-            }
-        }
-    }
-
-    #label-upload {
-        background: linear-gradient(98deg, #d2d2d2 4.6%, #e5e5e5 56.86%);
-        width: max-content;
-        height: auto;
-        border-radius: 5vmin;
-        border: 1px solid rgb(180, 179, 179);
-        padding: 1% 2%;
-        font-size: 2vmin;
-        font-weight: 400;
-        @media (max-width: 560px), (max-height: 560px) {
-            font-weight: 600;
-        }
-        &:hover,
-        &:focus {
-            border-color: rgb(97, 97, 97);
-        }
-    }
-}
+<style scoped>
+/* Estilos substituídos por Tailwind */
 </style>

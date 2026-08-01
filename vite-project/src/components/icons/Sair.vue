@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-row items-center gap-[2vmin] cursor-pointer text-white w-fit font-medium no-underline transition-all duration-300 p-[1vmin] text-center text-[clamp(13px,1.8vmin,20px)] hover:bg-[hsla(267,81%,37%,0.63)] hover:font-semibold hover:scale-110" @click="deslogar">
-    <p class="text-white font-semibold m-0">Sair</p>
-    <img class="aspect-square w-[3.5vmin]" src="../../assets/Log_out.png" />
-  </div>
+  <a class="flex items-center justify-end gap-3 w-full text-white text-xs sm:text-sm font-medium py-2 px-3 rounded-lg hover:bg-white/10 transition-colors cursor-pointer" @click="deslogar">
+    <span>Sair</span>
+    <img class="w-5 h-5" src="../../assets/Log_out.png" />
+  </a>
 </template>
 
 <script>
